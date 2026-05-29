@@ -1,7 +1,7 @@
 package embox.device
 
 module char_dev {
-	option string log_level="LOG_NONE"
+	option string log_level="LOG_ERR"
 	option number idesc_pool_size=32
 
 	@IncludeExport(path="drivers")

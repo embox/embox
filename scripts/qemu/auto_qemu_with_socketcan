@@ -1,10 +1,36 @@
 #!/usr/bin/env bash
 
+error() {
+	echo -e "auto_qemu_with_socketcan: error: $@" >&2
+	exit 1
+}
+
+check_vcan() {
+    if ip link show "$1" > /dev/null 2>&1; then
+		error "error: \"$1\" already exists"
+    fi
+}
+
+add_vcan() {
+	sudo ip link add dev "$1" type vcan
+	sudo ip link set up "$1"
+}
+
+delete_vcan() {
+	sudo ip link set down "$1"
+	sudo ip link delete "$1"
+}
+
 sudo modprobe vcan
-sudo ip link add dev vcan0 type vcan
-sudo ip link set up vcan0
 
-./scripts/qemu/auto_qemu -object can-host-socketcan,id=canhost0,if=vcan0,canbus=canbus0 "$@"
+check_vcan vcan0
+check_vcan vcan1
 
-sudo ip link set down vcan0
-sudo ip link delete vcan0
+add_vcan vcan0
+add_vcan vcan1
+
+export AUTOQEMU_HOST_SOCKETCAN="y"
+./scripts/qemu/auto_qemu "$@"
+
+delete_vcan vcan0
+delete_vcan vcan1
