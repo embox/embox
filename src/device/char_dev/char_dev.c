@@ -14,6 +14,7 @@
 #include <embox/unit.h>
 #include <lib/libds/array.h>
 #include <lib/libds/dlist.h>
+#include <util/log.h>
 
 EMBOX_UNIT_INIT(char_dev_registry_init);
 
@@ -37,6 +38,7 @@ static int char_dev_check_name(const char *name) {
 
 	char_dev_foreach(tmp) {
 		if (!strcmp(tmp->name, name)) {
+			log_error("device \"%s\" already exists", name);
 			return -EEXIST;
 		}
 	}
