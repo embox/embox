@@ -1,0 +1,10 @@
+package embox.driver.can
+
+module ctucanfd_pci {
+	option number dev_id=0
+
+	source "ctucanfd_pci.c"
+
+	depends embox.driver.pci
+	@NoRuntime depends embox.device.can_dev
+}
