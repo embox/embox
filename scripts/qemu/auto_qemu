@@ -344,6 +344,7 @@ fi
 declare -A CAN2QEMU
 CAN2QEMU=(
 	[kvaser_pci]="kvaser_pci"
+	[ctucanfd_pci]="ctucan_pci"
 )
 
 qemu_can="$AUTOQEMU_CAN"
@@ -356,7 +357,12 @@ if [ "$can_n" -gt 0 ]; then
 		if [ ! "$can_model" ]; then
 			error "can model ${qemu_can[$can]} is not supported"
 		else
-			can_lines="$can_lines -object can-bus,id=canbus$can_id -device $can_model,canbus=canbus$can_id"
+			can_lines="$can_lines -object can-bus,id=canbus$can_id"
+			if [ "$can_model" == "ctucan_pci" ]; then
+				can_lines="$can_lines -device $can_model,canbus0=canbus$can_id,canbus1=canbus$can_id"
+			else	
+				can_lines="$can_lines -device $can_model,canbus=canbus$can_id"
+			fi
 			if [ "$AUTOQEMU_HOST_SOCKETCAN" == "y" ]; then
 				can_lines="$can_lines -object can-host-socketcan,id=canhost$can_id,if=vcan$can_id,canbus=canbus$can_id"
 			fi
