@@ -18,7 +18,7 @@ info() {
 }
 
 error() {
-	echo -e "$@" >&2
+	echo -e "\n$@" >&2
 	exit 1
 }
 
@@ -304,7 +304,6 @@ if [ "$nic_n" -gt 0 ]; then
 	for ni in "${!qemu_nics[@]}"; do
 
 		nic_model=${NIC2QEMU[${qemu_nics[$ni]}]}
-		echo
 		if [ ! "$nic_model" ]; then
 			error "nic model ${qemu_nics[$ni]} is not supported"
 		fi
@@ -347,14 +346,13 @@ CAN2QEMU=(
 	[kvaser_pci]="kvaser_pci"
 )
 
-AUDIO_DEV=" " read -r -a qemu_can <<< "$AUTOQEMU_CAN"
+CAN_DEV=" " read -r -a qemu_can <<< "$AUTOQEMU_CAN"
 
 can_lines=""
 can_n=${#qemu_can[*]}
 if [ "$can_n" -gt 0 ]; then
 	for can in "${!qemu_can[@]}"; do
 		can_model=${CAN2QEMU[${qemu_can[$can]}]}
-		echo
 		if [ ! "$can_model" ]; then
 			error "can model ${qemu_can[$can]} is not supported"
 		else
@@ -384,7 +382,6 @@ if [ "$sound_n" -gt 0 ]; then
 
 	for so in "${!qemu_sound[@]}"; do
 		sound_model=${AUDIO2QEMU[${qemu_sound[$so]}]}
-		echo
 		if [ "$sound_model" != "default" ]; then
 			if [ ! "$sound_model" ]; then
 				error "sound model ${qemu_sound[$so]} is not supported"
@@ -430,7 +427,6 @@ if [ "$usb_n" -gt 0 ]; then
 		if [ "${qemu_usb[$so]}" != "ehci_hcd" ]; then
 			usb_model=${USB2QEMU[${qemu_usb[$so]}]}
 			hci_id=${USB2QEMUID[${qemu_usb[$so]}]}
-			echo
 			if [ ! "$usb_model" ]; then
 				error "usb model ${qemu_usb[$so]} ${qemu_usb[$so]} is not supported"
 			else
@@ -505,7 +501,7 @@ fi
 
 ARG_LINE="$sudo $QEMU $runas $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $can_lines $sound_lines $graphic_lines $@"
 
-info $ARG_LINE
+info "\n"$ARG_LINE
 $ARG_LINE
 
 if [ -f beagle_nand.img ]; then
