@@ -5,8 +5,8 @@
  * @date 14.04.26
  */
 
-#ifndef DRIVERS_CAN_KVASER_PCI_SJA1000_H_
-#define DRIVERS_CAN_KVASER_PCI_SJA1000_H_
+#ifndef DRIVERS_CAN_SJA1000_H_
+#define DRIVERS_CAN_SJA1000_H_
 
 #include <stdint.h>
 
@@ -170,4 +170,4 @@ static inline void sja_reg_clear(uintptr_t base, unsigned int reg, uint8_t mask)
 	return sja_reg_store(base, reg, sja_reg_load(base, reg) & ~mask);
 }
 
-#endif /* DRIVERS_CAN_KVASER_PCI_SJA1000_H_ */
+#endif /* DRIVERS_CAN_SJA1000_H_ */
