@@ -1,6 +1,8 @@
 package embox.driver.can
 
 module ctucanfd_pci {
+	option string log_level="LOG_WARNING"
+
 	option number dev_id=0
 
 	source "ctucanfd_pci.c"
