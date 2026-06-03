@@ -10,11 +10,16 @@
 #include <stdio.h>
 #include <unistd.h>
 
-int main(void) {
+int main(int argc, char **argv) {
 	struct can_frame frame;
 	int fd;
 
-	fd = open("/dev/can0", O_RDWR);
+	if (argc == 2) {
+		fd = open(argv[1], O_RDWR);
+	}
+	else {
+		fd = open("/dev/can0", O_RDWR);
+	}
 
 	frame.can_id = 0x123;
 	frame.len = 8;

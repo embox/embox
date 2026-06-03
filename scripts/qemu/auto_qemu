@@ -357,14 +357,14 @@ if [ "$can_n" -gt 0 ]; then
 		if [ ! "$can_model" ]; then
 			error "can model ${qemu_can[$can]} is not supported"
 		else
-			can_lines="$can_lines -object can-bus,id=canbus$can_id"
+			can_lines="$can_lines -object can-bus,id=can-bus$can_id"
 			if [ "$can_model" == "ctucan_pci" ]; then
-				can_lines="$can_lines -device $can_model,canbus0=canbus$can_id,canbus1=canbus$can_id"
+				can_lines="$can_lines -device $can_model,canbus0=can-bus$can_id,canbus1=can-bus$can_id"
 			else	
-				can_lines="$can_lines -device $can_model,canbus=canbus$can_id"
+				can_lines="$can_lines -device $can_model,canbus=can-bus$can_id"
 			fi
 			if [ "$AUTOQEMU_HOST_SOCKETCAN" == "y" ]; then
-				can_lines="$can_lines -object can-host-socketcan,id=canhost$can_id,if=vcan$can_id,canbus=canbus$can_id"
+				can_lines="$can_lines -object can-host-socketcan,id=canhost$can_id,if=vcan$can_id,canbus=can-bus$can_id"
 			fi
 		fi
 		can_id=$(($can_id + 1))

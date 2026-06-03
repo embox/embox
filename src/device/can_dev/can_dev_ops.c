@@ -50,10 +50,6 @@ static ssize_t can_dev_read(struct char_dev *char_dev, void *buf, size_t nbyte) 
 	struct waitq_link wql;
 	struct can_dev *dev;
 
-	if (nbyte != sizeof(can_frame_t)) {
-		return -EINVAL;
-	}
-
 	dev = (struct can_dev *)char_dev;
 	assert(dev->rx_buff_cnt >= 0);
 
@@ -70,7 +66,7 @@ static ssize_t can_dev_read(struct char_dev *char_dev, void *buf, size_t nbyte) 
 		}
 	}
 
-	memcpy(buf, &dev->rx_buff[dev->rx_buff_cnt - 1], sizeof(can_frame_t));
+	memcpy(buf, &dev->rx_buff[dev->rx_buff_cnt - 1], nbyte);
 
 	if (dev->rx_buff_cnt == CAN_RX_BUFF_SIZE) {
 		dev->ops->irq_en(dev);
@@ -78,17 +74,13 @@ static ssize_t can_dev_read(struct char_dev *char_dev, void *buf, size_t nbyte) 
 
 	--dev->rx_buff_cnt;
 
-	return sizeof(can_frame_t);
+	return nbyte;
 }
 
 static ssize_t can_dev_write(struct char_dev *char_dev, const void *buf,
     size_t nbyte) {
 	struct can_dev *dev;
 	int err;
-
-	if (nbyte != sizeof(can_frame_t)) {
-		return -EINVAL;
-	}
 
 	dev = (struct can_dev *)char_dev;
 
@@ -97,7 +89,7 @@ static ssize_t can_dev_write(struct char_dev *char_dev, const void *buf,
 		return err;
 	}
 
-	return sizeof(can_frame_t);
+	return nbyte;
 }
 
 static int can_dev_ioctl(struct char_dev *char_dev, int request, void *data) {

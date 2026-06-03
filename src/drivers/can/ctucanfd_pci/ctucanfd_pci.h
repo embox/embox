@@ -5,151 +5,164 @@
  * @date 29.05.26
  */
 
-#ifndef DRIVERS_CAN_CTUCAN_PCI_H_
-#define DRIVERS_CAN_CTUCAN_PCI_H_
+#ifndef DRIVERS_CAN_CTUCANFD_PCI_H_
+#define DRIVERS_CAN_CTUCANFD_PCI_H_
 
 /* Control registers */
-#define CTUCANFD_VERID      0x00
-#define CTUCANFD_SET_MODE   0x04
-#define CTUCANFD_STATUS     0x08
-#define CTUCANFD_CMD        0x0c
-#define CTUCANFD_INTSTAT    0x10
-#define CTUCANFD_INTENSET   0x14
-#define CTUCANFD_INTENCLR   0x18
-#define CTUCANFD_INTMASKSET 0x1c
-#define CTUCANFD_INTMASKCLR 0x20
-#define CTUCANFD_BTR        0x24
-#define CTUCANFD_BTRFD      0x28
-#define CTUCANFD_FAULT      0x2c
-#define CTUCANFD_ERRCNT     0x30
-#define CTUCANFD_ERR        0x34
-#define CTUCANFD_CTRPRES    0x38
-#define CTUCANFD_FLTR_A_MSK 0x3c
-#define CTUCANFD_FLTR_A_VAL 0x40
-#define CTUCANFD_FLTR_B_MSK 0x44
-#define CTUCANFD_FLTR_B_VAL 0x48
-#define CTUCANFD_FLTR_C_MSK 0x4c
-#define CTUCANFD_FLTR_C_VAL 0x50
-#define CTUCANFD_FLTR_RAN_L 0x54
-#define CTUCANFD_FLTR_RAN_H 0x58
-#define CTUCANFD_FLTR       0x5c
-#define CTUCANFD_RXMEMINFO  0x60
-#define CTUCANFD_RXPOINTERS 0x64
-#define CTUCANFD_RXSETSTAT  0x68
-#define CTUCANFD_RXDATA     0x6c
-#define CTUCANFD_TXSTAT     0x70
-#define CTUCANFD_TXINFOCMD  0x74
-#define CTUCANFD_TXPRIO     0x78
-#define CTUCANFD_MISC       0x7c
-#define CTUCANFD_SSP        0x80
-#define CTUCANFD_RXFRCTR    0x84
-#define CTUCANFD_TXFRCTR    0x88
-#define CTUCANFD_DEBUG      0x8c
-#define CTUCANFD_YOLO       0x90
-#define CTUCANFD_TS_L       0x94
-#define CTUCANFD_TS_H       0x98
+#define CTUCANFD_VER   0x00 /* Version Register */
+#define CTUCANFD_DEVID 0x00 /* Device ID Register */
+#define CTUCANFD_MODE  0x04 /* Mode Register */
+#define CTUCANFD_STAT  0x08 /* Status Register */
+#define CTUCANFD_CMD   0x0c /* Command Register */
+#define CTUCANFD_ISR   0x10 /* Interrupt Status Register */
+#define CTUCANFD_IES   0x14 /* Interrupt Enable Set Register */
+#define CTUCANFD_IEC   0x18 /* Interrupt Enable Clear Register */
+#define CTUCANFD_IMS   0x1c /* Interrupt Mask Set Register */
+#define CTUCANFD_IMC   0x20 /* Interrupt Mask Clear Register */
+#define CTUCANFD_BTR   0x24 /* Bit Timing Register */
+#define CTUCANFD_BTRFD 0x28 /* Bit Timing FD Register */
+#define CTUCANFD_ELR   0x2c /* Error Limit Register */
+#define CTUCANFD_FAULT 0x2c /* Fault State Register */
+#define CTUCANFD_REC   0x30 /* RX Error Counter Register */
+#define CTUCANFD_TEC   0x30 /* TX Error Counter Register */
+#define CTUCANFD_ERR   0x34 /* Error Counter Register */
+#define CTUCANFD_CPR   0x38 /* Counter Preset Register */
+#define CTUCANFD_FAM   0x3c /* Filter A Mask Register */
+#define CTUCANFD_FAV   0x40 /* Filter A Value Register */
+#define CTUCANFD_FBM   0x44 /* Filter B Mask Register */
+#define CTUCANFD_FBV   0x48 /* Filter B Value Register */
+#define CTUCANFD_FCM   0x4c /* Filter C Mask Register */
+#define CTUCANFD_FCV   0x50 /* Filter C Value Register */
+#define CTUCANFD_FRL   0x54 /* Filter Range Low Register */
+#define CTUCANFD_FRH   0x58 /* Filter Range High Register */
+#define CTUCANFD_FCR   0x5c /* Filter Control Register */
+#define CTUCANFD_FSR   0x5c /* Filter Status Register */
+#define CTUCANFD_RXMI  0x60 /* RX Memory Info Register  */
+#define CTUCANFD_RXPT  0x64 /* RX Pointers Register */
+#define CTUCANFD_RXS   0x68 /* TX Status/Settings Register */
+#define CTUCANFD_RXD   0x6c /* RX Data Register */
+#define CTUCANFD_TXS   0x70 /* TX Status Register */
+#define CTUCANFD_TXC   0x74 /* TX Command Register */
+#define CTUCANFD_TXI   0x74 /* TX Info Register */
+#define CTUCANFD_TXP   0x78 /* TX Priority Register */
+#define CTUCANFD_ECC   0x7c /* Error Code Capture Register */
+#define CTUCANFD_TDR   0x80 /* Transmitter delay register */
+#define CTUCANFD_SSPC  0x80 /* Secondary Sampling Point Config Register */
+#define CTUCANFD_TSL   0x94 /* Timestamp Low Register */
+#define CTUCANFD_TSH   0x98 /* Timestamp High Register */
 
-/* Mode */
+/* TXT Buﬀer 1 */
+#define CTUCANFD_TXB_FMT 0x100 /* Frame format */
+#define CTUCANFD_TXB_ID  0x104 /* CAN Identifier */
+#define CTUCANFD_TXB_TSL 0x108 /* Timestamp (Lower 32 bits) */
+#define CTUCANFD_TXB_TSU 0x10c /* Timestamp (Upper 32 bits) */
+#define CTUCANFD_TXB_DAT 0x110 /* Data (64 bytes) */
 
-#define CTUCANFD_MODE_RST   (1 << 0)  /* Soft reset */
-#define CTUCANFD_MODE_BMM   (1 << 1)  /* Bus monitoring mode */
-#define CTUCANFD_MODE_STM   (1 << 2)  /* Self test mode */
-#define CTUCANFD_MODE_AFM   (1 << 3)  /* Acceptance filters mode */
-#define CTUCANFD_MODE_FDE   (1 << 4)  /* Flexible data rate mode */
-#define CTUCANFD_MODE_TTTM  (1 << 5)  /* Time triggered transmission mode */
-#define CTUCANFD_MODE_ROM   (1 << 6)  /* Restricted operation mode */
-#define CTUCANFD_MODE_ACF   (1 << 7)  /* Acknowledge forbidden mode */
-#define CTUCANFD_MODE_TSTM  (1 << 8)  /* Test mode */
-#define CTUCANFD_MODE_RXBAM (1 << 9)  /* TX buffer automatic mode */
-#define CTUCANFD_MODE_TXBBM (1 << 10) /* TXT buffer backup mode */
-#define CTUCANFD_MODE_SAM   (1 << 11) /* Self-acknowledge mode */
-#define CTUCANFD_MODE_ERFM  (1 << 12) /* Error frame receive mode */
+/* CTUCANFD_MODE */
+#define CTUCANFD_MODE_RST    (1 << 0)  /* Soft Reset */
+#define CTUCANFD_MODE_BMM    (1 << 1)  /* Bus Monitoring Mode */
+#define CTUCANFD_MODE_STM    (1 << 2)  /* Self Test Mode */
+#define CTUCANFD_MODE_AFM    (1 << 3)  /* Acceptance Filters Mode */
+#define CTUCANFD_MODE_FDE    (1 << 4)  /* Flexible Data Rate Mode */
+#define CTUCANFD_MODE_TTTM   (1 << 5)  /* Time Triggered Transmission Mode */
+#define CTUCANFD_MODE_ROM    (1 << 6)  /* Restricted Mperation Mode */
+#define CTUCANFD_MODE_ACF    (1 << 7)  /* Acknowledge Forbidden Mode */
+#define CTUCANFD_MODE_TSTM   (1 << 8)  /* Test Mode */
+#define CTUCANFD_MODE_RXBAM  (1 << 9)  /* TX Buffer Automatic Mode */
+#define CTUCANFD_MODE_TXBBM  (1 << 10) /* TXT Buffer Backup Mode */
+#define CTUCANFD_MODE_SAM    (1 << 11) /* Self-Acknowledge Mode */
+#define CTUCANFD_MODE_ERFM   (1 << 12) /* Error Frame Receive Mode */
+#define CTUCANFD_MODE_RTRLE  (1 << 16) /* Retransmit Limit Enable */
+#define CTUCANFD_MODE_ILBP   (1 << 21) /* Internal Loop Back Mode */
+#define CTUCANFD_MODE_ENA    (1 << 22) /* Main Enable of CTU CAN FD */
+#define CTUCANFD_MODE_NISOFD (1 << 23) /* Non ISO FD */
+#define CTUCANFD_MODE_PEX    (1 << 24) /* Protocol Exception Handling */
+#define CTUCANFD_MODE_TBFBO  (1 << 25) /* TX Failed when Bus-Off */
+#define CTUCANFD_MODE_FDRF   (1 << 26) /* Frame Filter Drop Remote Frames */
+#define CTUCANFD_MODE_PCHKE  (1 << 27) /* Enable Parity Checks */
 
-/* Settings */
-#define CTUCANFD_SET_SHFIT       (16)     /* Shift in 32-bit access mode */
-#define CTUCANFD_SET_RTRLE       (1 << 0) /* Retransmit limit enable */
-#define CTUCANFD_SET_RTRTH_SHIFT (1)      /* Retransmit limit threshold shift */
-#define CTUCANFD_SET_ILBP        (1 << 5) /* Internal loop back mode */
-#define CTUCANFD_SET_ENA         (1 << 6) /* Main enable bif of CTU CAN FD */
-#define CTUCANFD_SET_NISOFD      (1 << 7) /* Non ISO FD */
-#define CTUCANFD_SET_PEX         (1 << 8) /* Protocol exception handling */
-#define CTUCANFD_SET_TBFBO       (1 << 9) /* TX failed for all buffers when bus-off */
-#define CTUCANFD_SET_FDRF        (1 << 10) /* Frame filter drop remote frames */
-#define CTUCANFD_SET_PCHKE \
-	(1 << 11) /* Enable parity checks in TXT and RX buffers */
-
-/* Command */
-#define CTUCANFD_CMD_RXRPMV  (1 << 1) /* RX buffer read pointer move */
-#define CTUCANFD_CMD_RRB     (1 << 2) /* Release RX buffer */
-#define CTUCANFD_CMD_CDO     (1 << 3) /* Clear data overrun flag in RX buffer */
-#define CTUCANFD_CMD_ERCRST  (1 << 4) /* Error counters reset */
-#define CTUCANFD_CMD_RXFCRST (1 << 5) /* Clear RX bus traffic counter */
-#define CTUCANFD_CMD_TXFCRST (1 << 6) /* Clear TX bus traffic counter */
-#define CTUCANFD_CMD_CPEXS   (1 << 7) /* Clear protocol exception status */
-#define CTUCANFD_CMD_CRXPE   (1 << 8) /* Clear STATUS[RXPE] flag */
-#define CTUCANFD_CMD_CTXPE   (1 << 9) /* Clear STATUS[TXPE] flag */
+/* CTUCANFD_CMD */
+#define CTUCANFD_CMD_RXRPMV  (1 << 1)  /* RX buffer read pointer move */
+#define CTUCANFD_CMD_RRB     (1 << 2)  /* Release RX buffer */
+#define CTUCANFD_CMD_CDO     (1 << 3)  /* Clear Data Overrun */
+#define CTUCANFD_CMD_ERCRST  (1 << 4)  /* Error counters reset */
+#define CTUCANFD_CMD_RXFCRST (1 << 5)  /* Clear RX bus traffic counter */
+#define CTUCANFD_CMD_TXFCRST (1 << 6)  /* Clear TX bus traffic counter */
+#define CTUCANFD_CMD_CPEXS   (1 << 7)  /* Clear protocol exception status */
+#define CTUCANFD_CMD_CRXPE   (1 << 8)  /* Clear STATUS[RXPE] flag */
+#define CTUCANFD_CMD_CTXPE   (1 << 9)  /* Clear STATUS[TXPE] flag */
 #define CTUCANFD_CMD_CTXDPE  (1 << 10) /* Clear STATUS[TXDPE] flag */
 
-/* Interrupts */
-#define CTUCANFD_INT_RXI  (1 << 0) /* Frame received interrupt */
-#define CTUCANFD_INT_TXI  (1 << 1) /* Frame transmitted interrupt */
-#define CTUCANFD_INT_EWLI (1 << 2) /* Error warning limit interrupt */
-#define CTUCANFD_INT_DOI  (1 << 3) /* Data overrun interrupt */
-#define CTUCANFD_INT_FCSI \
-	(1 << 4) /* Fault confinement state changed interrupt */
-#define CTUCANFD_INT_ALI    (1 << 5)  /* Arbitration lost interrupt */
-#define CTUCANFD_INT_BEI    (1 << 6)  /* Bus error interrupt */
-#define CTUCANFD_INT_OFI    (1 << 7)  /* Overload frame interrupt */
-#define CTUCANFD_INT_RXFI   (1 << 8)  /* RX buffer full interrupt */
-#define CTUCANFD_INT_BSI    (1 << 9)  /* Bit rate shifted interrupt */
-#define CTUCANFD_INT_RBNEI  (1 << 10) /* RX buffer not empty interrupt */
-#define CTUCANFD_INT_TXBHCI (1 << 11) /* TXT buffer HW command interrupt */
+/* CTUCANFD_ISR */
+#define CTUCANFD_ISR_RXI    (1 << 0)  /* Frame received interrupt */
+#define CTUCANFD_ISR_TXI    (1 << 1)  /* Frame transmitted interrupt */
+#define CTUCANFD_ISR_EWLI   (1 << 2)  /* Error warning limit interrupt */
+#define CTUCANFD_ISR_DOI    (1 << 3)  /* Data overrun interrupt */
+#define CTUCANFD_ISR_FCSI   (1 << 4)  /* Fault state changed interrupt */
+#define CTUCANFD_ISR_ALI    (1 << 5)  /* Arbitration lost interrupt */
+#define CTUCANFD_ISR_BEI    (1 << 6)  /* Bus error interrupt */
+#define CTUCANFD_ISR_OFI    (1 << 7)  /* Overload frame interrupt */
+#define CTUCANFD_ISR_RXFI   (1 << 8)  /* RX buffer full interrupt */
+#define CTUCANFD_ISR_BSI    (1 << 9)  /* Bit rate shifted interrupt */
+#define CTUCANFD_ISR_RBNEI  (1 << 10) /* RX buffer not empty interrupt */
+#define CTUCANFD_ISR_TXBHCI (1 << 11) /* TXT buffer HW command interrupt */
 
-/* RX_STATUS and RX_SETTINGS */
-#define CTUCANFD_RXSTAT_RXE         (1 << 0) /* RX buffer is empty */
-#define CTUCANFD_RXSTAT_RXF         (1 << 1) /* RX buffer is full */
-#define CTUCANFD_RXSTAT_RXMOF       (1 << 2) /* RX buffer middle of frame */
-#define CTUCANFD_RXSTAT_RXFRC_SHIFT (4)      /* RX buffer frame count */
-#define CTUCANFD_RXSTAT_RXFRC_MASK  (0x7ff << CTUCANFD_RXSTAT_RXFRC_SHIFT)
+/* CTUCANFD_RXS */
+#define CTUCANFD_RXS_RXE   (1 << 0) /* RX buffer is empty */
+#define CTUCANFD_RXS_RXF   (1 << 1) /* RX buffer is full */
+#define CTUCANFD_RXS_RXMOF (1 << 2) /* RX buffer middle of frame */
 
-/* TX_STATUS */
-#define CTUCANFD_TXSTAT_SHIFT (4)   /* TXyS shift */
-#define CTUCANFD_TXSTAT_MASK  (0xf) /* TXyS mask */
-#define CTUCANFD_TXSTAT_GET(val, i) \
-	(((val) >> (CTUCANFD_TXSTAT_SHIFT * (i))) & CTUCANFD_TXSTAT_MASK)
-#define CTUCANFD_TXSTAT_NOTEXIST (0) /* TXT buffer doesn't exist */
-#define CTUCANFD_TXSTAT_RDY      (1) /* "Ready" state */
-#define CTUCANFD_TXSTAT_TRAN     (2) /* "TX in progress" state */
-#define CTUCANFD_TXSTAT_ABTP     (3) /* "Abort in progress" state */
-#define CTUCANFD_TXSTAT_TOK      (4) /* "TX OK" state */
-#define CTUCANFD_TXSTAT_ERR      (6) /* "Failed" state */
-#define CTUCANFD_TXSTAT_ABT      (7) /* "Aborted" state */
-#define CTUCANFD_TXSTAT_ETY      (8) /* "Empty" state */
-#define CTUCANFD_TXSTAT_PER      (9) /* "Parity error" state */
+#define CTUCANFD_RXS_RXFRC       /* RX buffer frame count */
+#define CTUCANFD_RXS_RXFRC_MASK  0x3ff
+#define CTUCANFD_RXS_RXFRC_SHIFT 4
 
-/* TX_COMMAND and TXTB_INFO */
-#define CTUCANFD_TXCMD_TXCE      (1 << 0) /* "set empty" */
-#define CTUCANFD_TXCMD_TXCR      (1 << 1) /* "set ready" */
-#define CTUCANFD_TXCMD_TXCA      (1 << 2) /* "set abort" */
-#define CTUCANFD_TXCMD_TXB_SHIFT (8)
-#define CTUCANFD_TXCMD_TXB1      (1 << 8)  /* TXT buffer 1 */
-#define CTUCANFD_TXCMD_TXB2      (1 << 9)  /* TXT buffer 2 */
-#define CTUCANFD_TXCMD_TXB3      (1 << 10) /* TXT buffer 3 */
-#define CTUCANFD_TXCMD_TXB4      (1 << 11) /* TXT buffer 4 */
-#define CTUCANFD_TXCMD_TXB5      (1 << 12) /* TXT buffer 5 */
-#define CTUCANFD_TXCMD_TXB6      (1 << 13) /* TXT buffer 6 */
-#define CTUCANFD_TXCMD_TXB7      (1 << 14) /* TXT buffer 7 */
-#define CTUCANFD_TXCMD_TXB8      (1 << 15) /* TXT buffer 8 */
+/* CTUCANFD_TXS */
+#define CTUCANFD_TXS_MASK     0xf /* TX buffer 1 status */
+#define CTUCANFD_TXS_NOTEXIST 0   /* TXT buffer doesn't exist */
+#define CTUCANFD_TXS_RDY      1   /* "Ready" state */
+#define CTUCANFD_TXS_TRAN     2   /* "TX in progress" state */
+#define CTUCANFD_TXS_ABTP     3   /* "Abort in progress" state */
+#define CTUCANFD_TXS_TOK      4   /* "TX OK" state */
+#define CTUCANFD_TXS_ERR      6   /* "Failed" state */
+#define CTUCANFD_TXS_ABT      7   /* "Aborted" state */
+#define CTUCANFD_TXS_ETY      8   /* "Empty" state */
+#define CTUCANFD_TXS_PER      9   /* "Parity error" state */
 
-/* TX_PRIORITY */
-#define CTUCANFD_TXPRIO_SHIFT (4)
+/* CTUCANFD_TXC */
+#define CTUCANFD_TXC_TXCE (1 << 0)  /* TX Command Empty */
+#define CTUCANFD_TXC_TXCR (1 << 1)  /* TX Command Ready */
+#define CTUCANFD_TXC_TXCA (1 << 2)  /* TX Command Abort */
+#define CTUCANFD_TXC_TXB1 (1 << 8)  /* TXT buffer 1 */
+#define CTUCANFD_TXC_TXB2 (1 << 9)  /* TXT buffer 2 */
+#define CTUCANFD_TXC_TXB3 (1 << 10) /* TXT buffer 3 */
+#define CTUCANFD_TXC_TXB4 (1 << 11) /* TXT buffer 4 */
+#define CTUCANFD_TXC_TXB5 (1 << 12) /* TXT buffer 5 */
+#define CTUCANFD_TXC_TXB6 (1 << 13) /* TXT buffer 6 */
+#define CTUCANFD_TXC_TXB7 (1 << 14) /* TXT buffer 7 */
+#define CTUCANFD_TXC_TXB8 (1 << 15) /* TXT buffer 8 */
 
-/* TX buffer */
-#define CTUCANFD_TXBUF_FMT  (0x00)
-#define CTUCANFD_TXBUF_ID   (0x04)
-#define CTUCANFD_TXBUF_TSL  (0x08)
-#define CTUCANFD_TXBUF_TSU  (0x0c)
-#define CTUCANFD_TXBUF_DATA (0x10)
-#define CTUCANFD_TXBUF_TEST (0x05)
+/* CTUCANFD_TXB_FMT */
+#define CTUCANFD_TXB_FMT_RTR (1 << 5)  /* Remote Transmission Request */
+#define CTUCANFD_TXB_FMT_IDE (1 << 6)  /* Extended Format */
+#define CTUCANFD_TXB_FMT_FDF (1 << 7)  /* FD Format */
+#define CTUCANFD_TXB_FMT_BRS (1 << 9)  /* Bit Rate Shift */
+#define CTUCANFD_TXB_FMT_ESI (1 << 10) /* Error State Indicator */
 
-#endif /* DRIVERS_CAN_CTUCAN_PCI_H_ */
+#define CTUCANFD_TXB_FMT_DLC       /* Data Length Code */
+#define CTUCANFD_TXB_FMT_DLC_MASK  0xf
+#define CTUCANFD_TXB_FMT_DLC_SHIFT 0
+
+#define CTUCANFD_TXB_FMT_RWCNT       /* RX Buﬀer Size without FMT */
+#define CTUCANFD_TXB_FMT_RWCNT_MASK  0x1f
+#define CTUCANFD_TXB_FMT_RWCNT_SHIFT 11
+
+/* CTUCANFD_TXB_ID */
+#define CTUCANFD_TXB_ID_EXT       /* Extended Frame ID */
+#define CTUCANFD_TXB_ID_EXT_MASK  0x1fffffff
+#define CTUCANFD_TXB_ID_EXT_SHIFT 0
+
+#define CTUCANFD_TXB_ID_STD       /* Standard Frame ID */
+#define CTUCANFD_TXB_ID_STD_MASK  0x7ff
+#define CTUCANFD_TXB_ID_STD_SHIFT 18
+
+#endif /* DRIVERS_CAN_CTUCANFD_PCI_H_ */

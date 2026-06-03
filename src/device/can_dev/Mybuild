@@ -2,7 +2,7 @@ package embox.device
 
 module can_dev {
 	option number rx_buff_size=32
-	option boolean fd_frames=false
+	option boolean fd_frames=true
 
 	@IncludeExport(path="drivers")
 	source "can_dev.h"
