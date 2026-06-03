@@ -322,4 +322,199 @@ struct pwm_conf pwms[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), PWM(pwms))
+struct spi_conf spis[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "SPI0",
+		.dev = {
+			.name = "SPI0",
+			.regs = {
+				REGMAP("BASE_ADDR", (SPI0_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_SPI0_VECTNUM),
+			},
+			.pins = {
+				PIN("CLK", GPIO_PORT_A, 0, GPIO_MODE_ALT, 1),
+				// PIN("FSS", GPIO_PORT_A, 1, GPIO_MODE_ALT, 1),
+				// PIN("FSS", GPIO_PORT_A, 1, GPIO_MODE_OUT, -1),
+				PIN("RX", GPIO_PORT_A, 2, GPIO_MODE_ALT, 1),
+				PIN("TX", GPIO_PORT_A, 3, GPIO_MODE_ALT, 1),
+			},
+			.clocks = {
+				VAL("SPI",  "CLK_SPI0"),
+			}
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI0_0",
+			.bits_per_word = 8,
+			.bus_num = 0,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI0_0",
+				.pins = {
+					PIN("FSS", GPIO_PORT_A, 1, GPIO_MODE_ALT, 1),
+					// PIN("FSS", GPIO_PORT_B, 1, GPIO_MODE_OUT, -1),
+				},
+			},
+		},
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "SPI1",
+		.dev = {
+			.name = "SPI1",
+			.regs = {
+				REGMAP("BASE_ADDR", (SPI1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_SPI1_VECTNUM),
+			},
+			.pins = {
+				PIN("CLK", GPIO_PORT_A, 4, GPIO_MODE_ALT, 1),
+				// PIN("FSS", GPIO_PORT_A, 5, GPIO_MODE_ALT, 1),
+				// PIN("FSS", GPIO_PORT_A, 5, GPIO_MODE_OUT, -1),
+				PIN("RX", GPIO_PORT_A, 6, GPIO_MODE_ALT, 1),
+				PIN("TX", GPIO_PORT_A, 7, GPIO_MODE_ALT, 1),
+			},
+			.clocks = {
+				VAL("SPI",  "CLK_SPI1"),
+			}
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI1_0",
+			.bits_per_word = 8,
+			.bus_num = 1,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI1_0",
+				.pins = {
+					PIN("FSS", GPIO_PORT_A, 5, GPIO_MODE_ALT, 1),
+					// PIN("FSS", GPIO_PORT_B, 5, GPIO_MODE_OUT, -1),
+				},
+			},
+		},
+	},
+	[2] = {
+		.status = ENABLED,
+		.name = "SPI2",
+		.dev = {
+			.name = "SPI2",
+			.regs = {
+				REGMAP("BASE_ADDR", (SPI2_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_SPI2_VECTNUM),
+			},
+			.pins = {
+				PIN("CLK", GPIO_PORT_A, 8, GPIO_MODE_ALT, 1),
+				// PIN("FSS", GPIO_PORT_A, 9, GPIO_MODE_ALT, 1),
+				// PIN("FSS", GPIO_PORT_A, 9, GPIO_MODE_OUT, -1),
+				PIN("RX", GPIO_PORT_A, 10, GPIO_MODE_ALT, 1),
+				PIN("TX", GPIO_PORT_A, 11, GPIO_MODE_ALT, 1),
+			},
+			.clocks = {
+				VAL("SPI",  "CLK_SPI2"),
+			}
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI2_0",
+			.bits_per_word = 8,
+			.bus_num = 1,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI2_0",
+				.pins = {
+					PIN("FSS", GPIO_PORT_A, 9, GPIO_MODE_ALT, 1),
+					// PIN("FSS", GPIO_PORT_B, 5, GPIO_MODE_OUT, -1),
+				},
+			},
+		},
+	},
+	[3] = {
+		.status = ENABLED,
+		.name = "SPI3",
+		.dev = {
+			.name = "SPI3",
+			.regs = {
+				REGMAP("BASE_ADDR", (SPI3_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_SPI3_VECTNUM),
+			},
+			.pins = {
+				PIN("CLK", GPIO_PORT_A, 12, GPIO_MODE_ALT, 1),
+				// PIN("FSS", GPIO_PORT_A, 13, GPIO_MODE_ALT, 1),
+				// PIN("FSS", GPIO_PORT_A, 13, GPIO_MODE_OUT, -1),
+				PIN("RX", GPIO_PORT_A, 14, GPIO_MODE_ALT, 1),
+				PIN("TX", GPIO_PORT_A, 15, GPIO_MODE_ALT, 1),
+			},
+			.clocks = {
+				VAL("SPI",  "CLK_SPI3"),
+			}
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI3_0",
+			.bits_per_word = 8,
+			.bus_num = 1,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI3_0",
+				.pins = {
+					PIN("FSS", GPIO_PORT_A, 13, GPIO_MODE_ALT, 1),
+					// PIN("FSS", GPIO_PORT_B, 13, GPIO_MODE_OUT, -1),
+				},
+			},
+		},
+	},
+};
+
+struct i2c_conf i2cs[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "I2C0",
+		.dev = {
+			.name = "I2C0",
+			.regs = {
+				REGMAP("BASE_ADDR", (I2C0_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_I2C0_VECTNUM),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_D, 12, GPIO_MODE_ALT, 1),
+				PIN("SDA", GPIO_PORT_D, 13, GPIO_MODE_ALT, 1),
+			},
+			.clocks = {
+				VAL("", "CLK_I2C0"),
+			}
+		},
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "I2C1",
+		.dev = {
+			.name = "I2C1",
+			.regs = {
+				REGMAP("BASE_ADDR", (I2C1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_I2C1_VECTNUM),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_D, 1, GPIO_MODE_ALT, 1),
+				PIN("SDA", GPIO_PORT_D, 0, GPIO_MODE_ALT, 1),
+			},
+			.clocks = {
+				VAL("", "CLK_I2C1"),
+			}
+		},
+	},
+
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), PWM(pwms), SPI(spis), I2C(i2cs))
