@@ -59,6 +59,28 @@ struct pwm_device*pwm_dev_by_id(int id) {
 	return 0;
 }
 
+struct pwm_device *pwm_dev_by_idx(int idx) {
+	struct pwm_device *pwm_dev;
+	int i = 0;
+
+	if (idx < 0 || idx >= ARRAY_SPREAD_SIZE(__pwm_device_registry)) {
+		return NULL;
+	}
+
+	array_spread_foreach(pwm_dev, __pwm_device_registry) {
+		if (i == idx) {
+			return pwm_dev;
+		}
+		i++; 
+	}
+
+	return NULL;
+}
+
+int pwm_dev_num() {
+	return ARRAY_SPREAD_SIZE(__pwm_device_registry);
+}
+
 static inline int pwm_hz_to_dev(struct pwm_device *pwm, int hz) {
 	return (uint64_t)pwm->pwmd_base_freq / hz ;
 }
