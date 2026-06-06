@@ -12,6 +12,7 @@
 
 #include <drivers/char_dev.h>
 #include <embox/unit.h>
+#include <kernel/sched/waitq.h>
 #include <lib/libds/array.h>
 #include <lib/libds/dlist.h>
 #include <util/log.h>
@@ -122,6 +123,7 @@ void char_dev_init(struct char_dev *cdev, const char *name,
 	assert(ops);
 
 	dlist_init(&cdev->list_item);
+	waitq_init(&cdev->waitq);
 	cdev->usage_count = 0;
 	cdev->ops = ops;
 
