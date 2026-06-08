@@ -117,7 +117,7 @@ int sys_ctrl_enable_tmr(int num)  {
 }
 #else
 int sys_ctrl_enable_tmr(int num) {
-	REG32_STORE(&SIU_REGS->TMREN, (1 << num));
+	REG32_ORIN(&SIU_REGS->TMREN, (1 << num));
 	return 0;
 }
 #endif
