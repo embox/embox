@@ -1,0 +1,14 @@
+package embox.driver.can
+
+module mcp2515 {
+	option string log_level="LOG_WARNING"
+
+	option number dev_id=0
+	option number spi_bus=1
+	option number spi_cs=0
+
+	source "mcp2515.c"
+
+	depends embox.driver.spi.core
+	@NoRuntime depends embox.device.can_dev
+}
