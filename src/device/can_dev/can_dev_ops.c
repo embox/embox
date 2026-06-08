@@ -18,93 +18,115 @@
 #include <kernel/task/resource/idesc.h>
 #include <kernel/thread/thread_sched_wait.h>
 
-static int can_dev_open(struct char_dev *char_dev, struct idesc *idesc) {
-	struct can_dev *dev;
-	int err;
-
-	dev = (struct can_dev *)char_dev;
-
-	dev->rx_buff_cnt = 0;
-	waitq_init(&dev->waitq);
-
-	err = dev->ops->open(dev);
-	if (err) {
-		return err;
+static int can_frame_is_valid(struct can_dev *can, size_t nbyte) {
+	if (nbyte == CAN_MTU) {
+		return 1;
 	}
 
-	dev->ops->irq_en(dev);
+	if (nbyte == can->mtu) {
+		return 1;
+	}
 
 	return 0;
 }
 
-static void can_dev_close(struct char_dev *char_dev) {
-	struct can_dev *dev;
+static int can_dev_open(struct char_dev *cdev, struct idesc *idesc) {
+	struct can_dev *can;
+	int err;
 
-	dev = (struct can_dev *)char_dev;
+	can = (struct can_dev *)cdev;
 
-	dev->ops->irq_dis(dev);
-	dev->ops->close(dev);
+	err = can->ops->open(can);
+	if (err) {
+		return err;
+	}
+
+	can_rx_start(can);
+
+	return 0;
 }
 
-static ssize_t can_dev_read(struct char_dev *char_dev, void *buf, size_t nbyte) {
-	struct waitq_link wql;
-	struct can_dev *dev;
+static void can_dev_close(struct char_dev *cdev) {
+	struct can_dev *can;
+	struct can_msg *msg;
 
-	dev = (struct can_dev *)char_dev;
-	assert(dev->rx_buff_cnt >= 0);
+	can = (struct can_dev *)cdev;
 
-	if (dev->rx_buff_cnt == 0) {
-		waitq_link_init(&wql);
-		waitq_wait_prepare(&dev->waitq, &wql);
+	can_rx_stop(can);
 
-		SCHED_WAIT(dev->rx_buff_cnt > 0);
+	can->ops->close(can);
 
-		waitq_wait_cleanup(&dev->waitq, &wql);
+	while ((msg = can_msg_queue_pop(can))) {
+		can_msg_free(can, msg);
+	}
+}
 
-		if (dev->rx_buff_cnt == 0) {
-			return 0;
+static ssize_t can_dev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+	struct can_dev *can;
+	struct can_msg *msg;
+
+	can = (struct can_dev *)cdev;
+	msg = NULL;
+
+	if (!can_frame_is_valid(can, nbyte)) {
+		return -EINVAL;
+	}
+
+	while (1) {
+		msg = can_msg_queue_pop(can);
+		if (msg) {
+			break;
+		}
+
+		can_rx_start(can);
+		char_dev_wait(cdev, POLLIN);
+	}
+
+	memset(buf, 0, nbyte);
+	memcpy(buf, &msg->frame, can->mtu);
+
+	can_msg_free(can, msg);
+
+	return nbyte;
+}
+
+static ssize_t can_dev_write(struct char_dev *cdev, const void *buf, size_t nbyte) {
+	struct can_dev *can;
+	int err;
+
+	can = (struct can_dev *)cdev;
+
+	if (!can_frame_is_valid(can, nbyte)) {
+		return -EINVAL;
+	}
+
+	err = can->ops->send(can, buf);
+	if (err) {
+		return err;
+	}
+
+	return nbyte;
+}
+
+static int can_dev_ioctl(struct char_dev *cdev, int request, void *data) {
+	return 0;
+}
+
+static int can_dev_status(struct char_dev *cdev, int mask) {
+	struct can_dev *can;
+	int res;
+
+	can = (struct can_dev *)cdev;
+	res = 0;
+
+	if (mask & POLLIN) {
+		if (can_msg_queue_front(can)) {
+			res += can->mtu;
 		}
 	}
 
-	memcpy(buf, &dev->rx_buff[dev->rx_buff_cnt - 1], nbyte);
-
-	if (dev->rx_buff_cnt == CAN_RX_BUFF_SIZE) {
-		dev->ops->irq_en(dev);
-	}
-
-	--dev->rx_buff_cnt;
-
-	return nbyte;
-}
-
-static ssize_t can_dev_write(struct char_dev *char_dev, const void *buf,
-    size_t nbyte) {
-	struct can_dev *dev;
-	int err;
-
-	dev = (struct can_dev *)char_dev;
-
-	err = dev->ops->send(dev, (can_frame_t *)buf);
-	if (err) {
-		return err;
-	}
-
-	return nbyte;
-}
-
-static int can_dev_ioctl(struct char_dev *char_dev, int request, void *data) {
-	return 0;
-}
-
-static int can_dev_status(struct char_dev *char_dev, int mask) {
-	int res = 0;
-
-	if (mask & POLLIN) {
-		res += sizeof(can_frame_t);
-	}
-
 	if (mask & POLLOUT) {
-		res += sizeof(can_frame_t);
+		res += can->mtu;
 	}
 
 	return res;

@@ -10,6 +10,7 @@
 
 #include <limits.h>
 
+#include <kernel/sched/waitq.h>
 #include <kernel/task/resource/idesc.h>
 #include <lib/libds/array_spread.h>
 #include <lib/libds/dlist.h>
@@ -19,6 +20,7 @@
 #define CHAR_DEV_INIT(_self, _name, _ops)         \
 	((struct char_dev){                           \
 	    .list_item = DLIST_INIT(_self.list_item), \
+	    .waitq = WAITQ_INIT(_self.waitq),         \
 	    .usage_count = 0,                         \
 	    .ops = _ops,                              \
 	    .name = _name,                            \
@@ -43,6 +45,7 @@ struct char_dev_ops {
 struct char_dev {
 	const struct char_dev_ops *ops;
 	struct dlist_head list_item;
+	struct waitq waitq;
 	int usage_count;
 	char name[NAME_MAX];
 };
@@ -63,6 +66,9 @@ extern void char_dev_init(struct char_dev *cdev, const char *name,
     const struct char_dev_ops *ops);
 
 extern struct idesc *char_dev_open(struct char_dev *cdev, int oflag);
+
+extern int char_dev_wait(struct char_dev *cdev, int mask);
+extern void char_dev_notify(struct char_dev *cdev);
 
 #define char_dev_foreach(cdev_ptr) \
 	dlist_foreach_entry(cdev_ptr, __char_dev_registry, list_item)

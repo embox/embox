@@ -6,8 +6,10 @@ module char_dev {
 
 	@IncludeExport(path="drivers")
 	source "char_dev.h"
+
 	source "char_dev.c"
 	source "char_dev_idesc.c"
+	source "char_dev_wait.c"
 
 	@NoRuntime depends embox.kernel.task.idesc
 	@NoRuntime depends embox.mem.vmem_device_memory
