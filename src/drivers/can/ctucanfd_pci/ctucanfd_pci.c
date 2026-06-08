@@ -39,7 +39,7 @@
 
 static uintptr_t ctucanfd_base;
 
-void ctucanfd_reset(void) {
+static void ctucanfd_reset(struct can_dev *dev) {
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, CTUCANFD_MODE_RST);
 
 	CTUCANFD_REG_STORE(CTUCANFD_BTR, 0);
@@ -52,45 +52,40 @@ void ctucanfd_reset(void) {
 	CTUCANFD_REG_STORE(CTUCANFD_TXP, 0x1);
 }
 
-int ctucanfd_open(struct can_dev *dev) {
+static int ctucanfd_open(struct can_dev *dev) {
 	/* Enable CAN device */
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, CTUCANFD_MODE_ENA | CTUCANFD_MODE_RXBAM);
 
 	return 0;
 }
 
-void ctucanfd_close(struct can_dev *dev) {
+static void ctucanfd_close(struct can_dev *dev) {
 	/* Disable CAN device */
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, 0);
 }
 
-void ctucanfd_eoi(struct can_dev *dev) {
-	/* Clear pending RX interrupt */
-	CTUCANFD_REG_STORE(CTUCANFD_ISR, CTUCANFD_ISR_RBNEI);
+static void ctucanfd_rxint(struct can_dev *dev, int enable) {
+	if (enable) {
+		/* Enable RX interrupt */
+		CTUCANFD_REG_STORE(CTUCANFD_IES, CTUCANFD_ISR_RBNEI);
+	}
+	else {
+		/* Disable RX interrupt */
+		CTUCANFD_REG_STORE(CTUCANFD_IEC, CTUCANFD_ISR_RBNEI);
+	}
 }
 
-void ctucanfd_irq_en(struct can_dev *dev) {
-	/* Enable RX interrupt */
-	CTUCANFD_REG_STORE(CTUCANFD_IES, CTUCANFD_ISR_RBNEI);
-}
-
-void ctucanfd_irq_dis(struct can_dev *dev) {
-	/* Disable RX interrupt */
-	CTUCANFD_REG_STORE(CTUCANFD_IEC, CTUCANFD_ISR_RBNEI);
-}
-
-int ctucanfd_hasrx(struct can_dev *dev) {
-	return !(CTUCANFD_REG_LOAD(CTUCANFD_RXS) & CTUCANFD_RXS_RXE);
-}
-
-int ctucanfd_send(struct can_dev *dev, can_frame_t *frame) {
+static int ctucanfd_send(struct can_dev *dev, const void *data) {
+	const struct canfd_frame *frame;
 	uint32_t fmt;
 	uint32_t id;
 	int i;
 
-	if ((CTUCANFD_REG_LOAD(CTUCANFD_TXS) & CTUCANFD_TXS_MASK) != CTUCANFD_TXS_ETY) {
-		// log_warning("TX buffer not available");
-	}
+	frame = (const struct canfd_frame *)data;
+
+	// if ((CTUCANFD_REG_LOAD(CTUCANFD_TXS) & CTUCANFD_TXS_MASK) != CTUCANFD_TXS_ETY) {
+	// 	log_warning("TX buffer not available");
+	// }
 
 	fmt = FIELD(CTUCANFD_TXB_FMT_DLC, frame->len);
 	fmt |= CTUCANFD_TXB_FMT_FDF;
@@ -121,7 +116,17 @@ int ctucanfd_send(struct can_dev *dev, can_frame_t *frame) {
 	return 0;
 }
 
-int ctucanfd_receive(struct can_dev *dev, can_frame_t *frame) {
+static const struct can_ops ctucanfd_ops = {
+    .reset = ctucanfd_reset,
+    .open = ctucanfd_open,
+    .close = ctucanfd_close,
+    .rxint = ctucanfd_rxint,
+    .send = ctucanfd_send,
+};
+
+CANFD_DEVICE_DEF(ctucanfd_dev, &ctucanfd_ops, NULL, CAN_DEV_ID);
+
+static void ctucanfd_receive(struct canfd_frame *frame) {
 	uint32_t rwcnt;
 	uint32_t tmp;
 	uint32_t fmt;
@@ -129,7 +134,6 @@ int ctucanfd_receive(struct can_dev *dev, can_frame_t *frame) {
 	int i;
 
 	// rxfrc = FIELD_GET(CTUCANFD_REG_LOAD(CTUCANFD_RXS), CTUCANFD_RXS_RXFRC);
-
 	// for (; rxfrc > 0; rxfrc--) {
 	// 	fmt = CTUCANFD_REG_LOAD(CTUCANFD_RXD);
 	// }
@@ -157,29 +161,37 @@ int ctucanfd_receive(struct can_dev *dev, can_frame_t *frame) {
 	for (i = 0; i < rwcnt; i++) {
 		*((uint32_t *)(&frame->data[i * 4])) = CTUCANFD_REG_LOAD(CTUCANFD_RXD);
 	}
-
-	return 0;
 }
 
-static const struct can_ops ctucanfd_ops = {
-    .open = ctucanfd_open,
-    .close = ctucanfd_close,
-    .eoi = ctucanfd_eoi,
-    .irq_en = ctucanfd_irq_en,
-    .irq_dis = ctucanfd_irq_dis,
-    .hasrx = ctucanfd_hasrx,
-    .send = ctucanfd_send,
-    .receive = ctucanfd_receive,
-};
+static irq_return_t ctucanfd_irq_handler(unsigned int irq_num, void *data) {
+	struct can_dev *can;
+	struct can_msg *msg;
 
-CAN_DEVICE_DEF(ctucanfd_dev, &ctucanfd_ops, NULL, CAN_DEV_ID);
+	can = (struct can_dev *)data;
 
-static int ctucanfd_pci_init(struct pci_slot_dev *pci_dev) {
-	int irq;
+	/* Clear pending RX interrupt */
+	CTUCANFD_REG_STORE(CTUCANFD_ISR, CTUCANFD_ISR_RBNEI);
+
+	/* Check if RX buffer is not empty */
+	while (!(CTUCANFD_REG_LOAD(CTUCANFD_RXS) & CTUCANFD_RXS_RXE)) {
+		msg = can_msg_alloc(can);
+		if (!msg) {
+			can_rx_stop(can);
+			break;
+		}
+		ctucanfd_receive((struct canfd_frame *)&msg->frame);
+		can_msg_queue_push(can, msg);
+	}
+
+	can_rx_notify(can);
+
+	return IRQ_HANDLED;
+}
+
+static int ctucanfd_init(struct pci_slot_dev *pci_dev) {
 	int err;
 
 	ctucanfd_base = pci_dev->bar[1];
-	irq = pci_dev->irq;
 
 	if (mmap_device_memory((void *)ctucanfd_base, 0x10000,
 	        PROT_WRITE | PROT_READ | PROT_NOCACHE, MAP_FIXED, ctucanfd_base)
@@ -187,15 +199,15 @@ static int ctucanfd_pci_init(struct pci_slot_dev *pci_dev) {
 		return -1;
 	}
 
-	err = irq_attach(irq, can_dev_irq_handler, IF_SHARESUP, &ctucanfd_dev, NULL);
+	err = irq_attach(pci_dev->irq, ctucanfd_irq_handler, IF_SHARESUP,
+	    &ctucanfd_dev, NULL);
 	if (err) {
 		return err;
 	}
 
-	ctucanfd_reset();
+	ctucanfd_reset(&ctucanfd_dev);
 
 	return 0;
 }
 
-PCI_DRIVER("ctucanfd_pci", ctucanfd_pci_init, CTUCANFD_VENDOR_ID,
-    CTUCANFD_DEVICE_ID);
+PCI_DRIVER("ctucanfd_pci", ctucanfd_init, CTUCANFD_VENDOR_ID, CTUCANFD_DEVICE_ID);

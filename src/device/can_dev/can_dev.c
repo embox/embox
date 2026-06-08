@@ -7,38 +7,69 @@
 
 #include <assert.h>
 #include <linux/can.h>
+#include <linux/list.h>
 #include <poll.h>
 #include <sys/types.h>
 
 #include <drivers/can_dev.h>
 #include <drivers/char_dev.h>
 #include <kernel/irq.h>
+#include <mem/misc/pool.h>
 
-irq_return_t can_dev_irq_handler(unsigned int irq_num, void *data) {
-	struct can_dev *dev;
-	can_frame_t *frame;
+void can_msg_queue_init(struct can_dev *can) {
+	INIT_LIST_HEAD(&can->rx_queue);
+}
 
-	dev = (struct can_dev *)data;
-	assert(dev->rx_buff_cnt <= CAN_RX_BUFF_SIZE);
+void can_msg_queue_push(struct can_dev *can, struct can_msg *msg) {
+	list_add_tail((struct list_head *)msg, &can->rx_queue);
+}
 
-	while (dev->ops->hasrx(dev)) {
-		if (dev->rx_buff_cnt == CAN_RX_BUFF_SIZE) {
-			dev->ops->irq_dis(dev);
-			return IRQ_HANDLED;
-		}
+struct can_msg *can_msg_queue_front(struct can_dev *can) {
+	struct can_msg *msg;
 
-		frame = &dev->rx_buff[dev->rx_buff_cnt];
+	msg = (struct can_msg *)can->rx_queue.next;
+	assert(msg);
 
-		if (0 == dev->ops->receive(dev, frame)) {
-			++dev->rx_buff_cnt;
-		}
+	if (msg == (void *)&can->rx_queue) {
+		return NULL;
 	}
 
-	dev->ops->eoi(dev);
+	return msg;
+}
 
-	if (dev->rx_buff_cnt > 0) {
-		waitq_wakeup_all(&dev->waitq);
+struct can_msg *can_msg_queue_pop(struct can_dev *can) {
+	struct can_msg *msg;
+
+	msg = can_msg_queue_front(can);
+	if (msg) {
+		list_del_init((struct list_head *)msg);
 	}
 
-	return IRQ_HANDLED;
+	return msg;
+}
+
+struct can_msg *can_msg_alloc(struct can_dev *can) {
+	return (struct can_msg *)pool_alloc(can->msg_pool);
+}
+
+void can_msg_free(struct can_dev *can, struct can_msg *msg) {
+	pool_free(can->msg_pool, (void *)msg);
+}
+
+void can_rx_start(struct can_dev *can) {
+	if (can->ops->rxint) {
+		can->ops->rxint(can, 1);
+	}
+}
+
+void can_rx_stop(struct can_dev *can) {
+	if (can->ops->rxint) {
+		can->ops->rxint(can, 0);
+	}
+}
+
+void can_rx_notify(struct can_dev *can) {
+	if (can_msg_queue_front(can)) {
+		char_dev_notify((struct char_dev *)can);
+	}
 }

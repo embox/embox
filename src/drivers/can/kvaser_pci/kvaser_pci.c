@@ -10,10 +10,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include <asm/io.h>
 #include <drivers/can/sja1000.h>
 #include <drivers/can_dev.h>
+#include <drivers/char_dev.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 #include <framework/mod/options.h>
@@ -32,6 +34,7 @@
 #define S5920_INTCSR_IA  (1 << 23) /* Interrupt Asserted */
 
 static uintptr_t sja_base;
+static uintptr_t s5920_base;
 
 static void kvaser_set_filter(uint32_t code, uint32_t mask) {
 	int i;
@@ -42,7 +45,11 @@ static void kvaser_set_filter(uint32_t code, uint32_t mask) {
 	}
 }
 
-int kvaser_open(struct can_dev *dev) {
+static void kvaser_reset(struct can_dev *can) {
+	/* Enable card interrupts */
+	out32(in32(s5920_base + S5920_INTCSR) | S5920_INTCSR_AIE,
+	    s5920_base + S5920_INTCSR);
+
 	/* Enable reset mode */
 	sja_reg_store(sja_base, SJA_MOD, SJA_MOD_RM);
 
@@ -61,7 +68,9 @@ int kvaser_open(struct can_dev *dev) {
 
 	/* Set filter to receive all CAN frames */
 	kvaser_set_filter(0, 0xffffffff);
+}
 
+static int kvaser_open(struct can_dev *can) {
 	/* Enable operating mode */
 #if SINGLE_FILTER_MODE
 	sja_reg_store(sja_base, SJA_MOD, SJA_MOD_AFM);
@@ -75,41 +84,34 @@ int kvaser_open(struct can_dev *dev) {
 	return 0;
 }
 
-void kvaser_close(struct can_dev *dev) {
+static void kvaser_close(struct can_dev *can) {
 	/* Enable sleep mode */
 	sja_reg_orin(sja_base, SJA_MOD, SJA_MOD_SM);
 }
 
-void kvaser_eoi(struct can_dev *dev) {
-	/* Clear pending interrupts */
-	sja_reg_orin(sja_base, SJA_IR, 0);
+static void kvaser_rxint(struct can_dev *can, int enable) {
+	if (enable) {
+		/* Enable RX interrupt */
+		sja_reg_orin(sja_base, SJA_IER, SJA_IER_RIE);
+		sja_reg_orin(sja_base, SJA_IR, 0);
+	}
+	else {
+		/* Disable RX interrupt */
+		sja_reg_clear(sja_base, SJA_IER, SJA_IER_RIE);
+	}
 }
 
-void kvaser_irq_en(struct can_dev *dev) {
-	/* Enable RX interrupts */
-	sja_reg_orin(sja_base, SJA_IER, SJA_IER_RIE);
-}
-
-void kvaser_irq_dis(struct can_dev *dev) {
-	/* Disable RX interrupts */
-	sja_reg_clear(sja_base, SJA_IER, SJA_IER_RIE);
-}
-
-int kvaser_hasrx(struct can_dev *dev) {
-	/* Check if RX buffer is not empty */
-	return (sja_reg_load(sja_base, SJA_SR) & SJA_SR_RBS);
-}
-
-int kvaser_send(struct can_dev *dev, can_frame_t *frame) {
+static int kvaser_send(struct can_dev *can, const void *data) {
+	const struct can_frame *frame;
 	unsigned data_base;
 	uint8_t frame_info;
 	int i;
 
+	frame = (const struct can_frame *)data;
+
 	/* Check if TX buffer is ready */
-	for (i = 0; !(sja_reg_load(sja_base, SJA_SR) & SJA_SR_TBS); i++) {
-		if (i >= 10000) {
-			return -1;
-		}
+	if (!(sja_reg_load(sja_base, SJA_SR) & SJA_SR_TBS)) {
+		return -EBUSY;
 	}
 
 	frame_info = frame->len;
@@ -146,7 +148,17 @@ int kvaser_send(struct can_dev *dev, can_frame_t *frame) {
 	return 0;
 }
 
-int kvaser_receive(struct can_dev *dev, can_frame_t *frame) {
+static const struct can_ops kvaser_can_ops = {
+    .reset = kvaser_reset,
+    .open = kvaser_open,
+    .close = kvaser_close,
+    .rxint = kvaser_rxint,
+    .send = kvaser_send,
+};
+
+CAN_DEVICE_DEF(kvaser_can_dev, &kvaser_can_ops, NULL, CAN_DEV_ID);
+
+static void kvaser_receive(struct can_frame *frame) {
 	unsigned data_base;
 	uint8_t frame_info;
 	int i;
@@ -186,42 +198,41 @@ int kvaser_receive(struct can_dev *dev, can_frame_t *frame) {
 
 	/* Release RX buffer */
 	sja_reg_store(sja_base, SJA_CMR, SJA_CMR_RRB);
-
-	return 0;
 }
 
-static const struct can_ops kvaser_can_ops = {
-    .open = kvaser_open,
-    .close = kvaser_close,
-    .eoi = kvaser_eoi,
-    .irq_en = kvaser_irq_en,
-    .irq_dis = kvaser_irq_dis,
-    .hasrx = kvaser_hasrx,
-    .send = kvaser_send,
-    .receive = kvaser_receive,
-};
+static irq_return_t kvaser_irq_handler(unsigned int irq_num, void *data) {
+	struct can_dev *can;
+	struct can_msg *msg;
 
-CAN_DEVICE_DEF(kvaser_can_dev, &kvaser_can_ops, NULL, CAN_DEV_ID);
+	can = (struct can_dev *)data;
 
-static int kvaser_pci_init(struct pci_slot_dev *pci_dev) {
-	uintptr_t s5920_base;
-	int irq;
-	int err;
+	/* Clear pending interrupts */
+	sja_reg_orin(sja_base, SJA_IR, 0);
 
-	s5920_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
-	sja_base = pci_dev->bar[1] & PCI_BASE_ADDR_IO_MASK;
-	irq = pci_dev->irq;
-
-	err = irq_attach(irq, can_dev_irq_handler, IF_SHARESUP, &kvaser_can_dev, NULL);
-	if (err) {
-		return err;
+	/* Check if RX buffer is not empty */
+	while (sja_reg_load(sja_base, SJA_SR) & SJA_SR_RBS) {
+		msg = can_msg_alloc(can);
+		if (!msg) {
+			can_rx_stop(can);
+			break;
+		}
+		kvaser_receive(&msg->frame);
+		can_msg_queue_push(can, msg);
 	}
 
-	/* Enable card interrupts */
-	out32(in32(s5920_base + S5920_INTCSR) | S5920_INTCSR_AIE,
-	    s5920_base + S5920_INTCSR);
+	can_rx_notify(can);
 
-	return 0;
+	return IRQ_HANDLED;
+}
+
+static int kvaser_pci_init(struct pci_slot_dev *pci_dev) {
+	s5920_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
+	sja_base = pci_dev->bar[1] & PCI_BASE_ADDR_IO_MASK;
+
+	kvaser_reset(&kvaser_can_dev);
+
+	return irq_attach(pci_dev->irq, kvaser_irq_handler, IF_SHARESUP,
+	    &kvaser_can_dev, NULL);
 }
 
 PCI_DRIVER("kvaser_pci", kvaser_pci_init, KVASER_VENDOR_ID, KVASER_DEVICE_ID);

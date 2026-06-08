@@ -9,63 +9,84 @@
 #define DEVICE_CAN_DEV_H_
 
 #include <linux/can.h>
+#include <linux/list.h>
 
 #include <drivers/char_dev.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
+#include <kernel/thread/sync/mutex.h>
 #include <lib/libds/array_spread.h>
+#include <mem/misc/pool.h>
 #include <util/macro.h>
 
 #include <config/embox/device/can_dev.h>
 
-#define CAN_RX_BUFF_SIZE \
-	OPTION_MODULE_GET(embox__device__can_dev, NUMBER, rx_buff_size)
+#define CAN_FRAME_POOL_SIZE \
+	OPTION_MODULE_GET(embox__device__can_dev, NUMBER, frame_pool_size)
 
-#define CAN_FD_FRAMES \
-	OPTION_MODULE_GET(embox__device__can_dev, BOOLEAN, fd_frames)
-
-#if CAN_FD_FRAMES
-typedef struct canfd_frame can_frame_t;
-#else
-typedef struct can_frame can_frame_t;
-#endif
-
-#define CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id)                         \
+#define __CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id, _mtu)                 \
 	static struct can_dev _name = {                                         \
 	    .cdev = CHAR_DEV_INIT(_name.cdev,                                   \
 	        MACRO_STRING(MACRO_CONCAT(can, _dev_id)), &__can_char_dev_ops), \
+	    .mutex = MUTEX_INIT(_name.mutex),                                   \
+	    .rx_queue = LIST_HEAD_INIT(_name.rx_queue),                         \
+	    .msg_pool = &MACRO_CONCAT(_name, _pool),                            \
+	    .mtu = _mtu,                                                        \
 	    .ops = _ops,                                                        \
 	    .priv = _priv,                                                      \
-	    .dev_id = _dev_id,                                                  \
 	};                                                                      \
 	CHAR_DEV_REGISTER((struct char_dev *)&_name)
+
+#define CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id)                            \
+	POOL_DEF(MACRO_CONCAT(_name, _pool), struct can_msg, CAN_FRAME_POOL_SIZE); \
+	__CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id, CAN_MTU)
+
+#define CANFD_DEVICE_DEF(_name, _ops, _priv, _dev_id)                            \
+	POOL_DEF(MACRO_CONCAT(_name, _pool), struct canfd_msg, CAN_FRAME_POOL_SIZE); \
+	__CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id, CANFD_MTU)
 
 struct can_ops;
 
 struct can_dev {
 	struct char_dev cdev;
-	struct waitq waitq;
+	struct mutex mutex;
+	struct list_head rx_queue;
+	struct pool *msg_pool;
 	const struct can_ops *ops;
 	void *priv;
-	int dev_id;
-	int rx_buff_cnt;
-	can_frame_t rx_buff[CAN_RX_BUFF_SIZE];
+	const int mtu;
 };
 
 struct can_ops {
+	void (*reset)(struct can_dev *can);
 	int (*open)(struct can_dev *can);
 	void (*close)(struct can_dev *can);
-	void (*eoi)(struct can_dev *can);
-	void (*irq_en)(struct can_dev *can);
-	void (*irq_dis)(struct can_dev *can);
-	int (*hasrx)(struct can_dev *can);
-	int (*send)(struct can_dev *can, can_frame_t *frame);
-	int (*receive)(struct can_dev *can, can_frame_t *frame);
-	// int (*set_filter)(struct can_dev *can, struct can_filter *filter);
+	void (*rxint)(struct can_dev *can, int enable);
+	int (*send)(struct can_dev *can, const void *frame);
+};
+
+struct can_msg {
+	struct list_head lnk;
+	struct can_frame frame;
+};
+
+struct canfd_msg {
+	struct list_head lnk;
+	struct canfd_frame frame;
 };
 
 extern const struct char_dev_ops __can_char_dev_ops;
 
-extern irq_return_t can_dev_irq_handler(unsigned int irq_num, void *data);
+extern void can_msg_queue_init(struct can_dev *can);
+extern void can_msg_queue_push(struct can_dev *can, struct can_msg *msg);
+extern struct can_msg *can_msg_queue_front(struct can_dev *can);
+extern struct can_msg *can_msg_queue_pop(struct can_dev *can);
+
+extern struct can_msg *can_msg_alloc(struct can_dev *can);
+extern void can_msg_free(struct can_dev *can, struct can_msg *msg);
+
+extern void can_rx_start(struct can_dev *can);
+extern void can_rx_stop(struct can_dev *can);
+extern void can_rx_notify(struct can_dev *can);
 
 #endif /* DEVICE_CAN_DEV_H_ */
