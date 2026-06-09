@@ -1,7 +1,7 @@
 package embox.device
 
 module can_dev {
-	option number frame_pool_size=2
+	option number frame_pool_size=32
 
 	@IncludeExport(path="drivers")
 	source "can_dev.h"
