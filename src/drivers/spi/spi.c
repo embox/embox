@@ -37,21 +37,21 @@ static inline int spi_ctrl_pins_init(struct spi_controller *spi_c) {
 		gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_port,
 				(1 << spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_pin),
 				GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_func) |
-				GPIO_MODE_OUT_PUSH_PULL
+				GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP
 				// GPIO_MODE_OUT
 			);
 
 		gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_port,
 				(1 << spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_pin),
 				GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_func) |
-				GPIO_MODE_OUT_PUSH_PULL
+				GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP
 				// GPIO_MODE_OUT
 			);
 
 		gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_port,
 				(1 << spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_pin),
 				GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_func) |
-				GPIO_MODE_IN_PULL_UP
+				GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP
 				//GPIO_MODE_IN		
 			);
 	}
@@ -114,6 +114,7 @@ static int spi_init(void) {
 
 			cntl->spic_ops->init(cntl);
 		}
+		spi_ctrl_pins_init(cntl);
 	}
 
 	array_spread_foreach(dev, __spi_device_registry) {
