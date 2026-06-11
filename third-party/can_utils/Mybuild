@@ -1,0 +1,41 @@
+package third_party.can_utils
+
+@AutoCmd
+@Cmd(name="cansend",help="send CAN-frames via CAN_RAW sockets")
+@BuildDepends(build)
+module cansend {
+	@AddPrefix("^BUILD/extbld/third_party/can_utils/build/install")
+	source "cansend.c"
+
+	@NoRuntime depends lib
+	@NoRuntime depends build
+	@NoRuntime depends embox.net.socketcan
+}
+
+@AutoCmd
+@Cmd(name="candump",help="dump CAN bus traffic")
+@BuildDepends(build)
+module candump {
+	@AddPrefix("^BUILD/extbld/third_party/can_utils/build/install")
+	source "candump.c"
+
+	@NoRuntime depends lib
+	@NoRuntime depends build
+	@NoRuntime depends embox.net.socketcan
+}
+
+@BuildDepends(build)
+module lib {
+	@AddPrefix("^BUILD/extbld/third_party/can_utils/build/install")
+	source "lib.c"
+
+	@NoRuntime depends build
+	@NoRuntime depends embox.net.socketcan
+	@NoRuntime depends embox.compat.linux.libc.sys.epoll_stub
+}
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags_before="-I$(EXTERNAL_BUILD_DIR)/third_party/can_utils/build/install/include")
+@BuildArtifactPath(cppflags_before="-I$(EXTERNAL_BUILD_DIR)/third_party/can_utils/build/install/include")
+module build {
+}
