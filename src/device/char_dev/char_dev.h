@@ -65,7 +65,8 @@ extern int char_dev_unregister(struct char_dev *cdev);
 extern void char_dev_init(struct char_dev *cdev, const char *name,
     const struct char_dev_ops *ops);
 
-extern struct idesc *char_dev_open(struct char_dev *cdev, int oflag);
+extern struct idesc *char_dev_open_idesc(struct char_dev *cdev, int oflag);
+extern int char_dev_open(const char *name, int oflag);
 
 extern int char_dev_wait(struct char_dev *cdev, int mask);
 extern void char_dev_notify(struct char_dev *cdev);

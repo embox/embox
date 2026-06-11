@@ -55,7 +55,7 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	cdev = i_no->i_privdata;
 	assert(cdev);
 
-	return char_dev_open(cdev, __oflag);
+	return char_dev_open_idesc(cdev, __oflag);
 }
 
 struct block_dev *bdev_by_path(const char *dev_name) {
