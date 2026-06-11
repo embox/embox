@@ -38,7 +38,7 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *idesc,
 	cdev = inode_priv(node);
 	assert(cdev);
 
-	return char_dev_open(cdev, __oflag);
+	return char_dev_open_idesc(cdev, __oflag);
 }
 
 static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
@@ -71,7 +71,8 @@ static void devfs_fill_inode(struct inode *inode, void *priv, int flags) {
  *
  * @return Pointer to inode structure or NULL if failed
  */
-static struct inode *devfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
+static struct inode *devfs_lookup(struct inode *node, char const *name,
+    struct inode const *dir) {
 	int i;
 	struct char_dev *cdev;
 	struct block_dev **bdevtab = get_bdev_tab();

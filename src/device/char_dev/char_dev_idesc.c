@@ -17,7 +17,9 @@
 
 #include <drivers/char_dev.h>
 #include <framework/mod/options.h>
+#include <kernel/task.h>
 #include <kernel/task/resource/idesc.h>
+#include <kernel/task/resource/idesc_table.h>
 #include <lib/libds/array.h>
 #include <mem/misc/pool.h>
 #include <mem/vmem_device_memory.h>
@@ -184,7 +186,7 @@ static const struct idesc_ops char_dev_idesc_ops = {
     .idesc_mmap = char_dev_mmap,
 };
 
-struct idesc *char_dev_open(struct char_dev *cdev, int oflag) {
+struct idesc *char_dev_open_idesc(struct char_dev *cdev, int oflag) {
 	struct char_dev_idesc *cdev_idesc;
 	int err;
 
@@ -222,4 +224,24 @@ struct idesc *char_dev_open(struct char_dev *cdev, int oflag) {
 
 out:
 	return (struct idesc *)cdev_idesc;
+}
+
+int char_dev_open(const char *name, int oflag) {
+	struct char_dev *cdev;
+	struct idesc_table *it;
+	struct idesc *idesc;
+
+	cdev = char_dev_find(name);
+	if (!cdev) {
+		return -ENOENT;
+	}
+
+	idesc = char_dev_open_idesc(cdev, oflag);
+	if (ptr2err(idesc)) {
+		return ptr2err(idesc);
+	}
+
+	it = task_resource_idesc_table(task_self());
+
+	return idesc_table_add(it, idesc, 0);
 }

@@ -33,7 +33,7 @@ static struct idesc *cdevfs_open(const struct inode *inode, int oflag) {
 
 	cdev = (struct char_dev *)(uintptr_t)inode->ino;
 
-	return char_dev_open(cdev, oflag);
+	return char_dev_open_idesc(cdev, oflag);
 }
 
 static void cdevfs_load_info(const struct inode *inode,
