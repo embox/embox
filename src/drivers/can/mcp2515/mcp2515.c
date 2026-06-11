@@ -61,9 +61,9 @@ static uint8_t mcp2515_reg_load(uint8_t reg) {
 	ibuf[0] = MCP2515_READ;
 	ibuf[1] = reg;
 
-	spi_transfer(spi_bus_dev, ibuf, obuf, 2);
+	spi_transfer(spi_bus_dev, ibuf, obuf, 3);
 
-	return obuf[1]; /* obuf[0] ??? */
+	return obuf[2];
 }
 
 static inline void mcp2515_reg_orin(unsigned int reg, uint8_t mask) {
@@ -142,7 +142,7 @@ static void mcp2515_rxint(struct can_dev *can, int enable) {
 
 static int mcp2515_send(struct can_dev *can, const void *data) {
 	const struct can_frame *frame;
-	int i;
+	// int i;
 
 	frame = (const struct can_frame *)data;
 
