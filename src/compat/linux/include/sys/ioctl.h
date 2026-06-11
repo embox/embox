@@ -93,8 +93,10 @@
 #define SIOCSARP           _IOW('s', 20, struct arpreq)     /* Set arp entry */
 #define SIOCGARP           _IOR('s', 21, struct arpreq)     /* Get arp entry */
 #define SIOCDARP           _IOW('s', 22, struct arpreq)     /* Delete arp entry */
-#define SIOCGIFINDEX       _IOR('s', 6, struct ifreq)       /* name -> if_index mapping	*/
-#define SIOCGIFNAME        _IOR('s', 6, struct ifreq)       /* Get iface name */
+#define SIOCGIFINDEX       _IOR('s', 23, struct ifreq)      /* name -> if_index mapping	*/
+#define SIOCGIFNAME        _IOR('s', 24, struct ifreq)      /* Get iface name */
+#define SIOCGIFMTU         _IOR('s', 25, struct ifreq)      /* Get MTU size */
+#define SIOCSIFMTU         _IOW('s', 26, struct ifreq)      /* Set iface name */
 
 
 /**

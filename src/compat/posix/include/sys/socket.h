@@ -204,6 +204,11 @@ SO_TYPE    Socket type.
 #define SO_POSIX_MAX    19
 /* }; */
 
+/* For compatibility with Linux */
+#define SO_SNDBUFFORCE 32
+#define SO_RCVBUFFORCE 33
+#define SO_TIMESTAMP   34
+#define SO_RXQ_OVFL    35
 
 /* POSIX descriptions
 MSG_CTRUNC    Control data truncated.
