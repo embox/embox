@@ -1,0 +1,16 @@
+package embox.net
+
+module socketcan {
+    option string log_level="LOG_NONE"
+
+    option string device="can0"
+    option number sock_pool_size=4
+
+    source "socketcan_f_ops.c"
+    source "socketcan_p_ops.c"
+
+	@NoRuntime depends embox.net.sock
+	@NoRuntime depends embox.net.family
+	@NoRuntime depends embox.net.net_sock
+	@NoRuntime depends embox.device.can_dev
+}
