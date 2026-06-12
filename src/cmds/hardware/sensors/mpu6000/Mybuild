@@ -1,0 +1,7 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name="mpu6000", help="mpu6000 sensor demo")
+module mpu6000 {
+	source "mpu6000.c"
+}
