@@ -486,8 +486,8 @@ struct i2c_conf i2cs[] = {
 				VAL("", PLIC_I2C0_VECTNUM),
 			},
 			.pins = {
-				PIN("SCL", GPIO_PORT_D, 12, GPIO_MODE_ALT, 1),
-				PIN("SDA", GPIO_PORT_D, 13, GPIO_MODE_ALT, 1),
+				PIN("SCL", GPIO_PORT_D, 3, GPIO_MODE_ALT, 2),
+				PIN("SDA", GPIO_PORT_D, 2, GPIO_MODE_ALT, 2),
 			},
 			.clocks = {
 				VAL("", "CLK_I2C0"),
