@@ -71,14 +71,14 @@ struct niiet_i2c_regs {
 #define I2C_ST_MODE_BERROR     0x1F  /* Bus error */
 #define I2C_ST_MODE_HMTMCOK    0x21  /* HS mode entered (master code sent) */
 
-static void vg015_i2c_dump_regs(struct niiet_i2c_regs *regs) {
+static void vg015_i2c_dump_regs(volatile struct niiet_i2c_regs *regs) {
 	log_error("I2C: ST=0x%02x CST=0x%02x CTL0=0x%02x CTL1=0x%02x",
 	    regs->ST, regs->CST, regs->CTL0, regs->CTL1);
 }
 
 /* Wait for INT flag with timeout and hardware error check.
  * Returns 0 on success, -ETIMEDOUT on timeout, -EIO on hardware error */
-static int vg015_i2c_wait_int(struct niiet_i2c_regs *regs) {
+static int vg015_i2c_wait_int(volatile struct niiet_i2c_regs *regs) {
 	int timeout = I2C_TIMEOUT_LOOPS;
 	uint32_t mode;
 
@@ -111,7 +111,7 @@ static int vg015_i2c_wait_int(struct niiet_i2c_regs *regs) {
 
 /* Wait for STOP condition to complete.
  * Returns 0 on success, -ETIMEDOUT on timeout */
-static int vg015_i2c_wait_stop(struct niiet_i2c_regs *regs) {
+static int vg015_i2c_wait_stop(volatile struct niiet_i2c_regs *regs) {
 	int timeout = I2C_TIMEOUT_LOOPS;
 
 	/* Wait for STOP bit to clear (hardware finished sending STOP) */
@@ -131,7 +131,7 @@ static int vg015_i2c_wait_stop(struct niiet_i2c_regs *regs) {
 
 static int vg015_i2c_tx(const struct i2c_bus *bus, uint16_t addr,
 									uint8_t *buff, size_t sz) {
-	struct niiet_i2c_regs *regs;
+	volatile struct niiet_i2c_regs *regs;
 	uint32_t mode;
 	size_t i;
 	int ret;
@@ -218,7 +218,7 @@ static int vg015_i2c_tx(const struct i2c_bus *bus, uint16_t addr,
 
 static int vg015_i2c_rx(const struct i2c_bus *bus, uint16_t addr,
 									uint8_t *buff, size_t sz) {
-	struct niiet_i2c_regs *regs;
+	volatile struct niiet_i2c_regs *regs;
 	uint32_t mode;
 	size_t i;
 	int ret;
@@ -290,12 +290,12 @@ static int vg015_i2c_rx(const struct i2c_bus *bus, uint16_t addr,
 	return sz;
 }
 
-static inline int niiet_i2c_is_busy(struct niiet_i2c_regs *regs) {
+static inline int niiet_i2c_is_busy(volatile struct niiet_i2c_regs *regs) {
 	return regs->CST & CST_BB_BIT;
 }
 
 /* Reset I2C controller to recover from stuck state */
-static void vg015_i2c_reset(struct niiet_i2c_regs *regs) {
+static void vg015_i2c_reset(volatile struct niiet_i2c_regs *regs) {
 	uint32_t ctl1_save;
 
 	log_warning("I2C: resetting controller");
@@ -322,7 +322,7 @@ static void vg015_i2c_reset(struct niiet_i2c_regs *regs) {
 
 static int vg015_i2c_master_xfer(const struct i2c_bus *bus,
 						struct i2c_msg *msgs, size_t num_msgs) {
-	struct niiet_i2c_regs *regs;
+	volatile struct niiet_i2c_regs *regs;
 	int res = 0;
 	size_t i;
 	int timeout;
@@ -341,10 +341,12 @@ static int vg015_i2c_master_xfer(const struct i2c_bus *bus,
 		}
 	}
 
+	regs->CTL0 |= CTL0_START_BIT;
+	
 	for (i = 0; i < num_msgs; i++) {
 		/* Generate start or repeated start condition.
 		 * Use |= to preserve INTEN bit set during init */
-		regs->CTL0 |= CTL0_START_BIT;
+		
 
 		if (msgs[i].flags & I2C_M_RD) {
 			res = vg015_i2c_rx(bus, msgs[i].addr, msgs[i].buf, msgs[i].len);
@@ -355,6 +357,9 @@ static int vg015_i2c_master_xfer(const struct i2c_bus *bus,
 		if (res < 0) {
 			break;
 		}
+
+		regs->CTL0 |= CTL0_START_BIT;
+		regs->CTL0 |= CTL0_CLRST_BIT;
 	}
 
 	/* Generate stop condition and wait for completion */
@@ -375,7 +380,7 @@ static int vg015_i2c_master_xfer(const struct i2c_bus *bus,
 extern int vg015_i2c_hw_init0(const struct i2c_bus *bus);
 
 static int vg015_i2c_init(const struct i2c_bus *bus) {
-	struct niiet_i2c_regs *regs;
+	volatile struct niiet_i2c_regs *regs;
 	uint32_t freq_calc;
 
 	regs = (void *)bus->i2cb_label;
