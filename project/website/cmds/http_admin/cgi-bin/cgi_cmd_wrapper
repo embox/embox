@@ -11,14 +11,14 @@ print()
 
 form = cgi.FieldStorage()
 
-cmd = "cgi-bin/" + form['c'].value
+cmd = ["cgi-bin/" + form['c'].value]
 
 for item in cgi.parse().keys():
 	if item != 'c':
-		cmd += ' ' + form[item].value
+		cmd.append(form[item].value)
 
 print(cmd, file=sys.stderr)
 
-result = subprocess.check_output(cmd, shell=True).decode("utf-8")
+result = subprocess.check_output(cmd, shell=False).decode("utf-8")
 
 print(result)
