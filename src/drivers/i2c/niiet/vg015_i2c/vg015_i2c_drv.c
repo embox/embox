@@ -100,8 +100,8 @@ static int vg015_i2c_wait_int(volatile struct niiet_i2c_regs *regs) {
 			return -ETIMEDOUT;
 		}
 		if (--timeout == 0) {
-			log_error("I2C: software timeout waiting for INT");
-			vg015_i2c_dump_regs(regs);
+			log_debug("I2C: software timeout waiting for INT");
+			//vg015_i2c_dump_regs(regs);
 			/* Controller may be stuck - will be reset by caller */
 			return -ETIMEDOUT;
 		}
