@@ -2,6 +2,7 @@ package embox.driver.spi
 
 module pl022_spi_drv {
 	option string log_level="LOG_ERR"
+	option boolean vg1t_sup = false
 
 	source "pl022_spi_drv.c"
 

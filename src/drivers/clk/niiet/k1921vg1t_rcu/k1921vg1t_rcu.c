@@ -82,40 +82,81 @@ struct rcu_reg {
     uint32_t 	RCU_PLLSTAT_reg;
 };
 
-#define RCU_CGCFGAPB_TMR_OFFSET     16
-#define RCU_CGCFGAPB_TMR0EN         (1 << (RCU_CGCFGAPB_TMR_OFFSET + 0))
-#define RCU_CGCFGAPB_TMR1EN         (1 << (RCU_CGCFGAPB_TMR_OFFSET + 1))
-#define RCU_CGCFGAPB_TMR2EN         (1 << (RCU_CGCFGAPB_TMR_OFFSET + 2))
-#define RCU_CGCFGAPB_TMR_EN(nr)     (1 << (RCU_CGCFGAPB_TMR_OFFSET + nr))
+#define RCU_CGCFGAPB1_TMR_OFFSET     16
+#define RCU_CGCFGAPB1_TMR0EN         (1 << (RCU_CGCFGAPB1_TMR_OFFSET + 0))
+#define RCU_CGCFGAPB1_TMR1EN         (1 << (RCU_CGCFGAPB1_TMR_OFFSET + 1))
+#define RCU_CGCFGAPB1_TMR2EN         (1 << (RCU_CGCFGAPB1_TMR_OFFSET + 2))
+#define RCU_CGCFGAPB1_TMR3EN         (1 << (RCU_CGCFGAPB1_TMR_OFFSET + 3))
+#define RCU_CGCFGAPB1_TMR4EN         (1 << (RCU_CGCFGAPB1_TMR_OFFSET + 4))
+#define RCU_CGCFGAPB1_TMR_EN(nr)     (1 << (RCU_CGCFGAPB1_TMR_OFFSET + nr))
 
-#define RCU_CGCFGAPB_UART_EN(port)  (1 << (16 + port))
+#define RCU_CGCFGAPB2_UART_OFFSET    16
+#define RCU_CGCFGAPB2_UART_EN(port)  (1 << (RCU_CGCFGAPB2_UART_OFFSET + port))
+#define RCU_CGCFGAPB2_UART0EN        (1 << (RCU_CGCFGAPB2_UART_OFFSET + 0))
+#define RCU_CGCFGAPB2_UART1EN        (1 << (RCU_CGCFGAPB2_UART_OFFSET + 1))
+#define RCU_CGCFGAPB2_UART2EN        (1 << (RCU_CGCFGAPB2_UART_OFFSET + 2))
+#define RCU_CGCFGAPB2_UART3EN        (1 << (RCU_CGCFGAPB2_UART_OFFSET + 3))
+#define RCU_CGCFGAPB2_UART4EN        (1 << (RCU_CGCFGAPB2_UART_OFFSET + 4))
+#define RCU_CGCFGAPB2_UART5EN        (1 << (RCU_CGCFGAPB2_UART_OFFSET + 5))
+#define RCU_CGCFGAPB2_UART6EN        (1 << (RCU_CGCFGAPB2_UART_OFFSET + 6))
+#define RCU_CGCFGAPB2_UART7EN        (1 << (RCU_CGCFGAPB2_UART_OFFSET + 7))
 
-
-#define RCU_CGCFGAPB_I2C_EN(port)   (1 << (5 + port))
-#define RCU_CGCFGAPB_I2C0EN         (1 << 5)
+#define RCU_CGCFGAPB2_I2C_OFFSET     24
+#define RCU_CGCFGAPB2_I2C_EN(port)   (1 << (RCU_CGCFGAPB2_I2C_OFFSET + port))
+#define RCU_CGCFGAPB2_I2C0EN         (1 << (RCU_CGCFGAPB2_I2C_OFFSET + 0))
+#define RCU_CGCFGAPB2_I2C1EN         (1 << (RCU_CGCFGAPB2_I2C_OFFSET + 1))
+#define RCU_CGCFGAPB2_I2C2EN         (1 << (RCU_CGCFGAPB2_I2C_OFFSET + 2))
+#define RCU_CGCFGAPB2_I2C3EN         (1 << (RCU_CGCFGAPB2_I2C_OFFSET + 3))
 
 #define RCU_CGCFGAHB_GPIOEN(port)   (1 << (0 + port))
 
+#define RCU_CGCFGAPB2_SPI_OFFSET     8
+#define RCU_CGCFGAPB2_SPI0EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 0))
+#define RCU_CGCFGAPB2_SPI1EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 1))
+#define RCU_CGCFGAPB2_SPI2EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 2))
+#define RCU_CGCFGAPB2_SPI3EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 3))
+#define RCU_CGCFGAPB2_SPI4EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 4))
+#define RCU_CGCFGAPB2_SPI5EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 5))
+#define RCU_CGCFGAPB2_SPI6EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 6))
+#define RCU_CGCFGAPB2_SPI7EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 7))
+#define RCU_CGCFGAPB2_SPI_EN(nr)     (1 << (RCU_CGCFGAPB2_SPI_OFFSET + nr))
 
-#define RCU_CGCFGAHB_SPI0EN         (1 << 5)
-#define RCU_CGCFGAHB_SPI1EN         (1 << 6)
-#define RCU_CGCFGAHB_SPI_EN(nr)     (1 << (5 + nr))
+#define RCU_RSTDISAPB1_TMR_OFFSET     16
+#define RCU_RSTDISAPB1_TMR0EN         (1 << (RCU_RSTDISAPB1_TMR_OFFSET + 0))
+#define RCU_RSTDISAPB1_TMR1EN         (1 << (RCU_RSTDISAPB1_TMR_OFFSET + 1))
+#define RCU_RSTDISAPB1_TMR2EN         (1 << (RCU_RSTDISAPB1_TMR_OFFSET + 2))
+#define RCU_RSTDISAPB1_TMR3EN         (1 << (RCU_RSTDISAPB1_TMR_OFFSET + 3))
+#define RCU_RSTDISAPB1_TMR4EN         (1 << (RCU_RSTDISAPB1_TMR_OFFSET + 4))
+#define RCU_RSTDISAPB1_TMR_EN(num)    (1 << (RCU_RSTDISAPB1_TMR_OFFSET + num))
 
-#define RCU_RSTDISAPB_TMR_OFFSET     16
-#define RCU_RSTDISAPB_TMR0EN         (1 << (RCU_RSTDISAPB_TMR_OFFSET + 0))
-#define RCU_RSTDISAPB_TMR1EN         (1 << (RCU_RSTDISAPB_TMR_OFFSET + 1))
-#define RCU_RSTDISAPB_TMR2EN         (1 << (RCU_RSTDISAPB_TMR_OFFSET + 2))
-#define RCU_RSTDISAPB_TMR_EN(num)    (1 << (RCU_RSTDISAPB_TMR_OFFSET + num))
+#define RCU_RSTDISAPB2_UART_OFFSET    16
+#define RCU_RSTDISAPB2_UART_EN(port)  (1 << (RCU_RSTDISAPB2_UART_OFFSET + port))
+#define RCU_RSTDISAPB2_UART0EN        (1 << (RCU_RSTDISAPB2_UART_OFFSET + 0))
+#define RCU_RSTDISAPB2_UART1EN        (1 << (RCU_RSTDISAPB2_UART_OFFSET + 1))
+#define RCU_RSTDISAPB2_UART2EN        (1 << (RCU_RSTDISAPB2_UART_OFFSET + 2))
+#define RCU_RSTDISAPB2_UART3EN        (1 << (RCU_RSTDISAPB2_UART_OFFSET + 3))
+#define RCU_RSTDISAPB2_UART4EN        (1 << (RCU_RSTDISAPB2_UART_OFFSET + 4))
+#define RCU_RSTDISAPB2_UART5EN        (1 << (RCU_RSTDISAPB2_UART_OFFSET + 5))
+#define RCU_RSTDISAPB2_UART6EN        (1 << (RCU_RSTDISAPB2_UART_OFFSET + 6))
+#define RCU_RSTDISAPB2_UART7EN        (1 << (RCU_RSTDISAPB2_UART_OFFSET + 7))
 
-#define RCU_RSTDISAPB_UART_EN(port)  (1 << (16 + port))
-#define RCU_RSTDISAPB_UART0EN        (1 << 6)
-#define RCU_RSTDISAPB_UART1EN        (1 << 7)
-#define RCU_RSTDISAPB_UART2EN        (1 << 8)
-#define RCU_RSTDISAPB_UART3EN        (1 << 9)
-#define RCU_RSTDISAPB_UART4EN        (1 << 10)
+#define RCU_RSTDISAPB2_SPI_OFFSET     8
+#define RCU_RSTDISAPB2_SPI_EN(port)  (1 << (RCU_RSTDISAPB2_SPI_OFFSET + port))
+#define RCU_RSTDISAPB2_SPI0EN        (1 << (RCU_RSTDISAPB2_SPI_OFFSET + 0))
+#define RCU_RSTDISAPB2_SPI1EN        (1 << (RCU_RSTDISAPB2_SPI_OFFSET + 1))
+#define RCU_RSTDISAPB2_SPI2EN        (1 << (RCU_RSTDISAPB2_SPI_OFFSET + 2))
+#define RCU_RSTDISAPB2_SPI3EN        (1 << (RCU_RSTDISAPB2_SPI_OFFSET + 3))
+#define RCU_RSTDISAPB2_SPI4EN        (1 << (RCU_RSTDISAPB2_SPI_OFFSET + 4))
+#define RCU_RSTDISAPB2_SPI5EN        (1 << (RCU_RSTDISAPB2_SPI_OFFSET + 5))
+#define RCU_RSTDISAPB2_SPI6EN        (1 << (RCU_RSTDISAPB2_SPI_OFFSET + 6))
+#define RCU_RSTDISAPB2_SPI7EN        (1 << (RCU_RSTDISAPB2_SPI_OFFSET + 7))
 
-#define RCU_RSTDISAPB_I2C_EN(port)   (1 << (5 + port))
-#define RCU_RSTDISAPB_I2C0EN         (1 << 5)
+#define RCU_RSTDISAPB2_I2C_OFFSET    24
+#define RCU_RSTDISAPB2_I2C_EN(port)   (1 << (RCU_RSTDISAPB2_I2C_OFFSET + port))
+#define RCU_RSTDISAPB2_I2C0EN         (1 << (RCU_RSTDISAPB2_I2C_OFFSET + 0))
+#define RCU_RSTDISAPB2_I2C1EN         (1 << (RCU_RSTDISAPB2_I2C_OFFSET + 1))
+#define RCU_RSTDISAPB2_I2C2EN         (1 << (RCU_RSTDISAPB2_I2C_OFFSET + 2))
+#define RCU_RSTDISAPB2_I2C3EN         (1 << (RCU_RSTDISAPB2_I2C_OFFSET + 3))
 
 #define RCU_RSTDISAHB_GPIO_OFFSET    0
 #define RCU_RSTDISAHB_GPIOEN(port)   (1 << (RCU_RSTDISAHB_GPIO_OFFSET + port))
@@ -123,9 +164,6 @@ struct rcu_reg {
 #define RCU_RSTDISAHB_GPIOBEN        (1 << (RCU_RSTDISAHB_GPIO_OFFSET + 1))
 #define RCU_RSTDISAHB_GPIOCEN        (1 << (RCU_RSTDISAHB_GPIO_OFFSET + 2))
 
-#define RCU_RSTDISAHB_SPI0EN         (1 << 5)
-#define RCU_RSTDISAHB_SPI1EN         (1 << 6)
-#define RCU_RSTDISAHB_SPI_EN(num)    (1 << (5 + num))
 
 #define RCU_CLKSTAT_SRC_MASK        (0x3)
 #define  RCU_CLKSTAT_SRC_HSICLK      (0x0)
@@ -230,6 +268,17 @@ struct rcu_reg {
 #define RCU_UARTCLKCFG_DIVN_MASK                0x003F0000UL
 
 
+#define RCU_SPICLKCFG_CLKEN_MASK               0x00000001UL
+#define RCU_SPICLKCFG_RSTDIS_MASK              0x00000010UL
+#define RCU_SPICLKCFG_CLKSEL_OFFSET             (8)
+#define RCU_SPICLKCFG_CLKSEL_MASK               0x00000300UL
+# define  RCU_SPICLKCFG_CLKSEL_HSICLK_MASK      0x00000000UL
+# define  RCU_SPICLKCFG_CLKSEL_HSECLK_MASK      0x00000100UL
+# define  RCU_SPICLKCFG_CLKSEL_SYSPLL0CLK_MASK  0x00000200UL
+# define  RCU_SPICLKCFG_CLKSEL_SYSPLL1CLK_MASK  0x00000300UL
+#define RCU_SPICLKCFG_DIVEN_MASK               0x00001000UL
+#define RCU_SPICLKCFG_DIVN_MASK                0x003F0000UL
+
 int niiet_gpio_clock_setup(unsigned char port) {
     RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOEN(port);
     RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOEN(port);
@@ -240,10 +289,10 @@ int niiet_gpio_clock_setup(unsigned char port) {
 void niiet_uart_set_rcu(int num) {
     volatile uint32_t *rcu_clkcfg_reg = &RCU->RCU_UARTCLKCFG_reg[num];
 
-	RCU->RCU_CGCFGAPB2_reg |= RCU_CGCFGAPB_UART_EN(num);
-	RCU->RCU_RSTDISAPB2_reg |= RCU_RSTDISAPB_UART_EN(num);
+	RCU->RCU_CGCFGAPB2_reg |= RCU_CGCFGAPB2_UART_EN(num);
+	RCU->RCU_RSTDISAPB2_reg |= RCU_RSTDISAPB2_UART_EN(num);
 
-    rcu_clkcfg_reg += num;
+    //rcu_clkcfg_reg += num;
 
 	*rcu_clkcfg_reg = 0;
 	//*rcu_clkcfg_reg |= RCU_UARTCLKCFG_CLKSEL_SYSPLL0CLK_MASK;
@@ -253,10 +302,38 @@ void niiet_uart_set_rcu(int num) {
     *rcu_clkcfg_reg |= RCU_UARTCLKCFG_RSTDIS_MASK;
 }
 
+void niiet_spi_set_rcu(int num) {
+    volatile uint32_t *rcu_clkcfg_reg = &RCU->RCU_SPICLKCFG_reg[num];
+
+	RCU->RCU_CGCFGAPB2_reg |= RCU_CGCFGAPB2_SPI_EN(num);
+	RCU->RCU_RSTDISAPB2_reg |= RCU_RSTDISAPB2_SPI_EN(num);
+
+    *rcu_clkcfg_reg = 0;
+    *rcu_clkcfg_reg |= RCU_SPICLKCFG_CLKSEL_HSECLK_MASK;
+
+	*rcu_clkcfg_reg |= RCU_SPICLKCFG_CLKEN_MASK;
+    *rcu_clkcfg_reg |= RCU_SPICLKCFG_RSTDIS_MASK;
+}
+
+
+void niiet_i2c_set_rcu(int num) {
+    volatile uint32_t dummy;
+
+	/* Put I2C in reset state first */
+	RCU->RCU_RSTDISAPB2_reg &= ~RCU_RSTDISAPB2_I2C_EN(num);
+	dummy = RCU->RCU_RSTDISAPB2_reg; /* dummy read */
+	(void)dummy;
+
+	/* Enable clock */
+	RCU->RCU_CGCFGAPB2_reg |= RCU_CGCFGAPB2_I2C_EN(num);
+
+	/* Release reset */
+	RCU->RCU_RSTDISAPB2_reg |= RCU_RSTDISAPB2_I2C_EN(num);
+}
 
 void niiet_tmr_set_rcu(int num) {
-	RCU->RCU_CGCFGAPB1_reg |= RCU_CGCFGAPB_TMR_EN(num);
-	RCU->RCU_RSTDISAPB1_reg |= RCU_RSTDISAPB_TMR_EN(num);
+	RCU->RCU_CGCFGAPB1_reg |= RCU_CGCFGAPB1_TMR_EN(num);
+	RCU->RCU_RSTDISAPB1_reg |= RCU_RSTDISAPB1_TMR_EN(num);
 }
 
 int clk_enable(char *clk_name) {
@@ -275,6 +352,16 @@ int clk_enable(char *clk_name) {
     if (0 == strncmp(clk_name, CLK_NAME_TMR, sizeof(CLK_NAME_TMR) - 1)) {
         num = clk_name[sizeof(CLK_NAME_TMR) - 1]  - '0';
         niiet_tmr_set_rcu(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_SPI, sizeof(CLK_NAME_SPI) - 1)) {
+        num = clk_name[sizeof(CLK_NAME_SPI) - 1]  - '0';
+        niiet_spi_set_rcu(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_I2C, sizeof(CLK_NAME_I2C) - 1)) {
+        num = clk_name[sizeof(CLK_NAME_I2C) - 1]  - '0';
+        niiet_i2c_set_rcu(num);
         return 0;
     }
 
