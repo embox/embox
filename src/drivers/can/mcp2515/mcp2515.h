@@ -156,4 +156,33 @@
 #define MCP2515_RXFnSIDL_SID_MASK  0x7
 #define MCP2515_RXFnSIDL_SID_SHIFT 5
 
+/* MCP2515_CNF1 */
+#define MCP2515_CNF1_BRP       /* Baud Rate Prescaler */
+#define MCP2515_CNF1_BRP_MASK  0x3f
+#define MCP2515_CNF1_BRP_SHIFT 0
+
+#define MCP2515_CNF1_SJW       /* Synchronization Jump Width */
+#define MCP2515_CNF1_SJW_MASK  0x3
+#define MCP2515_CNF1_SJW_SHIFT 6
+
+/* MCP2515_CNF2 */
+#define MCP2515_CNF2_SAM     (1 << 6) /* Sample Point Configuration */
+#define MCP2515_CNF2_BTLMODE (1 << 7) /* Phase Segment 2 Length Mode */
+
+#define MCP2515_CNF2_PROPSEG       /* Propagation Segment Length */
+#define MCP2515_CNF2_PROPSEG_MASK  0x7
+#define MCP2515_CNF2_PROPSEG_SHIFT 0
+
+#define MCP2515_CNF2_PHSEG1       /* Phase Segment 1 Length */
+#define MCP2515_CNF2_PHSEG1_MASK  0x7
+#define MCP2515_CNF2_PHSEG1_SHIFT 3
+
+/* MCP2515_CNF3 */
+#define MCP2515_CNF3_WAKFIL (1 << 6) /* Wake-up Filter */
+#define MCP2515_CNF3_SOF    (1 << 7) /* Start-of-Frame Signal */
+
+#define MCP2515_CNF3_PHSEG2       /* Phase Segment 2 Length */
+#define MCP2515_CNF3_PHSEG2_MASK  0x7
+#define MCP2515_CNF3_PHSEG2_SHIFT 0
+
 #endif /* DRIVERS_CAN_MCP2515_H_ */
