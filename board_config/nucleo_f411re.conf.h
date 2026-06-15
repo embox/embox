@@ -148,8 +148,82 @@ struct spi_conf spis[] = {
 			},
 		},
 	},
+	[2] = {
+		.status = ENABLED,
+		.name = "SPI2",
+		.dev = {
+			.name = "SPI2",
+			.pins = {
+				PIN("SCK",  GPIO_PORT_B, 13, GPIO_MODE_ALT, AF5),
+				PIN("MISO", GPIO_PORT_B, 14, GPIO_MODE_ALT, AF5),
+				PIN("MOSI", GPIO_PORT_B, 15, GPIO_MODE_ALT, AF5),
+				PIN("CS",   GPIO_PORT_B, 12, GPIO_MODE_OUT, NOAF),
+			},
+			.clocks = {
+				VAL("SPI",  CLK_SPI2),
+			}
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI2_0",
+			.bits_per_word = 8,
+			.bus_num = 2,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI2_0",
+				.pins = {
+					PIN("CS",   GPIO_PORT_B, 12, GPIO_MODE_OUT, NOAF),
+				},
+			},
+		},
+	},
 
 };
 
+struct i2c_conf i2cs[] = {
+	[1] = {
+		.status = ENABLED,
+		.name = "I2C1",
+		.dev = {
+			.name = "I2C1",
+			.regs = {
+				REGMAP("BASE", (I2C1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("EVENT", 31),
+				VAL("ERROR", 32),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, 8, GPIO_MODE_AF, AF4),
+				PIN("SDA", GPIO_PORT_B, 9, GPIO_MODE_AF, AF4),
+			},
+			.clocks = {
+				VAL("I2C", CLK_I2C1),
+			}
+		},
+	},
+	[2] = {
+		.status = ENABLED,
+		.name = "I2C2",
+		.dev = {
+			.name = "I2C2",
+			.regs = {
+				REGMAP("BASE", (I2C2_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("EVENT", 33),
+				VAL("ERROR", 34),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, 10, GPIO_MODE_ALT, AF4),
+				PIN("SDA", GPIO_PORT_B, 11, GPIO_MODE_ALT, AF4),
+			},
+			.clocks = {
+				VAL("I2C", CLK_I2C2),
+			}
+		},
+	},
 
-EXPORT_CONFIG(CLK(clks), UART(uarts), LED(leds), SPI(spis))
+};
+
+EXPORT_CONFIG(CLK(clks), UART(uarts), LED(leds), SPI(spis), I2C(i2cs))
