@@ -1,0 +1,82 @@
+#include <check.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+START_TEST(test_cgi_cmd_wrapper_rejects_shell_injection)
+{
+    // Invariant: Shell metacharacters in user input must not execute arbitrary commands
+    const char *payloads[] = {
+        "cmd=status;id",           // Exact exploit: command injection via semicolon
+        "cmd=status|cat /etc/passwd",  // Pipe injection
+        "cmd=status`whoami`",      // Backtick injection
+        "cmd=status",              // Valid input (should work normally)
+    };
+    int num_payloads = sizeof(payloads) / sizeof(payloads[0]);
+
+    for (int i = 0; i < num_payloads; i++) {
+        int pipefd[2];
+        ck_assert_int_eq(pipe(pipefd), 0);
+        
+        pid_t pid = fork();
+        ck_assert_int_ne(pid, -1);
+        
+        if (pid == 0) {
+            close(pipefd[0]);
+            dup2(pipefd[1], STDOUT_FILENO);
+            dup2(pipefd[1], STDERR_FILENO);
+            setenv("QUERY_STRING", payloads[i], 1);
+            setenv("REQUEST_METHOD", "GET", 1);
+            execl("project/website/cmds/http_admin/cgi-bin/cgi_cmd_wrapper",
+                  "cgi_cmd_wrapper", NULL);
+            _exit(127);
+        }
+        
+        close(pipefd[1]);
+        char output[4096] = {0};
+        read(pipefd[0], output, sizeof(output) - 1);
+        close(pipefd[0]);
+        
+        int status;
+        waitpid(pid, &status, 0);
+        
+        // Security invariant: output must NOT contain evidence of injected command execution
+        ck_assert_msg(strstr(output, "uid=") == NULL,
+                      "Shell injection succeeded with payload: %s", payloads[i]);
+        ck_assert_msg(strstr(output, "root:") == NULL,
+                      "File disclosure via injection with payload: %s", payloads[i]);
+    }
+}
+END_TEST
+
+Suite *security_suite(void)
+{
+    Suite *s;
+    TCase *tc_core;
+
+    s = suite_create("Security");
+    tc_core = tcase_create("Core");
+
+    tcase_add_test(tc_core, test_cgi_cmd_wrapper_rejects_shell_injection);
+    suite_add_tcase(s, tc_core);
+
+    return s;
+}
+
+int main(void)
+{
+    int number_failed;
+    Suite *s;
+    SRunner *sr;
+
+    s = security_suite();
+    sr = srunner_create(s);
+
+    srunner_run_all(sr, CK_NORMAL);
+    number_failed = srunner_ntests_failed(sr);
+    srunner_free(sr);
+
+    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
