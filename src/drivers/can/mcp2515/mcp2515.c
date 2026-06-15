@@ -27,6 +27,21 @@
 #define SPI_BUS    OPTION_GET(NUMBER, spi_bus)
 #define SPI_CS     OPTION_GET(NUMBER, spi_cs)
 
+#define MCP2515_PROPSEG  OPTION_GET(NUMBER, propseg)
+#define MCP2515_PHSEG1   OPTION_GET(NUMBER, phseg1)
+#define MCP2515_PHSEG2   OPTION_GET(NUMBER, phseg2)
+#define MCP2515_BITRATE  OPTION_GET(NUMBER, bitrate)
+#define MCP2515_CLK_FREQ OPTION_GET(NUMBER, clk_freq)
+
+/* Synchronization Jump Width */
+#define MCP2515_SJW 1
+
+/* Baud Rate Prescaler */
+#define MCP2515_BRP                                                             \
+	(uint8_t)((float)MCP2515_CLK_FREQ                                           \
+	          / ((float)(MCP2515_PROPSEG + MCP2515_PHSEG1 + MCP2515_PHSEG2 + 1) \
+	              * (float)(2 * MCP2515_BITRATE)))
+
 /* CANCTRL register value after reset */
 #define MCP2515_CANCTRL_DEFAULT 0x87
 
@@ -79,14 +94,28 @@ static inline void mcp2515_reg_clear(unsigned int reg, uint8_t mask) {
 }
 
 static void mcp2515_reset(struct can_dev *can) {
+	uint8_t reg;
+
 	mcp2515_cmd(MCP2515_RESET);
 
 	/* Wait for mcp2515 to restart */
 	usleep(10000);
-}
 
-static int mcp2515_open(struct can_dev *can) {
-	uint8_t reg;
+	reg = mcp2515_reg_load(MCP2515_CNF1);
+	reg = FIELD_SET(reg, MCP2515_CNF1_BRP, MCP2515_BRP - 1);
+	reg = FIELD_SET(reg, MCP2515_CNF1_SJW, MCP2515_SJW - 1);
+	mcp2515_reg_store(MCP2515_CNF1, reg);
+
+	reg = mcp2515_reg_load(MCP2515_CNF2);
+	reg = FIELD_SET(reg, MCP2515_CNF2_PROPSEG, MCP2515_PROPSEG - 1);
+	reg = FIELD_SET(reg, MCP2515_CNF2_PHSEG1, MCP2515_PHSEG1 - 1);
+	reg |= MCP2515_CNF2_SAM | MCP2515_CNF2_BTLMODE;
+	mcp2515_reg_store(MCP2515_CNF2, reg);
+
+	reg = mcp2515_reg_load(MCP2515_CNF3);
+	reg = FIELD_SET(reg, MCP2515_CNF3_PHSEG2, MCP2515_PHSEG2 - 1);
+	reg |= MCP2515_CNF3_SOF;
+	mcp2515_reg_store(MCP2515_CNF3, reg);
 
 	reg = mcp2515_reg_load(MCP2515_RXB0CTRL);
 	reg = FIELD_SET(reg, MCP2515_RXBnCTRL_RXM, MCP2515_RXBnCTRL_RXM_VALID);
@@ -109,6 +138,10 @@ static int mcp2515_open(struct can_dev *can) {
 
 	mcp2515_reg_orin(MCP2515_RXM0SIDL, MCP2515_RXFnSIDL_EXIDE);
 	mcp2515_reg_orin(MCP2515_RXM1SIDL, MCP2515_RXFnSIDL_EXIDE);
+}
+
+static int mcp2515_open(struct can_dev *can) {
+	uint8_t reg;
 
 	/* Enable normal mode */
 	reg = mcp2515_reg_load(MCP2515_CANCTRL);
