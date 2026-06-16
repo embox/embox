@@ -55,13 +55,14 @@ static void fpga_dev_close(struct char_dev *cdev) {
 	}
 }
 
-static ssize_t fpga_dev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+static ssize_t fpga_dev_read(struct char_dev *cdev, void *buf, size_t nbyte,
+    int flags) {
 	/* Dumping FPGA config is currently NIY */
 	return 0;
 }
 
 static ssize_t fpga_dev_write(struct char_dev *cdev, const void *buf,
-    size_t nbyte) {
+    size_t nbyte, int flags) {
 	struct fpga *fpga;
 	int err;
 
