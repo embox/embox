@@ -18,18 +18,6 @@
 #include <kernel/task/resource/idesc.h>
 #include <kernel/thread/thread_sched_wait.h>
 
-static int can_frame_is_valid(struct can_dev *can, size_t nbyte) {
-	if (nbyte == CAN_MTU) {
-		return 1;
-	}
-
-	if (nbyte == can->mtu) {
-		return 1;
-	}
-
-	return 0;
-}
-
 static int can_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	struct can_dev *can;
 	int err;
@@ -68,7 +56,7 @@ static ssize_t can_dev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 	can = (struct can_dev *)cdev;
 	msg = NULL;
 
-	if (!can_frame_is_valid(can, nbyte)) {
+	if ((nbyte != CANFD_MTU) && (nbyte != can->mtu)) {
 		return -EINVAL;
 	}
 
@@ -96,7 +84,7 @@ static ssize_t can_dev_write(struct char_dev *cdev, const void *buf, size_t nbyt
 
 	can = (struct can_dev *)cdev;
 
-	if (!can_frame_is_valid(can, nbyte)) {
+	if ((nbyte != CAN_MTU) && (nbyte != can->mtu)) {
 		return -EINVAL;
 	}
 
