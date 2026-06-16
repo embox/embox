@@ -11,17 +11,16 @@
 #include <drivers/char_dev.h>
 
 static ssize_t demo_char_dev_read(struct char_dev *cdev, void *buf,
-    size_t nbyte) {
+    size_t nbyte, int flags) {
 	return 0;
 }
 
 static ssize_t demo_char_dev_write(struct char_dev *cdev, const void *buf,
-    size_t nbyte) {
+    size_t nbyte, int flags) {
 	return 0;
 }
 
-static void *demo_char_dev_ioctl(struct char_dev *cdev, int request,
-    void *data) {
+static void *demo_char_dev_ioctl(struct char_dev *cdev, int request, void *data) {
 	return 0;
 }
 
