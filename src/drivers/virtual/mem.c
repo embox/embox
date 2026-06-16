@@ -12,12 +12,13 @@
 
 #include <drivers/char_dev.h>
 
-static ssize_t mem_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+static ssize_t mem_read(struct char_dev *cdev, void *buf, size_t nbyte, int flags) {
 	memset(buf, 0, nbyte);
 	return nbyte;
 }
 
-static ssize_t mem_write(struct char_dev *cdev, const void *buf, size_t nbyte) {
+static ssize_t mem_write(struct char_dev *cdev, const void *buf, size_t nbyte,
+    int flags) {
 	return nbyte;
 }
 
