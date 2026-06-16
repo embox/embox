@@ -114,7 +114,8 @@ static void tun_dev_close(struct char_dev *cdev) {
 	tun_user_unlock((struct tun_dev *)cdev);
 }
 
-static ssize_t tun_dev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+static ssize_t tun_dev_read(struct char_dev *cdev, void *buf, size_t nbyte,
+    int flags) {
 	struct waitq_link *wql = &thread_self()->schedee.waitq_link;
 	struct tun_dev *tun;
 	struct sk_buff *skb;
@@ -153,7 +154,7 @@ static ssize_t tun_dev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 }
 
 static ssize_t tun_dev_write(struct char_dev *cdev, const void *buf,
-    size_t nbyte) {
+    size_t nbyte, int flags) {
 	struct net_device *netdev;
 	struct tun_dev *tun;
 	struct sk_buff *skb;
