@@ -25,7 +25,8 @@ static int input_dev_fs_wait(struct idesc *desc, int flags) {
 	    /* no lock */);
 }
 
-static ssize_t input_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+static ssize_t input_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte,
+    int flags) {
 	struct input_dev *inpdev;
 	struct input_event *ev;
 	ssize_t sz;
