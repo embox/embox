@@ -18,42 +18,32 @@
 
 static struct vterm vc_vterm;
 
-static void vc_close(struct idesc *idesc) {
+static void vc_close(struct char_dev *cdev) {
 	vc_vterm.tty.idesc = NULL;
 }
 
-static ssize_t vc_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
-	void *buf;
-	size_t nbyte;
-
-	assert(iov);
-	buf = iov->iov_base;
-	assert(cnt == 1);
-	nbyte = iov->iov_len;
-
+static ssize_t vc_read(struct char_dev *cdev, void *buf, size_t nbyte, int flags) {
 	return tty_read(&vc_vterm.tty, (char *)buf, nbyte);
 }
 
-static ssize_t vc_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t vc_write(struct char_dev *cdev, const void *buf, size_t nbyte,
+    int flags) {
 	int i;
 	char *b;
 
-	assert(iov);
-	assert(cnt == 1);
-
-	b = (char *)iov->iov_base;
-	for (i = iov->iov_len; i > 0; i--) {
+	b = (char *)buf;
+	for (i = nbyte; i > 0; i--) {
 		vterm_putc(&vc_vterm, *b++);
 	}
 
-	return (ssize_t)iov->iov_len;
+	return (ssize_t)nbyte;
 }
 
-static int vc_ioctl(struct idesc *idesc, int request, void *data) {
+static int vc_ioctl(struct char_dev *cdev, int request, void *data) {
 	return tty_ioctl(&vc_vterm.tty, request, data);
 }
 
-static int vc_status(struct idesc *idesc, int mask) {
+static int vc_status(struct char_dev *cdev, int mask) {
 	return tty_status(&vc_vterm.tty, mask);
 }
 
