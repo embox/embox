@@ -1,7 +1,7 @@
 package embox.cmd.hw.can_utils
 
 @AutoCmd
-@Cmd(name="candump",help="")
+@Cmd(name="candump",help="dump CAN traffic")
 module candump {
 	source "candump.c"
 
