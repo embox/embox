@@ -37,8 +37,9 @@ struct char_dev_ops {
 	int (*open)(struct char_dev *cdev, struct idesc *idesc);
 	int (*status)(struct char_dev *cdev, int mask);
 	int (*ioctl)(struct char_dev *cdev, int request, void *data);
-	ssize_t (*read)(struct char_dev *cdev, void *buf, size_t nbyte);
-	ssize_t (*write)(struct char_dev *cdev, const void *buf, size_t nbyte);
+	ssize_t (*read)(struct char_dev *cdev, void *buf, size_t nbyte, int flags);
+	ssize_t (*write)(struct char_dev *cdev, const void *buf, size_t nbyte,
+	    int flags);
 	void *(*direct_access)(struct char_dev *cdev, off_t off, size_t len);
 };
 
