@@ -218,6 +218,10 @@ struct pl022_regs {
  */
 #define TDR_MASK_TESTDATA		(0xFFFFFFFF)
 
+#define SSP_WRITE_REG     REG32_STORE
+
+#define SSP_READ_REG     REG32_LOAD
+
 /*
  * ARM PL022 exists in different 'flavors'.
  * This drivers currently support the standard variant (0x00041022), that has a
@@ -238,7 +242,7 @@ static int pl022_is_supported(struct pl022_spi *dev) {
 static void pl022_spi_flush(struct pl022_spi *dev) {
 	do {
 		while (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_RNE) {
-			REG16_LOAD(SSP_DR(dev->base_addr));
+			SSP_READ_REG(SSP_DR(dev->base_addr));
 		}
 	} while (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_BSY);
 }
@@ -304,12 +308,14 @@ static int pl022_spi_setup(struct pl022_spi *dev, bool is_master) {
 #else /* VG1T_SUP */
 	uint32_t reg;
 
+	REG32_STORE(SSP_CR0(dev->base_addr), SSP_CR0_BIT_MODE(8));
+
 	reg = REG32_LOAD(SSP_CR0(dev->base_addr));
 
-	reg &= ~SSP_CR0_BIT_MODE(32); /* clean bits */
-	reg |= SSP_CR0_BIT_MODE(8);
-	reg &= ~SSP_CR_MASK_FRM; /* clean bits */
-	reg |= SSP_CR_FRM_SPI;
+	//reg &= ~SSP_CR0_BIT_MODE(32); /* clean bits */
+	//reg |= SSP_CR0_BIT_MODE(8);
+	//reg &= ~SSP_CR_MASK_FRM; /* clean bits */
+	//reg |= SSP_CR_FRM_SPI;
 	if (!is_master) {
 		reg |=  SSP_CR_MASK_MS;
 	} else {
@@ -379,12 +385,12 @@ static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 				value = 0;
 			}
 			log_debug("SPI WRITE: data=0x%02X, txcnt=0x%02X ", value, tx_cnt);
-			REG16_STORE(SSP_DR(dev->base_addr), value);
+			SSP_WRITE_REG(SSP_DR(dev->base_addr), value);
 			tx_cnt++;
 		}
 
 		if (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_RNE) {
-			value = REG16_LOAD(SSP_DR(dev->base_addr));
+			value = SSP_READ_REG(SSP_DR(dev->base_addr));
 			if (outbuf) {
 				*outbuf++ = value;
 				log_debug("SPI READ: data=0x%02X, rxcnt=0x%02X\n", value, tx_cnt);																		
@@ -395,7 +401,7 @@ static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 
 	while (rx_cnt < tx_cnt) {
 		if (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_RNE) {
-			value = REG16_LOAD(SSP_DR(dev->base_addr));
+			value = SSP_READ_REG(SSP_DR(dev->base_addr));
 			if (outbuf) {
 				*outbuf++ = value;
 				log_debug("SPI READ: data=0x%02X, rxcnt=0x%02X\n", value, tx_cnt);				
