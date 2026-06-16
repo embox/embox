@@ -15,7 +15,8 @@
 #include <drivers/i2c/i2c.h>
 #include <util/log.h>
 
-static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte,
+    int flags) {
 	struct eeprom_dev *dev;
 	struct i2c_msg msgs[2];
 	uint8_t msgbuf[2] = {0};
