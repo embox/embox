@@ -61,7 +61,8 @@ static ssize_t char_dev_readv(struct idesc *idesc, const struct iovec *iov,
 	}
 
 	for (i = 0, nbyte = 0; i < iovcnt; i++) {
-		res = cdev->ops->read(cdev, iov[i].iov_base, iov[i].iov_len);
+		res = cdev->ops->read(cdev, iov[i].iov_base, iov[i].iov_len,
+		    idesc->idesc_flags);
 		if (res < 0) {
 			nbyte = res;
 			break;
@@ -90,7 +91,8 @@ static ssize_t char_dev_writev(struct idesc *idesc, const struct iovec *iov,
 	}
 
 	for (i = 0, nbyte = 0; i < iovcnt; i++) {
-		res = cdev->ops->write(cdev, iov[i].iov_base, iov[i].iov_len);
+		res = cdev->ops->write(cdev, iov[i].iov_base, iov[i].iov_len,
+		    idesc->idesc_flags);
 		if (res < 0) {
 			nbyte = res;
 			break;

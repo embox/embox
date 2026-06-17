@@ -20,7 +20,8 @@
 #include <util/err.h>
 #include <util/log.h>
 
-static ssize_t serial_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+static ssize_t serial_read(struct char_dev *cdev, void *buf, size_t nbyte,
+    int flags) {
 	struct uart *uart;
 
 	assert(buf);
@@ -40,7 +41,7 @@ static ssize_t serial_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 }
 
 static ssize_t serial_write(struct char_dev *cdev, const void *buf,
-    size_t nbyte) {
+    size_t nbyte, int flags) {
 	struct uart *uart;
 	size_t written;
 	size_t left;

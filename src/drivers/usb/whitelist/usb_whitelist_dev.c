@@ -177,14 +177,13 @@ int usb_whitelist_check(struct usb_dev *dev) {
 }
 
 static ssize_t usb_whitelist_read(struct char_dev *cdev, void *buf,
-    size_t nbyte) {
+    size_t nbyte, int flags) {
 	struct usb_whitelist_conf *wl_conf;
 	int req_rules;
 	ssize_t req_size;
 
 	wl_conf = &whitelist_conf;
-	req_rules = min(nbyte / sizeof(struct usb_whitelist_rule),
-	    wl_conf->rules_n);
+	req_rules = min(nbyte / sizeof(struct usb_whitelist_rule), wl_conf->rules_n);
 
 	req_size = req_rules * sizeof(struct usb_whitelist_rule);
 
@@ -237,8 +236,7 @@ static void usb_whitelist_parse_builtin(struct usb_whitelist_conf *wl_conf,
 		char *pp, *str, *saveptr, *tok[3];
 		int tok_i, actlen;
 
-		actlen = comma ? min(comma - p, sizeof(scratch) - 1)
-		               : sizeof(scratch) - 1;
+		actlen = comma ? min(comma - p, sizeof(scratch) - 1) : sizeof(scratch) - 1;
 		strncpy(scratch, p, actlen);
 		scratch[actlen] = '\0';
 

@@ -27,7 +27,7 @@ struct fb_dev {
 
 POOL_DEF(fb_dev_pool, struct fb_dev, DEV_POOL_SIZE);
 
-static void *fb_direct_access(struct char_dev *cdev, off_t off, size_t len) {
+static void *fb_dev_direct_access(struct char_dev *cdev, off_t off, size_t len) {
 	struct fb_info *info;
 
 	info = ((struct fb_dev *)cdev)->info;
@@ -63,7 +63,8 @@ static int fb_dev_ioctl(struct char_dev *cdev, int request, void *data) {
 	return ENOERR;
 }
 
-static ssize_t fb_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+static ssize_t fb_dev_read(struct char_dev *cdev, void *buf, size_t nbyte,
+    int flags) {
 	struct fb_info *info;
 
 	info = ((struct fb_dev *)cdev)->info;
@@ -76,7 +77,7 @@ static ssize_t fb_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 }
 
 static ssize_t fb_dev_write(struct char_dev *cdev, const void *buf,
-    size_t nbyte) {
+    size_t nbyte, int flags) {
 	struct fb_info *info;
 
 	info = ((struct fb_dev *)cdev)->info;
@@ -89,10 +90,10 @@ static ssize_t fb_dev_write(struct char_dev *cdev, const void *buf,
 }
 
 static const struct char_dev_ops fb_cdev_ops = {
-    .read = fb_read,
+    .read = fb_dev_read,
     .write = fb_dev_write,
     .ioctl = fb_dev_ioctl,
-    .direct_access = fb_direct_access,
+    .direct_access = fb_dev_direct_access,
 };
 
 /* TODO: fb_dev_destroy() */
