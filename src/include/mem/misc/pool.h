@@ -65,7 +65,7 @@ struct pool {
 	    .free_blocks = SLIST_INIT(&name.free_blocks),            \
 	    .obj_size = sizeof(__pool_storage##name[0]),             \
 	    .pool_size = sizeof(__pool_storage##name),               \
-	    POOL_BLOCKS_INIT,                                        \
+	    POOL_BLOCKS_INIT                                        \
 	};
 
 #else

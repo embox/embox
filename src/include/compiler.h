@@ -48,7 +48,9 @@
 #define __weak __attribute__((weak))
 #endif
 
-#if defined(__clang__)
+#if defined(__MCST__)
+#define __attribute_no_ubsan
+#elif defined(__clang__)
 #define __attribute_no_ubsan __attribute__((no_sanitize("undefined")))
 #elif defined(__GNUC__)
 #define __attribute_no_ubsan __attribute__((no_sanitize_undefined))
