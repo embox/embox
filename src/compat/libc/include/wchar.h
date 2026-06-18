@@ -17,7 +17,12 @@
 
 #define WEOF ((wint_t)(-1))
 
+#ifdef __WINT_TYPE__
 typedef __WINT_TYPE__ wint_t;
+#else
+// MCST lcc doesn't define __WINT_TYPE__
+typedef unsigned int wint_t;
+#endif
 typedef int wctype_t;
 typedef int mbstate_t;
 
