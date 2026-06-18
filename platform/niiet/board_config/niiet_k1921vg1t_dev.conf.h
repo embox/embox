@@ -332,7 +332,7 @@ struct spi_conf spis[] = {
 				REGMAP("BASE_ADDR", (SPI0_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", PLIC_SPI0_VECTNUM),
+				VAL("", PLIC_IRQ_SPI0),
 			},
 			.pins = {
 				PIN("CLK", GPIO_PORT_A, 0, GPIO_MODE_ALT, 1),
@@ -369,7 +369,7 @@ struct spi_conf spis[] = {
 				REGMAP("BASE_ADDR", (SPI1_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", PLIC_SPI1_VECTNUM),
+				VAL("", PLIC_IRQ_SPI1),
 			},
 			.pins = {
 				PIN("CLK", GPIO_PORT_A, 4, GPIO_MODE_ALT, 1),
@@ -406,7 +406,7 @@ struct spi_conf spis[] = {
 				REGMAP("BASE_ADDR", (SPI2_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", PLIC_SPI2_VECTNUM),
+				VAL("", PLIC_IRQ_SPI2),
 			},
 			.pins = {
 				PIN("CLK", GPIO_PORT_A, 8, GPIO_MODE_ALT, 1),
@@ -443,7 +443,7 @@ struct spi_conf spis[] = {
 				REGMAP("BASE_ADDR", (SPI3_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", PLIC_SPI3_VECTNUM),
+				VAL("", PLIC_IRQ_SPI3),
 			},
 			.pins = {
 				PIN("CLK", GPIO_PORT_A, 12, GPIO_MODE_ALT, 1),
@@ -483,7 +483,7 @@ struct i2c_conf i2cs[] = {
 				REGMAP("BASE_ADDR", (I2C0_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", PLIC_I2C0_VECTNUM),
+				VAL("", PLIC_IRQ_I2C0),
 			},
 			.pins = {
 				PIN("SCL", GPIO_PORT_D, 3, GPIO_MODE_ALT, 2),
@@ -503,7 +503,7 @@ struct i2c_conf i2cs[] = {
 				REGMAP("BASE_ADDR", (I2C1_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", PLIC_I2C1_VECTNUM),
+				VAL("", PLIC_IRQ_I2C1),
 			},
 			.pins = {
 				PIN("SCL", GPIO_PORT_D, 1, GPIO_MODE_ALT, 1),
@@ -517,4 +517,155 @@ struct i2c_conf i2cs[] = {
 
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), PWM(pwms), SPI(spis), I2C(i2cs))
+struct eth_conf eths[] = {
+	[1] = {
+		.status = ENABLED,
+		.name = "ETH",
+		.dev = {
+			.name = "ETH",
+			.regs = {
+				REGMAP("BASE", (ETH_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_ETH),
+			},
+			.pins = {
+
+				PIN("GMII_TXCLK", GPIO_PORT_D,  3, GPIO_MODE_ALT, 4),
+				PIN("GMII_GTXCLK", GPIO_PORT_D, 4, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXCLK", GPIO_PORT_D,  5, GPIO_MODE_ALT, 4),
+
+				PIN("GMII_RXDV", GPIO_PORT_D,  8, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXER", GPIO_PORT_D,  9, GPIO_MODE_ALT, 4),
+				PIN("GMII_MDIO", GPIO_PORT_D, 10, GPIO_MODE_ALT, 4),
+				PIN("GMII_TXEN", GPIO_PORT_D, 11, GPIO_MODE_ALT, 4),
+				PIN("GMII_TXER", GPIO_PORT_D, 12, GPIO_MODE_ALT, 4),
+				PIN("GMII_CRS",  GPIO_PORT_D, 13, GPIO_MODE_ALT, 4),
+				PIN("GMII_COL",  GPIO_PORT_D, 14, GPIO_MODE_ALT, 4),
+				PIN("GMII_MDC",  GPIO_PORT_D, 15, GPIO_MODE_ALT, 4),
+
+				PIN("GMII_TXD0", GPIO_PORT_E,  0, GPIO_MODE_ALT, 4),
+				PIN("GMII_TXD1", GPIO_PORT_E,  1, GPIO_MODE_ALT, 4),
+				PIN("GMII_TXD2", GPIO_PORT_E,  2, GPIO_MODE_ALT, 4),
+				PIN("GMII_TXD3", GPIO_PORT_E,  3, GPIO_MODE_ALT, 4),
+				PIN("GMII_TXD4", GPIO_PORT_E,  4, GPIO_MODE_ALT, 4),
+				PIN("GMII_TXD5", GPIO_PORT_E,  5, GPIO_MODE_ALT, 4),
+				PIN("GMII_TXD6", GPIO_PORT_E,  6, GPIO_MODE_ALT, 4),
+				PIN("GMII_TXD7", GPIO_PORT_E,  7, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXD0", GPIO_PORT_E,  8, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXD1", GPIO_PORT_E,  9, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXD2", GPIO_PORT_E, 10, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXD3", GPIO_PORT_E, 11, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXD4", GPIO_PORT_E, 12, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXD5", GPIO_PORT_E, 13, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXD6", GPIO_PORT_E, 14, GPIO_MODE_ALT, 4),
+				PIN("GMII_RXD7", GPIO_PORT_E, 15, GPIO_MODE_ALT, 4),
+			},
+			.clocks = {
+				VAL("", "CLK_ETH"),
+			},
+			.misc = {
+				VAL("PHY_ADDR", 0),
+				VAL("MEDIA_TYPE", GMII),
+			}
+		},
+	},
+};
+
+struct can_conf cans[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "CAN0",
+		.dev = {
+			.name = "CAN0",
+			.regs = {
+				REGMAP("BASE", (CANFD0_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_CANFD01),
+			},
+			.pins = {
+				PIN("CAN_RX", GPIO_PORT_A, 0, GPIO_MODE_ALT, 3),
+				PIN("CAN_TX", GPIO_PORT_A, 1, GPIO_MODE_ALT, 3),
+				// PIN("CAN_RX", GPIO_PORT_D, 8, GPIO_MODE_ALT, 1),
+				// PIN("CAN_TX", GPIO_PORT_D, 9, GPIO_MODE_ALT, 1),
+
+			},
+			.clocks = {
+				VAL("", "CLK_CAN0"),
+			},
+		},
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "CAN1",
+		.dev = {
+			.name = "CAN1",
+			.regs = {
+				REGMAP("BASE", (CANFD1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_CANFD1),
+			},
+			.pins = {
+				PIN("CAN_RX", GPIO_PORT_A, 2, GPIO_MODE_ALT, 3),
+				PIN("CAN_TX", GPIO_PORT_A, 3, GPIO_MODE_ALT, 3),
+				// PIN("CAN_RX", GPIO_PORT_D, 10, GPIO_MODE_ALT, 1),
+				// PIN("CAN_TX", GPIO_PORT_D, 1, GPIO_MODE_ALT, 1),
+
+			},
+			.clocks = {
+				VAL("", "CLK_CAN1"),
+			},
+		},
+	},
+	[2] = {
+		.status = ENABLED,
+		.name = "CAN2",
+		.dev = {
+			.name = "CAN2",
+			.regs = {
+				REGMAP("BASE", (CANFD2_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_CANFD2),
+			},
+			.pins = {
+				PIN("CAN_RX", GPIO_PORT_A, 4, GPIO_MODE_ALT, 3),
+				PIN("CAN_TX", GPIO_PORT_A, 5, GPIO_MODE_ALT, 3),
+				// PIN("CAN_RX", GPIO_PORT_D, 12, GPIO_MODE_ALT, 1),
+				// PIN("CAN_TX", GPIO_PORT_D, 13, GPIO_MODE_ALT, 1),
+
+			},
+			.clocks = {
+				VAL("", "CLK_CAN2"),
+			},
+		},
+	},
+	[3] = {
+		.status = ENABLED,
+		.name = "CAN3",
+		.dev = {
+			.name = "CAN3",
+			.regs = {
+				REGMAP("BASE", (CANFD3_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_CANFD3),
+			},
+			.pins = {
+				PIN("CAN_RX", GPIO_PORT_A, 6, GPIO_MODE_ALT, 3),
+				PIN("CAN_TX", GPIO_PORT_A, 7, GPIO_MODE_ALT, 3),
+				// PIN("CAN_RX", GPIO_PORT_D, 14, GPIO_MODE_ALT, 1),
+				// PIN("CAN_TX", GPIO_PORT_D, 15, GPIO_MODE_ALT, 1),
+
+			},
+			.clocks = {
+				VAL("", "CLK_CAN1"),
+			},
+		},
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds),
+					PWM(pwms), SPI(spis), I2C(i2cs), ETH(eths), CAN(cans))
