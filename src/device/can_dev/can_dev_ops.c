@@ -24,7 +24,7 @@ static int can_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 
 	can = (struct can_dev *)cdev;
 
-	err = can->ops->open(can);
+	err = can->ops->co_open(can);
 	if (err) {
 		return err;
 	}
@@ -42,7 +42,7 @@ static void can_dev_close(struct char_dev *cdev) {
 
 	can_rx_stop(can);
 
-	can->ops->close(can);
+	can->ops->co_close(can);
 
 	while ((msg = can_msg_queue_pop(can))) {
 		can_msg_free(can, msg);
@@ -90,7 +90,7 @@ static ssize_t can_dev_write(struct char_dev *cdev, const void *buf,
 		return -EINVAL;
 	}
 
-	err = can->ops->send(can, buf);
+	err = can->ops->co_send(can, buf);
 	if (err) {
 		return err;
 	}

@@ -57,14 +57,14 @@ void can_msg_free(struct can_dev *can, struct can_msg *msg) {
 }
 
 void can_rx_start(struct can_dev *can) {
-	if (can->ops->rxint) {
-		can->ops->rxint(can, 1);
+	if (can->ops->co_rxint) {
+		can->ops->co_rxint(can, 1);
 	}
 }
 
 void can_rx_stop(struct can_dev *can) {
-	if (can->ops->rxint) {
-		can->ops->rxint(can, 0);
+	if (can->ops->co_rxint) {
+		can->ops->co_rxint(can, 0);
 	}
 }
 

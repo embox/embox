@@ -58,11 +58,11 @@ struct can_dev {
 };
 
 struct can_ops {
-	void (*reset)(struct can_dev *can);
-	int (*open)(struct can_dev *can);
-	void (*close)(struct can_dev *can);
-	void (*rxint)(struct can_dev *can, int enable);
-	int (*send)(struct can_dev *can, const void *frame);
+	void (*co_reset)(struct can_dev *can);
+	int (*co_open)(struct can_dev *can);
+	void (*co_close)(struct can_dev *can);
+	void (*co_rxint)(struct can_dev *can, int enable);
+	int (*co_send)(struct can_dev *can, const void *frame);
 };
 
 struct can_msg {

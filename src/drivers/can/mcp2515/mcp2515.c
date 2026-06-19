@@ -231,11 +231,11 @@ static int mcp2515_send(struct can_dev *can, const void *data) {
 }
 
 static const struct can_ops mcp2515_can_ops = {
-    .reset = mcp2515_reset,
-    .open = mcp2515_open,
-    .close = mcp2515_close,
-    .rxint = mcp2515_rxint,
-    .send = mcp2515_send,
+    .co_reset = mcp2515_reset,
+    .co_open = mcp2515_open,
+    .co_close = mcp2515_close,
+    .co_rxint = mcp2515_rxint,
+    .co_send = mcp2515_send,
 };
 
 CAN_DEVICE_DEF(mcp2515_can_dev, &mcp2515_can_ops, NULL, CAN_DEV_ID);
@@ -292,7 +292,7 @@ static int mcp2515_receive(struct can_frame *frame) {
 
 static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
 	log_error("irq happened");
-	
+
 	(void)mcp2515_receive;
 
 	return 0;
