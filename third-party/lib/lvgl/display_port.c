@@ -21,6 +21,14 @@ uint8_t *lv_fbp = NULL;
 struct fb_var_screeninfo lv_vinfo;
 struct fb_fix_screeninfo lv_finfo;
 
+int lvgl_port_fbdev_width(void) {
+	return lv_vinfo.xres;
+}
+
+int lvgl_port_fbdev_height(void) {
+	return lv_vinfo.yres;
+}
+
 int lvgl_port_fbdev_init(const char *fb_path) {
 	int fbfd;
 	size_t fb_size;

@@ -12,6 +12,8 @@
 
 /* Display */
 extern int lvgl_port_fbdev_init(const char *fb_path);
+extern int lvgl_port_fbdev_width(void);
+extern int lvgl_port_fbdev_height(void);
 extern void lvgl_port_fbdev_flush(lv_display_t *disp, const lv_area_t *area,
         uint8_t *px_map);
 

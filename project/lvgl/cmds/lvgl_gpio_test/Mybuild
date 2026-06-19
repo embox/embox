@@ -12,3 +12,14 @@ module lvgl_gpio_test {
 	@NoRuntime depends third_party.lib.lvgl_display_port_api
 }
 
+@AutoCmd
+@Cmd(name="lvgl_gpio_test", help="LVGL GPIO test stm32f429i (v9)", man="")
+@BuildDepends(third_party.lib.lvgl)
+@BuildDepends(third_party.lib.lvgl_display_port_api)
+module lvgl_gpio_test_v9 {
+	@IncludePath("$(CONF_DIR)")
+	source "lvgl_gpio_test_v9.c"
+
+	@NoRuntime depends third_party.lib.lvgl
+	@NoRuntime depends third_party.lib.lvgl_display_port_api
+}

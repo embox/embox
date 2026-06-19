@@ -70,7 +70,7 @@ static int hal_init(void) {
 		fprintf(stderr, "Failed to init framebuffer %s\n", fb_path);
 		return -1;
 	}
-	disp = lv_display_create(640, 480);
+	disp = lv_display_create(lvgl_port_fbdev_width(), lvgl_port_fbdev_height());
 
 	int32_t hor = lv_display_get_horizontal_resolution(disp);
 	int32_t ver = lv_display_get_vertical_resolution(disp);
