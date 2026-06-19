@@ -39,6 +39,6 @@ static const struct char_dev_ops urandom_cdev_ops = {
 };
 
 static struct char_dev urandom_cdev = CHAR_DEV_INIT(urandom_cdev, "urandom",
-    &urandom_cdev_ops);
+    &urandom_cdev_ops, 0);
 
 CHAR_DEV_REGISTER(&urandom_cdev);
