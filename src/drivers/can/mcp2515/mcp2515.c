@@ -27,6 +27,14 @@
 #define SPI_BUS    OPTION_GET(NUMBER, spi_bus)
 #define SPI_CS     OPTION_GET(NUMBER, spi_cs)
 
+#define PIN_INT_PORT    OPTION_GET(NUMBER, pin_int_port)
+
+#if PIN_INT_PORT != 0xFF
+#include <drivers/gpio.h>
+
+#define PIN_INT_NUM     OPTION_GET(NUMBER, pin_int_num)
+#endif
+
 #define MCP2515_PROPSEG  OPTION_GET(NUMBER, propseg)
 #define MCP2515_PHSEG1   OPTION_GET(NUMBER, phseg1)
 #define MCP2515_PHSEG2   OPTION_GET(NUMBER, phseg2)
@@ -219,6 +227,13 @@ CAN_DEVICE_DEF(mcp2515_can_dev, &mcp2515_can_ops, NULL, CAN_DEV_ID);
 
 EMBOX_UNIT_INIT(mcp2515_init);
 
+#if PIN_INT_PORT != 0xFF
+static int mcp2515_pin_irq_hnd(unsigned int irq_nr, void *data) {
+	log_error("irq happened");
+	return 0;
+}
+#endif
+
 static int mcp2515_init(void) {
 	uint8_t reg;
 
@@ -235,5 +250,8 @@ static int mcp2515_init(void) {
 		log_error("Invalid CANCTRL value");
 	}
 
+#if PIN_INT_PORT != 0xFF
+	gpio_irq_attach(PIN_INT_PORT, 1 << PIN_INT_PORT, mcp2515_pin_irq_hnd,  &mcp2515_can_dev);
+#endif
 	return 0;
 }

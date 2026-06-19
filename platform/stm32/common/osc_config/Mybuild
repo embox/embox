@@ -1,5 +1,6 @@
 package platform.stm32
 
+@DefaultImpl(stm32cube_osc_config_hal)
 abstract module osc_config {
 }
 
