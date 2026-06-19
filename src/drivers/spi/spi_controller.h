@@ -14,10 +14,8 @@
 #include <stdint.h>
 
 #include <drivers/char_dev.h>
-
 #include <lib/libds/array_spread.h>
 #include <util/macro.h>
-
 
 struct spi_controller_ops;
 struct spi_device;
@@ -59,17 +57,18 @@ extern int spi_controller_id(struct spi_controller *dev);
 
 extern const struct char_dev_ops __spi_cdev_ops;
 
- #define SPI_CONTROLLER_DEF(name, ops, dev_priv, idx, pins)         \
- 	struct spi_controller MACRO_CONCAT(spi_controller, idx) = {           \
-		.cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_controller, idx).cdev, \
-			MACRO_STRING(name), &__spi_cdev_ops),             \
-		.spic_ops = ops,                                          \
-		.spic_priv = dev_priv,                                         \
-		.spic_bus_num = idx,                                      \
-		.spic_pins = NULL,                                      \
- 	};                                                            \
+#define SPI_CONTROLLER_DEF(name, ops, dev_priv, idx, pins)                    \
+	struct spi_controller MACRO_CONCAT(spi_controller, idx) = {               \
+	    .cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_controller, idx).cdev,         \
+	        MACRO_STRING(name), &__spi_cdev_ops, CHAR_DEV_TYPE_SPI),          \
+	    .spic_ops = ops,                                                      \
+	    .spic_priv = dev_priv,                                                \
+	    .spic_bus_num = idx,                                                  \
+	    .spic_pins = NULL,                                                    \
+	};                                                                        \
 	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_controller, idx)); \
-	ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry);       \
-	ARRAY_SPREAD_ADD(__spi_controller_registry, &MACRO_CONCAT(spi_controller, idx))
+	ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry); \
+	ARRAY_SPREAD_ADD(__spi_controller_registry,                               \
+	    &MACRO_CONCAT(spi_controller, idx))
 
 #endif /* DRIVERS_SPI_CONTROLLER_H_ */
