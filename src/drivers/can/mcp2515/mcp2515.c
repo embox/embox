@@ -14,26 +14,22 @@
 
 #include <drivers/can_dev.h>
 #include <drivers/char_dev.h>
+#include <drivers/gpio.h>
 #include <drivers/spi.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
-#include <kernel/irq.h>
 #include <util/field.h>
 #include <util/log.h>
 
 #include "mcp2515.h"
 
 #define CAN_DEV_ID OPTION_GET(NUMBER, dev_id)
-#define SPI_BUS    OPTION_GET(NUMBER, spi_bus)
-#define SPI_CS     OPTION_GET(NUMBER, spi_cs)
 
-#define PIN_INT_PORT    OPTION_GET(NUMBER, pin_int_port)
+#define SPI_BUS OPTION_GET(NUMBER, spi_bus)
+#define SPI_CS  OPTION_GET(NUMBER, spi_cs)
 
-#if PIN_INT_PORT != 0xFF
-#include <drivers/gpio.h>
-
-#define PIN_INT_NUM     OPTION_GET(NUMBER, pin_int_num)
-#endif
+#define GPIO_IRQ_PORT OPTION_GET(NUMBER, gpio_irq_port)
+#define GPIO_IRQ_PIN  OPTION_GET(NUMBER, gpio_irq_pin)
 
 #define MCP2515_PROPSEG  OPTION_GET(NUMBER, propseg)
 #define MCP2515_PHSEG1   OPTION_GET(NUMBER, phseg1)
@@ -53,11 +49,7 @@
 /* CANCTRL register value after reset */
 #define MCP2515_CANCTRL_DEFAULT 0x87
 
-#define TXB_BUF_SIZE 14
-
 static struct spi_device *spi_bus_dev;
-
-static uint8_t spi_txbuf[TXB_BUF_SIZE];
 
 static void mcp2515_cmd(uint8_t cmd) {
 	uint8_t ibuf[4];
@@ -67,26 +59,39 @@ static void mcp2515_cmd(uint8_t cmd) {
 	spi_transfer(spi_bus_dev, ibuf, NULL, 1);
 }
 
-static void mcp2515_reg_store(uint8_t reg, uint8_t val) {
-	uint8_t ibuf[4];
+static void mcp2515_regs_store(uint8_t addr, uint8_t *buf, size_t len) {
+	uint8_t ibuf[16];
 
 	ibuf[0] = MCP2515_WRITE;
-	ibuf[1] = reg;
-	ibuf[2] = val;
+	ibuf[1] = addr;
 
-	spi_transfer(spi_bus_dev, ibuf, NULL, 3);
+	memcpy(ibuf + 2, buf, len);
+
+	spi_transfer(spi_bus_dev, ibuf, NULL, len + 2);
 }
 
-static uint8_t mcp2515_reg_load(uint8_t reg) {
+static void mcp2515_regs_load(uint8_t addr, uint8_t *buf, size_t len) {
+	uint8_t obuf[16];
 	uint8_t ibuf[4];
-	uint8_t obuf[4];
 
 	ibuf[0] = MCP2515_READ;
-	ibuf[1] = reg;
+	ibuf[1] = addr;
 
-	spi_transfer(spi_bus_dev, ibuf, obuf, 3);
+	spi_transfer(spi_bus_dev, ibuf, obuf, len + 2);
 
-	return obuf[2];
+	memcpy(buf, obuf + 2, len);
+}
+
+static void mcp2515_reg_store(uint8_t addr, uint8_t val) {
+	mcp2515_regs_store(addr, &val, 1);
+}
+
+static uint8_t mcp2515_reg_load(uint8_t addr) {
+	uint8_t val;
+
+	mcp2515_regs_load(addr, &val, 1);
+
+	return val;
 }
 
 static inline void mcp2515_reg_orin(unsigned int reg, uint8_t mask) {
@@ -126,12 +131,12 @@ static void mcp2515_reset(struct can_dev *can) {
 	mcp2515_reg_store(MCP2515_CNF3, reg);
 
 	reg = mcp2515_reg_load(MCP2515_RXB0CTRL);
-	reg = FIELD_SET(reg, MCP2515_RXBnCTRL_RXM, MCP2515_RXBnCTRL_RXM_VALID);
-	reg |= MCP2515_RXBnCTRL_BUKT;
+	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
+	reg |= MCP2515_RXB_CTRL_BUKT;
 	mcp2515_reg_store(MCP2515_RXB0CTRL, reg);
 
 	reg = mcp2515_reg_load(MCP2515_RXB1CTRL);
-	reg = FIELD_SET(reg, MCP2515_RXBnCTRL_RXM, MCP2515_RXBnCTRL_RXM_VALID);
+	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
 	mcp2515_reg_store(MCP2515_RXB1CTRL, reg);
 
 	mcp2515_reg_store(MCP2515_RXM0SIDH, 0);
@@ -144,30 +149,35 @@ static void mcp2515_reset(struct can_dev *can) {
 	mcp2515_reg_store(MCP2515_RXM1EID8, 0);
 	mcp2515_reg_store(MCP2515_RXM1EID0, 0);
 
-	mcp2515_reg_orin(MCP2515_RXM0SIDL, MCP2515_RXFnSIDL_EXIDE);
-	mcp2515_reg_orin(MCP2515_RXM1SIDL, MCP2515_RXFnSIDL_EXIDE);
-}
-
-static int mcp2515_open(struct can_dev *can) {
-	uint8_t reg;
+	mcp2515_reg_orin(MCP2515_RXM0SIDL, MCP2515_RXB_SIDL_EXIDE);
+	mcp2515_reg_orin(MCP2515_RXM1SIDL, MCP2515_RXB_SIDL_EXIDE);
 
 	/* Enable normal mode */
 	reg = mcp2515_reg_load(MCP2515_CANCTRL);
 	reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_NORM);
 	mcp2515_reg_store(MCP2515_CANCTRL, reg);
+}
 
-	usleep(1000);
+static int mcp2515_open(struct can_dev *can) {
+	// uint8_t reg;
+
+	// /* Enable normal mode */
+	// reg = mcp2515_reg_load(MCP2515_CANCTRL);
+	// reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_NORM);
+	// mcp2515_reg_store(MCP2515_CANCTRL, reg);
+
+	// usleep(1000);
 
 	return 0;
 }
 
 static void mcp2515_close(struct can_dev *can) {
-	uint8_t reg;
+	// uint8_t reg;
 
-	/* Enable sleep mode */
-	reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_SLEEP);
-	mcp2515_reg_store(MCP2515_CANCTRL, reg);
+	// /* Enable sleep mode */
+	// reg = mcp2515_reg_load(MCP2515_CANCTRL);
+	// reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_SLEEP);
+	// mcp2515_reg_store(MCP2515_CANCTRL, reg);
 }
 
 static void mcp2515_rxint(struct can_dev *can, int enable) {
@@ -183,34 +193,39 @@ static void mcp2515_rxint(struct can_dev *can, int enable) {
 
 static int mcp2515_send(struct can_dev *can, const void *data) {
 	const struct can_frame *frame;
-	// int i;
+	uint8_t frame_len;
+	uint8_t txbuf[MCP2515_TXB_SIZE];
 
 	frame = (const struct can_frame *)data;
+	frame_len = frame->len;
+	if (frame_len > 8) {
+		frame_len = 8;
+	}
 
-	spi_txbuf[MCP2515_TXB_CTRL] = MCP2515_LOAD_TX0;
-	spi_txbuf[MCP2515_TXB_DLC] = frame->len;
+	txbuf[MCP2515_TXB_CTRL] = 0;
+	txbuf[MCP2515_TXB_DLC] = frame_len;
 
 	if (frame->can_id & CAN_RTR_FLAG) {
-		spi_txbuf[MCP2515_TXB_DLC] |= MCP2515_TXB_DLC_RTR;
+		txbuf[MCP2515_TXB_DLC] |= MCP2515_TXB_DLC_RTR;
 	}
 
 	if (frame->can_id & CAN_EFF_FLAG) {
-		spi_txbuf[MCP2515_TXB_EID0] = (frame->can_id & 0xff);
-		spi_txbuf[MCP2515_TXB_EID8] = (frame->can_id & 0xff00) >> 8;
-		spi_txbuf[MCP2515_TXB_SIDL] = (frame->can_id & 0x30000) >> 16;
-		spi_txbuf[MCP2515_TXB_SIDL] |= (frame->can_id & 0x1c0000) >> 13;
-		spi_txbuf[MCP2515_TXB_SIDL] |= MCP2515_RXFnSIDL_EXIDE;
-		spi_txbuf[MCP2515_TXB_SIDH] = (frame->can_id & 0x1fe00000) >> 21;
+		txbuf[MCP2515_TXB_EID0] = (frame->can_id & 0xff);
+		txbuf[MCP2515_TXB_EID8] = (frame->can_id & 0xff00) >> 8;
+		txbuf[MCP2515_TXB_SIDH] = (frame->can_id & 0x1fe00000) >> 21;
+		txbuf[MCP2515_TXB_SIDL] = (frame->can_id & 0x30000) >> 16;
+		txbuf[MCP2515_TXB_SIDL] |= (frame->can_id & 0x1c0000) >> 13;
+		txbuf[MCP2515_TXB_SIDL] |= MCP2515_TXB_SIDL_EXIDE;
 	}
 	else {
-		spi_txbuf[MCP2515_TXB_SIDL] = (frame->can_id & 0x007) << 5;
-		spi_txbuf[MCP2515_TXB_SIDH] = (frame->can_id & 0x7f8) >> 3;
+		txbuf[MCP2515_TXB_SIDH] = (frame->can_id & 0x7f8) >> 3;
+		txbuf[MCP2515_TXB_SIDL] = (frame->can_id & 0x007) << 5;
 	}
 
-	memcpy(&spi_txbuf[MCP2515_TXB_DATA], frame->data, frame->len);
+	memcpy(&txbuf[MCP2515_TXB_DATA], frame->data, frame_len);
 
-	spi_transfer(spi_bus_dev, spi_txbuf, NULL, TXB_BUF_SIZE);
-	mcp2515_cmd(MCP2515_RTS_TX0);
+	mcp2515_regs_store(MCP2515_TXB0CTRL, txbuf, MCP2515_TXB_SIZE);
+	mcp2515_reg_store(MCP2515_TXB0CTRL, MCP2515_TXB_CTRL_TXREQ);
 
 	return 0;
 }
@@ -225,14 +240,65 @@ static const struct can_ops mcp2515_can_ops = {
 
 CAN_DEVICE_DEF(mcp2515_can_dev, &mcp2515_can_ops, NULL, CAN_DEV_ID);
 
-EMBOX_UNIT_INIT(mcp2515_init);
+static int mcp2515_receive(struct can_frame *frame) {
+	uint8_t rxbuf[MCP2515_RXB_SIZE];
+	uint8_t rxbuf_addr;
+	uint8_t canintf;
+	canid_t can_id;
 
-#if PIN_INT_PORT != 0xFF
-static int mcp2515_pin_irq_hnd(unsigned int irq_nr, void *data) {
-	log_error("irq happened");
+	can_id = 0;
+
+	canintf = mcp2515_reg_load(MCP2515_CANINTF);
+	if (canintf & MCP2515_CANINTF_RX0) {
+		rxbuf_addr = MCP2515_RXB0CTRL;
+	}
+	else if (canintf & MCP2515_CANINTF_RX1) {
+		rxbuf_addr = MCP2515_RXB1CTRL;
+	}
+	else {
+		return -1;
+	}
+
+	mcp2515_regs_load(rxbuf_addr, rxbuf, MCP2515_RXB_SIZE);
+
+	frame->len = rxbuf[MCP2515_RXB_DLC] & 0xf;
+	if (frame->len > 8) {
+		frame->len = 8;
+	}
+
+	if (rxbuf[MCP2515_RXB_SIDL] & MCP2515_RXB_SIDL_EXIDE) {
+		can_id |= rxbuf[MCP2515_RXB_EID0];
+		can_id |= rxbuf[MCP2515_RXB_EID8] << 8;
+		can_id |= rxbuf[MCP2515_RXB_SIDH] << 21;
+		can_id |= FIELD_GET(rxbuf[MCP2515_RXB_SIDL], MCP2515_RXB_SIDL_EID) << 16;
+		can_id |= FIELD_GET(rxbuf[MCP2515_RXB_SIDL], MCP2515_RXB_SIDL_SID) << 18;
+		can_id |= CAN_EFF_FLAG;
+	}
+	else {
+		can_id |= rxbuf[MCP2515_RXB_SIDH] << 3;
+		can_id |= rxbuf[MCP2515_RXB_SIDL] >> 5;
+	}
+
+	if (rxbuf[MCP2515_RXB_CTRL] & MCP2515_RXB_CTRL_RXRTR) {
+		can_id |= CAN_RTR_FLAG;
+	}
+
+	frame->can_id = can_id;
+
+	memcpy(frame->data, &rxbuf[MCP2515_RXB_DATA], frame->len);
+
 	return 0;
 }
-#endif
+
+static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
+	log_error("irq happened");
+	
+	(void)mcp2515_receive;
+
+	return 0;
+}
+
+EMBOX_UNIT_INIT(mcp2515_init);
 
 static int mcp2515_init(void) {
 	uint8_t reg;
@@ -248,10 +314,9 @@ static int mcp2515_init(void) {
 	reg = mcp2515_reg_load(MCP2515_CANCTRL);
 	if (reg != MCP2515_CANCTRL_DEFAULT) {
 		log_error("Invalid CANCTRL value");
+		return -1;
 	}
 
-#if PIN_INT_PORT != 0xFF
-	gpio_irq_attach(PIN_INT_PORT, 1 << PIN_INT_PORT, mcp2515_pin_irq_hnd,  &mcp2515_can_dev);
-#endif
-	return 0;
+	return gpio_irq_attach(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN,
+	    mcp2515_irq_handler, &mcp2515_can_dev);
 }

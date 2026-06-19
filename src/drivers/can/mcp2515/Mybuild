@@ -4,11 +4,12 @@ module mcp2515 {
 	option string log_level="LOG_WARNING"
 
 	option number dev_id=0
+
 	option number spi_bus=1
 	option number spi_cs=0
 
-	option number pin_int_port = 0xFF
-	option number pin_int_num = 0xFF
+	option number gpio_irq_port=0xff
+	option number gpio_irq_pin=0
 
 	option number propseg=1
 	option number phseg1=3
@@ -20,4 +21,5 @@ module mcp2515 {
 
 	depends embox.driver.spi.core
 	@NoRuntime depends embox.device.can_dev
+	@NoRuntime depends embox.driver.gpio.core
 }
