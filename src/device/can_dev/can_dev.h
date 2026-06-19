@@ -90,4 +90,10 @@ extern void can_rx_start(struct can_dev *can);
 extern void can_rx_stop(struct can_dev *can);
 extern void can_rx_notify(struct can_dev *can);
 
+/* clang-format off */
+#define can_dev_foreach(dev_ptr) \
+	char_dev_foreach((struct char_dev *)dev_ptr) \
+		if (((struct char_dev *)dev_ptr)->type == CHAR_DEV_TYPE_CAN)
+/* clang-format on */
+
 #endif /* DEVICE_CAN_DEV_H_ */
