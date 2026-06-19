@@ -38,17 +38,17 @@
 #include "etnaviv_gem.h"
 #include "etnaviv_gpu.h"
 
-#define VERSION_NAME            "etnaviv"
-#define VERSION_NAME_LEN        9
-#define VERSION_DATE            "7 Dec 2017"
-#define VERSION_DATE_LEN        10
-#define VERSION_DESC            "DEADBEEF"
-#define VERSION_DESC_LEN        8
+#define VERSION_NAME     "etnaviv"
+#define VERSION_NAME_LEN 9
+#define VERSION_DATE     "7 Dec 2017"
+#define VERSION_DATE_LEN 10
+#define VERSION_DESC     "DEADBEEF"
+#define VERSION_DESC_LEN 8
 
 /* Interrupt numbers */
-#define GPU3D_IRQ               OPTION_GET(NUMBER, gpu3d_irq)
-#define R2D_GPU2D_IRQ           OPTION_GET(NUMBER, r2d_gpu2d_irq)
-#define V2D_GPU2D_IRQ           OPTION_GET(NUMBER, v2d_gpu2d_irq)
+#define GPU3D_IRQ     OPTION_GET(NUMBER, gpu3d_irq)
+#define R2D_GPU2D_IRQ OPTION_GET(NUMBER, r2d_gpu2d_irq)
+#define V2D_GPU2D_IRQ OPTION_GET(NUMBER, v2d_gpu2d_irq)
 
 #define ETNA_UNCACHED_BUFFER_SZ (16 * 1024 * 1024)
 
@@ -77,8 +77,7 @@ int etnaviv_ioctl_gem_new(struct drm_device *dev, void *data,
 	struct drm_etnaviv_gem_new *args = data;
 
 	if (args->flags
-	    & ~(ETNA_BO_CACHED | ETNA_BO_WC | ETNA_BO_UNCACHED
-	        | ETNA_BO_FORCE_MMU)) {
+	    & ~(ETNA_BO_CACHED | ETNA_BO_WC | ETNA_BO_UNCACHED | ETNA_BO_FORCE_MMU)) {
 		log_error("unsupported flags");
 	}
 
@@ -164,8 +163,7 @@ static irq_return_t etna_irq_handler(unsigned int irq, void *data) {
 		if (intr & VIVS_HI_INTR_ACKNOWLEDGE_MMU_EXCEPTION) {
 			int i;
 
-			log_error("MMU fault status 0x%08x",
-			    gpu_read(gpu, VIVS_MMUv2_STATUS));
+			log_error("MMU fault status 0x%08x", gpu_read(gpu, VIVS_MMUv2_STATUS));
 			for (i = 0; i < 4; i++) {
 				log_error("MMU %d fault addr 0x%08x\n", i,
 				    gpu_read(gpu, VIVS_MMUv2_EXCEPTION_ADDR(i)));
@@ -224,8 +222,7 @@ static int etnaviv_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	}
 
 	if ((err = vmem_set_flags(vmem_current_context(),
-	         (mmu_vaddr_t)etnaviv_uncached_buffer,
-	         sizeof(etnaviv_uncached_buffer),
+	         (mmu_vaddr_t)etnaviv_uncached_buffer, sizeof(etnaviv_uncached_buffer),
 	         PROT_WRITE | PROT_READ | PROT_NOCACHE))) {
 		log_error("Failed to set page attributes! Error %d", err);
 
@@ -261,8 +258,7 @@ int etnaviv_dmp(int id) {
 	return 0;
 }
 
-static int etnaviv_dev_idesc_ioctl(struct char_dev *cdev, int request,
-    void *data) {
+static int etnaviv_dev_idesc_ioctl(struct char_dev *cdev, int request, void *data) {
 	drm_version_t *version;
 	int nr = _IOC_NR(request);
 	struct drm_device *dev = &etnaviv_drm_device;
@@ -293,8 +289,7 @@ static int etnaviv_dev_idesc_ioctl(struct char_dev *cdev, int request,
 
 		break;
 	case DRM_COMMAND_BASE + DRM_ETNAVIV_GET_PARAM:
-		res = etnaviv_gpu_get_param(&etnaviv_gpus[pipe], args->param,
-		    &args->value);
+		res = etnaviv_gpu_get_param(&etnaviv_gpus[pipe], args->param, &args->value);
 		break;
 	case DRM_COMMAND_BASE + DRM_ETNAVIV_GEM_NEW:
 		res = etnaviv_ioctl_gem_new(dev, data, file);
@@ -365,7 +360,7 @@ static struct char_dev_ops etnaviv_dev_ops = {
 };
 
 static struct char_dev etnaviv_dev = CHAR_DEV_INIT(etnaviv_dev, "card",
-    &etnaviv_dev_ops);
+    &etnaviv_dev_ops, 0);
 
 CHAR_DEV_REGISTER(&etnaviv_dev);
 
