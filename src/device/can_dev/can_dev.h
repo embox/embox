@@ -24,17 +24,18 @@
 #define CAN_FRAME_POOL_SIZE \
 	OPTION_MODULE_GET(embox__device__can_dev, NUMBER, frame_pool_size)
 
-#define __CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id, _mtu)                 \
-	static struct can_dev _name = {                                         \
-	    .cdev = CHAR_DEV_INIT(_name.cdev,                                   \
-	        MACRO_STRING(MACRO_CONCAT(can, _dev_id)), &__can_char_dev_ops), \
-	    .mutex = MUTEX_INIT(_name.mutex),                                   \
-	    .rx_queue = LIST_HEAD_INIT(_name.rx_queue),                         \
-	    .msg_pool = &MACRO_CONCAT(_name, _pool),                            \
-	    .mtu = _mtu,                                                        \
-	    .ops = _ops,                                                        \
-	    .priv = _priv,                                                      \
-	};                                                                      \
+#define __CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id, _mtu)                \
+	static struct can_dev _name = {                                        \
+	    .cdev = CHAR_DEV_INIT(_name.cdev,                                  \
+	        MACRO_STRING(MACRO_CONCAT(can, _dev_id)), &__can_char_dev_ops, \
+	        CHAR_DEV_TYPE_CAN),                                            \
+	    .mutex = MUTEX_INIT(_name.mutex),                                  \
+	    .rx_queue = LIST_HEAD_INIT(_name.rx_queue),                        \
+	    .msg_pool = &MACRO_CONCAT(_name, _pool),                           \
+	    .mtu = _mtu,                                                       \
+	    .ops = _ops,                                                       \
+	    .priv = _priv,                                                     \
+	};                                                                     \
 	CHAR_DEV_REGISTER((struct char_dev *)&_name)
 
 #define CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id)                            \
