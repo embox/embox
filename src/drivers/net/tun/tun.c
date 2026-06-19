@@ -194,7 +194,7 @@ static const struct char_dev_ops tun_dev_ops = {
 };
 
 static struct tun_dev tun_dev = {
-    .cdev = CHAR_DEV_INIT(tun_dev.cdev, "tun0", &tun_dev_ops),
+    .cdev = CHAR_DEV_INIT(tun_dev.cdev, "tun0", &tun_dev_ops, 0),
 };
 
 CHAR_DEV_REGISTER((struct char_dev *)&tun_dev);
