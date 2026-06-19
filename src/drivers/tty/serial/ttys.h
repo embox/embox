@@ -22,7 +22,7 @@
 	ARRAY_SPREAD_ADD(__uart_device_registry, _uart_ptr);                    \
 	static struct serial_dev __TTYS_NAME(_name) = {                         \
 	    .cdev = CHAR_DEV_INIT(__TTYS_NAME(_name).cdev, MACRO_STRING(_name), \
-	        serial_dev_get_ops()),                                          \
+	        serial_dev_get_ops(), 0),                                       \
 	    .uart = _uart_ptr,                                                  \
 	};                                                                      \
 	CHAR_DEV_REGISTER((struct char_dev *)&__TTYS_NAME(_name))
