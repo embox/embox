@@ -17,12 +17,17 @@
 
 #include <config/embox/device/char_dev.h>
 
-#define CHAR_DEV_INIT(_self, _name, _ops)         \
+#define CHAR_DEV_TYPE_NONE 0
+#define CHAR_DEV_TYPE_SPI  1
+#define CHAR_DEV_TYPE_CAN  2
+
+#define CHAR_DEV_INIT(_self, _name, _ops, _type)  \
 	((struct char_dev){                           \
 	    .list_item = DLIST_INIT(_self.list_item), \
 	    .waitq = WAITQ_INIT(_self.waitq),         \
 	    .usage_count = 0,                         \
 	    .ops = _ops,                              \
+	    .type = _type,                            \
 	    .name = _name,                            \
 	})
 
@@ -48,6 +53,7 @@ struct char_dev {
 	struct dlist_head list_item;
 	struct waitq waitq;
 	int usage_count;
+	int type;
 	char name[NAME_MAX];
 };
 
