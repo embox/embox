@@ -94,6 +94,17 @@ static uint8_t mcp2515_reg_load(uint8_t addr) {
 	return val;
 }
 
+static void mcp2515_reg_modify(uint8_t addr, uint8_t mask, uint8_t val) {
+	uint8_t ibuf[4];
+
+	ibuf[0] = MCP2515_BITMOD;
+	ibuf[1] = addr;
+	ibuf[2] = mask;
+	ibuf[3] = val;
+
+	spi_transfer(spi_bus_dev, ibuf, NULL, 4);
+}
+
 static inline void mcp2515_reg_orin(unsigned int reg, uint8_t mask) {
 	return mcp2515_reg_store(reg, mcp2515_reg_load(reg) | mask);
 }
@@ -112,7 +123,7 @@ static void mcp2515_reset(struct can_dev *can) {
 	mcp2515_cmd(MCP2515_RESET);
 
 	/* Wait for mcp2515 to restart */
-	usleep(10000);
+	usleep(2000);
 
 	reg = mcp2515_reg_load(MCP2515_CNF1);
 	reg = FIELD_SET(reg, MCP2515_CNF1_BRP, MCP2515_BRP - 1);
@@ -149,8 +160,10 @@ static void mcp2515_reset(struct can_dev *can) {
 	mcp2515_reg_store(MCP2515_RXM1EID8, 0);
 	mcp2515_reg_store(MCP2515_RXM1EID0, 0);
 
-	mcp2515_reg_orin(MCP2515_RXM0SIDL, MCP2515_RXB_SIDL_EXIDE);
-	mcp2515_reg_orin(MCP2515_RXM1SIDL, MCP2515_RXB_SIDL_EXIDE);
+	mcp2515_reg_modify(MCP2515_RXM0SIDL, MCP2515_RXB_SIDL_EXIDE,
+	    MCP2515_RXB_SIDL_EXIDE);
+	mcp2515_reg_modify(MCP2515_RXM1SIDL, MCP2515_RXB_SIDL_EXIDE,
+	    MCP2515_RXB_SIDL_EXIDE);
 
 	/* Enable normal mode */
 	reg = mcp2515_reg_load(MCP2515_CANCTRL);
@@ -159,35 +172,47 @@ static void mcp2515_reset(struct can_dev *can) {
 }
 
 static int mcp2515_open(struct can_dev *can) {
-	// uint8_t reg;
+	uint8_t reg;
 
-	// /* Enable normal mode */
-	// reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	// reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_NORM);
-	// mcp2515_reg_store(MCP2515_CANCTRL, reg);
+	reg = mcp2515_reg_load(MCP2515_CANCTRL);
+	if (FIELD_GET(reg, MCP2515_CANCTRL_REQOP) == MCP2515_CANCTRL_REQOP_SLEEP) {
+		/* Generate wake-up interrupt */
+		mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK,
+		    MCP2515_CANINTF_WAK);
+		mcp2515_reg_modify(MCP2515_CANINTF, MCP2515_CANINTF_WAK,
+		    MCP2515_CANINTF_WAK);
 
-	// usleep(1000);
+		while (mcp2515_reg_load(MCP2515_CANINTE) & MCP2515_CANINTF_WAK) {}
+	}
+
+	/* Enable normal mode */
+	reg = mcp2515_reg_load(MCP2515_CANCTRL);
+	reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_NORM);
+	mcp2515_reg_store(MCP2515_CANCTRL, reg);
+
+	usleep(1000);
 
 	return 0;
 }
 
 static void mcp2515_close(struct can_dev *can) {
-	// uint8_t reg;
+	uint8_t reg;
 
-	// /* Enable sleep mode */
-	// reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	// reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_SLEEP);
-	// mcp2515_reg_store(MCP2515_CANCTRL, reg);
+	/* Enable sleep mode */
+	reg = mcp2515_reg_load(MCP2515_CANCTRL);
+	reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_SLEEP);
+	mcp2515_reg_store(MCP2515_CANCTRL, reg);
 }
 
 static void mcp2515_rxint(struct can_dev *can, int enable) {
 	if (enable) {
-		mcp2515_reg_orin(MCP2515_CANINTE,
+		mcp2515_reg_modify(MCP2515_CANINTE,
+		    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1,
 		    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1);
 	}
 	else {
-		mcp2515_reg_clear(MCP2515_CANINTE,
-		    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1);
+		mcp2515_reg_modify(MCP2515_CANINTE,
+		    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1, 0);
 	}
 }
 
@@ -240,26 +265,17 @@ static const struct can_ops mcp2515_can_ops = {
 
 CAN_DEVICE_DEF(mcp2515_can_dev, &mcp2515_can_ops, NULL, CAN_DEV_ID);
 
-static int mcp2515_receive(struct can_frame *frame) {
+static int mcp2515_receive(uint8_t rxbuf_addr, uint8_t rxbuf_intf,
+    struct can_frame *frame) {
 	uint8_t rxbuf[MCP2515_RXB_SIZE];
-	uint8_t rxbuf_addr;
-	uint8_t canintf;
 	canid_t can_id;
 
-	can_id = 0;
-
-	canintf = mcp2515_reg_load(MCP2515_CANINTF);
-	if (canintf & MCP2515_CANINTF_RX0) {
-		rxbuf_addr = MCP2515_RXB0CTRL;
-	}
-	else if (canintf & MCP2515_CANINTF_RX1) {
-		rxbuf_addr = MCP2515_RXB1CTRL;
-	}
-	else {
-		return -1;
-	}
-
 	mcp2515_regs_load(rxbuf_addr, rxbuf, MCP2515_RXB_SIZE);
+
+	/* Release RX buffer */
+	mcp2515_reg_modify(MCP2515_CANINTF, rxbuf_intf, 0);
+
+	can_id = 0;
 
 	frame->len = rxbuf[MCP2515_RXB_DLC] & 0xf;
 	if (frame->len > 8) {
@@ -291,9 +307,45 @@ static int mcp2515_receive(struct can_frame *frame) {
 }
 
 static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
-	log_error("irq happened");
+	struct can_dev *can;
+	struct can_msg *msg;
+	uint8_t rxbuf_addr[2];
+	uint8_t rxbuf_intf[2];
+	uint8_t canintf;
+	int i;
 
-	(void)mcp2515_receive;
+	can = (struct can_dev *)data;
+
+	rxbuf_addr[0] = MCP2515_RXB0CTRL;
+	rxbuf_addr[1] = MCP2515_RXB1CTRL;
+
+	rxbuf_intf[0] = MCP2515_CANINTF_RX0;
+	rxbuf_intf[1] = MCP2515_CANINTF_RX1;
+
+	canintf = mcp2515_reg_load(MCP2515_CANINTF);
+
+	if (canintf & MCP2515_CANINTF_WAK) {
+		mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK, 0);
+		mcp2515_reg_modify(MCP2515_CANINTF, MCP2515_CANINTF_WAK, 0);
+	}
+
+	while (canintf & (MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1)) {
+		for (i = 0; i < 2; i++) {
+			if (canintf & rxbuf_intf[i]) {
+				msg = can_msg_alloc(can);
+				if (!msg) {
+					can_rx_stop(can);
+					break;
+				}
+				mcp2515_receive(rxbuf_addr[i], rxbuf_intf[i], &msg->frame);
+				can_msg_queue_push(can, msg);
+			}
+		}
+
+		canintf = mcp2515_reg_load(MCP2515_CANINTF);
+	}
+
+	can_rx_notify(can);
 
 	return 0;
 }
