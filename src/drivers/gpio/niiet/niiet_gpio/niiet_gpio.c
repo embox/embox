@@ -8,6 +8,7 @@
  */
 
 #include <stdint.h>
+#include <assert.h>
 
 #include <drivers/clk/niiet_rcu.h>
 #include <drivers/gpio.h>
@@ -169,6 +170,47 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(
 	return NULL;
 }
 
+static inline int niiet_gpio_get_port_num (uintptr_t port) {
+	switch (port) {
+#if defined(CONF_GPIO_PORT_A_REGION_BASE)
+	case CONF_GPIO_PORT_A_REGION_BASE:
+		return 0;
+#endif /* defined (CONF_GPIO_PORT_A_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_B_REGION_BASE)
+	case CONF_GPIO_PORT_B_REGION_BASE:
+		return 1;
+#endif /* defined (CONF_GPIO_PORT_B_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_C_REGION_BASE)
+	case CONF_GPIO_PORT_C_REGION_BASE:
+		return 2;
+#endif /* defined (CONF_GPIO_PORT_C_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_D_REGION_BASE)
+	case CONF_GPIO_PORT_D_REGION_BASE:
+		return 3;
+#endif /* defined (CONF_GPIO_PORT_D_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_E_REGION_BASE)
+	case CONF_GPIO_PORT_E_REGION_BASE:
+		return 4;
+#endif /* defined (CONF_GPIO_PORT_E_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_F_REGION_BASE)
+	case CONF_GPIO_PORT_F_REGION_BASE:
+		return 5;
+#endif /* defined (CONF_GPIO_PORT_F_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_G_REGION_BASE)
+	case CONF_GPIO_PORT_G_REGION_BASE:
+		return 6;
+#endif /* defined (CONF_GPIO_PORT_G_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_H_REGION_BASE)
+	case CONF_GPIO_PORT_H_REGION_BASE:
+		return 7;
+#endif /* defined (CONF_GPIO_PORT_H_REGION_BASE) */
+	default:
+		return -1;
+	}
+
+	return -1;
+}
+
 static inline char *niiet_gpio_get_gpio_clk(unsigned int port) {
 	char *clk_name;
 
@@ -216,10 +258,15 @@ static inline char *niiet_gpio_get_gpio_clk(unsigned int port) {
 	return clk_name;
 }
 
-irq_return_t niiet_gpio_irq_handler(unsigned int irq_nr, void *gpio) {
+static irq_return_t niiet_gpio_irq_handler(unsigned int irq_nr, void *gpio) {
 	uint32_t mask = 0;
 	uint8_t port_num = 0;
+	int res;
 	volatile struct gpio_reg *gpio_reg = gpio;
+
+	res = niiet_gpio_get_port_num((uintptr_t)gpio);
+	assert(res != -1);
+	port_num = res;
 
 	mask = niiet_gpio_irq_get_status(gpio_reg);
 
