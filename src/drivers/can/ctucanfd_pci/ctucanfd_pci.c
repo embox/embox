@@ -117,11 +117,11 @@ static int ctucanfd_send(struct can_dev *dev, const void *data) {
 }
 
 static const struct can_ops ctucanfd_ops = {
-    .reset = ctucanfd_reset,
-    .open = ctucanfd_open,
-    .close = ctucanfd_close,
-    .rxint = ctucanfd_rxint,
-    .send = ctucanfd_send,
+    .co_reset = ctucanfd_reset,
+    .co_open = ctucanfd_open,
+    .co_close = ctucanfd_close,
+    .co_rxint = ctucanfd_rxint,
+    .co_send = ctucanfd_send,
 };
 
 CANFD_DEVICE_DEF(ctucanfd_dev, &ctucanfd_ops, NULL, CAN_DEV_ID);

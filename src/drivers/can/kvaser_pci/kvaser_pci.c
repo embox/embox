@@ -149,11 +149,11 @@ static int kvaser_send(struct can_dev *can, const void *data) {
 }
 
 static const struct can_ops kvaser_can_ops = {
-    .reset = kvaser_reset,
-    .open = kvaser_open,
-    .close = kvaser_close,
-    .rxint = kvaser_rxint,
-    .send = kvaser_send,
+    .co_reset = kvaser_reset,
+    .co_open = kvaser_open,
+    .co_close = kvaser_close,
+    .co_rxint = kvaser_rxint,
+    .co_send = kvaser_send,
 };
 
 CAN_DEVICE_DEF(kvaser_can_dev, &kvaser_can_ops, NULL, CAN_DEV_ID);
