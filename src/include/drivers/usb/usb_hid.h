@@ -11,7 +11,8 @@
 
 #define USB_HID_MAX_DEVS         2
 
-#define USB_CLASS_HID 		 3
+//#define USB_CLASS_HID 		 3
+#include <drivers/usb/usb_defines.h>
 
 #define USB_CLASS_HID_SUB	 0
 #define USB_CLASS_HID_SUB_BOOT	 1

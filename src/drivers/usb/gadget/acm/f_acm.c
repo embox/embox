@@ -6,17 +6,24 @@
  * @date    20.07.2020
  */
 
+#include <util/log.h>
+
 #include <stdint.h>
 #include <string.h>
-#include <embox/unit.h>
-#include <util/log.h>
+
+
 #include <drivers/usb/usb_defines.h>
 #include <drivers/usb/usb_desc.h>
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/gadget/gadget.h>
+#include <drivers/usb/class/usb_cdc.h>
+
+#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(acm_init);
 
+
+#if 0
 /* TODO These defines should be moved to some CDC part. */
 #define USB_CDC_SUBCLASS_ACM        0x02
 #define USB_CDC_PROTOCOL_ATV250     0x01
@@ -25,7 +32,7 @@ EMBOX_UNIT_INIT(acm_init);
 #define USB_CDC_CALL_TYPE           0x01
 #define USB_CDC_ACM_TYPE            0x02
 #define USB_CDC_UNION_TYPE          0x06
-
+#endif
 static int acm_probe(struct usb_gadget *gadget);
 
 static struct usb_desc_endpoint int_ep_desc = {
@@ -143,21 +150,45 @@ static int acm_setup(struct usb_gadget_function *f,
 	struct usb_gadget *gadget = f->gadget;
 	struct usb_gadget_request *req = &gadget->composite->req;
 
-	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) != USB_REQ_TYPE_STANDARD) {
-		log_error("Not a standard request");
-		return -1;
+	log_debug("EP0: bm=%02x bReq=%02x wValue=%04x wIndex=%04x wLen=%04x",
+	    ctrl->bm_request_type, ctrl->b_request, ctrl->w_value, ctrl->w_index,
+	    ctrl->w_length);
+	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_STANDARD) {
+		switch (ctrl->b_request) {
+		case USB_REQ_SET_INTERFACE:
+			/* Send zero-length reply */
+			req->len = 0;
+			usb_gadget_ep_queue(&gadget->composite->ep0, req);
+			return 0;
+		default:
+			log_error("Not supported standard request");
+			break;
+		}
 	}
-
-	switch (ctrl->b_request) {
-	case USB_REQ_SET_INTERFACE:
-		/* Send zero-length reply */
-		req->len = 0;
-		usb_gadget_ep_queue(&gadget->composite->ep0, req);
-		return 0;
-	default:
-		log_error("Not supported standard request");
-		break;
+	/* 2) CLASS requests */
+	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_CLASS) {
+		log_error("USB_REQ_TYPE_CLASS EP0: bm=%02x bReq=%02x wValue=%04x wIndex=%04x wLen=%04x",
+	    ctrl->bm_request_type, ctrl->b_request, ctrl->w_value, ctrl->w_index,
+	    ctrl->w_length);
+		switch (ctrl->b_request) {
+		case SET_LINE_CODING:
+			log_error("ACM SET_LINE_CODING: val=%04x", ctrl->w_value);
+			req->len = 0;
+			usb_gadget_ep_queue(&gadget->composite->ep0, req);
+			return 0;
+		case SET_CONTROL_LINE_STATE:
+			log_error("ACM SET_CONTROL_LINE_STATE: val=%04x", ctrl->w_value);
+			req->len = 0;
+			usb_gadget_ep_queue(&gadget->composite->ep0, req);
+			return 0;
+		default:
+			log_error("Unsupported CDC CLASS bReq=%02x", ctrl->b_request);
+			return -1;
+		}
 	}
+	log_error("Unsupported EP0: bm=%02x bReq=%02x wValue=%04x wIndex=%04x wLen=%04x",
+	    ctrl->bm_request_type, ctrl->b_request, ctrl->w_value, ctrl->w_index,
+	    ctrl->w_length);
 
 	return -1;
 }
