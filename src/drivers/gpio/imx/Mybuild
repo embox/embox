@@ -1,10 +1,11 @@
 package embox.driver.gpio
 
 module imx {
+	option string log_level="LOG_NONE"
 	option number gpio_chip_id = 0
 	option number base_addr=0x0209c000
 	option number gpio_ports = 4
-	option string log_level="LOG_NONE"
+	option number irq_num = 98
 
 	source "imx.c"
 
