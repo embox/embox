@@ -1,0 +1,79 @@
+/**
+ * @file
+ *
+ * @date Aug 24, 2023
+ * @author Anton Bondarev
+ */
+
+#include <unistd.h>
+
+#include <bsp/stm32cube_hal.h>
+#include <drivers/gpio.h>
+#include <util/log.h>
+
+#include <config/board_config.h>
+
+#define ETH_GPIO_PORT(name) \
+			MACRO_CONCAT(MACRO_CONCAT(CONF_ETH_PIN_, name), _PORT)
+#define ETH_GPIO_PIN(name) \
+			MACRO_CONCAT(MACRO_CONCAT(CONF_ETH_PIN_, name), _NR)
+#define ETH_GPIO_AF(name)  \
+			MACRO_CONCAT(MACRO_CONCAT(CONF_ETH_PIN_, name), _AF)
+
+void HAL_ETH_MspInit(ETH_HandleTypeDef *heth) {
+	/* RMII_REF_CLK */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_REF_CLK), (1 << ETH_GPIO_PIN(RMII_REF_CLK)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_REF_CLK)) | GPIO_MODE_OUT_PUSH_PULL);
+	/* RMII_MDIO */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_MDIO), (1 << ETH_GPIO_PIN(RMII_MDIO)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_MDIO)) | GPIO_MODE_OUT_PUSH_PULL);
+	/* RMII_MDC */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_MDC), (1 << ETH_GPIO_PIN(RMII_MDC)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_MDC)) | GPIO_MODE_OUT_PUSH_PULL);
+	/* RMII_MII_CRS_DV */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_MII_CRS_DV),
+	    (1 << ETH_GPIO_PIN(RMII_MII_CRS_DV)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_MII_CRS_DV)) | GPIO_MODE_OUT_PUSH_PULL);
+	/* RMII_MII_RXD0 */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_MII_RXD0),
+	    (1 << ETH_GPIO_PIN(RMII_MII_RXD0)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_MII_RXD0)) | GPIO_MODE_OUT_PUSH_PULL);
+	/* RMII_MII_RXD1 */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_MII_RXD1),
+	    (1 << ETH_GPIO_PIN(RMII_MII_RXD1)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_MII_RXD1)) | GPIO_MODE_OUT_PUSH_PULL);
+	/* RMII_MII_RXER */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_MII_RXER),
+	    (1 << ETH_GPIO_PIN(RMII_MII_RXER)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_MII_RXER)) | GPIO_MODE_OUT_PUSH_PULL);
+	/* RMII_MII_TX_EN */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_MII_TX_EN),
+	    (1 << ETH_GPIO_PIN(RMII_MII_TX_EN)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_MII_TX_EN)) | GPIO_MODE_OUT_PUSH_PULL);
+	/* RMII_MII_TXD0 */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_MII_TXD0),
+	    (1 << ETH_GPIO_PIN(RMII_MII_TXD0)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_MII_TXD0)) | GPIO_MODE_OUT_PUSH_PULL);
+	/* RMII_MII_TXD1 */
+	gpio_setup_mode(ETH_GPIO_PORT(RMII_MII_TXD1),
+	    (1 << ETH_GPIO_PIN(RMII_MII_TXD1)),
+	    GPIO_MODE_ALT_SET(ETH_GPIO_AF(RMII_MII_TXD1)) | GPIO_MODE_OUT_PUSH_PULL);
+
+	if (heth->Init.MediaInterface == ETH_MEDIA_INTERFACE_MII) {
+		/* Output HSE clock (25MHz) on MCO pin (PA8) to clock the PHY */
+		HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSE, RCC_MCODIV_1);
+	}
+
+#if defined(CONF_ETH_PIN_PHY_RESET_PORT)
+	gpio_setup_mode(CONF_ETH_PIN_PHY_RESET_PORT,
+	    (1 << CONF_ETH_PIN_PHY_RESET_NR), GPIO_MODE_OUT | GPIO_MODE_IN_PULL_UP);
+
+	gpio_set(CONF_ETH_PIN_PHY_RESET_PORT, (1 << CONF_ETH_PIN_PHY_RESET_NR), 0);
+	usleep(10);
+	gpio_set(CONF_ETH_PIN_PHY_RESET_PORT, (1 << CONF_ETH_PIN_PHY_RESET_NR), 1);
+	usleep(10);
+#endif
+
+	/* Enable ETHERNET clock  */
+	CONF_ETH_CLK_DEF_ETH();
+}
