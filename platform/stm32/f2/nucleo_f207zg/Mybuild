@@ -14,9 +14,6 @@ static module nucleo_f207zg_conf extends third_party.bsp.stmf2cube.stm32f2_conf 
 static module bsp extends third_party.bsp.st_bsp_api {
 	source "clock_config.c"
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf2cube/cube/STM32CubeF2-1.9.4/")
-	source "Projects/NUCLEO-F207ZG/Templates/Src/system_stm32f2xx.c"
-
 	@NoRuntime depends third_party.bsp.stmf2cube.cube
 	@NoRuntime depends nucleo_f207zg_conf
 	@NoRuntime depends platform.stm32.stm32cube_compat
