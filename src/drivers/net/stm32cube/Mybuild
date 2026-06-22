@@ -5,9 +5,9 @@ module stm32f2cube_eth {
 	option number irq = 61
 
 	source "stm32cube_eth.c"
-	source "stm32f2cube_eth_msp.c"
+	source "stm32cube_eth_msp.c"
 	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
-	source "stm32f2cube_eth.h"
+	source "stm32cube_eth.h"
 
 	option string log_level="LOG_ERR"
 	depends embox.net.skbuff
