@@ -18,6 +18,9 @@ static module cube {
 	@IncludeExport(path="bsp")
 	source "stm32cube_hal.h"
 
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
+    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
+
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF4-1.27.1/Drivers/STM32F4xx_HAL_Driver/Src")
