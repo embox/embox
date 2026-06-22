@@ -1,0 +1,8 @@
+"export PWD=/",
+"export HOME=/",
+
+"netmanager",
+"service telnetd",
+"service httpd",
+
+"tish",
