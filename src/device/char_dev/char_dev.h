@@ -20,7 +20,6 @@
 #define CHAR_DEV_INIT(_self, _name, _ops)         \
 	((struct char_dev){                           \
 	    .list_item = DLIST_INIT(_self.list_item), \
-	    .waitq = WAITQ_INIT(_self.waitq),         \
 	    .usage_count = 0,                         \
 	    .ops = _ops,                              \
 	    .name = _name,                            \

@@ -17,6 +17,7 @@
 
 #include <drivers/char_dev.h>
 #include <framework/mod/options.h>
+#include <kernel/sched/waitq.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
@@ -27,7 +28,7 @@
 
 #define IDESC_POOL_SIZE OPTION_GET(NUMBER, idesc_pool_size)
 
-POOL_DEF(idesc_pool, struct char_dev_idesc, IDESC_POOL_SIZE);
+POOL_DEF(cdev_idesc_pool, struct char_dev_idesc, IDESC_POOL_SIZE);
 
 static const struct idesc_ops char_dev_idesc_ops;
 
@@ -103,29 +104,6 @@ static ssize_t char_dev_writev(struct idesc *idesc, const struct iovec *iov,
 	return nbyte;
 }
 
-void char_dev_close(struct idesc *idesc) {
-	struct char_dev *cdev;
-
-	cdev = idesc2cdev(idesc);
-
-	if (idesc->idesc_flags & O_PATH) {
-		goto out;
-	}
-
-	if (--cdev->usage_count > 0) {
-		goto out;
-	}
-
-	assert(cdev->usage_count == 0);
-
-	if (cdev->ops->close) {
-		cdev->ops->close(cdev);
-	}
-
-out:
-	pool_free(&idesc_pool, idesc);
-}
-
 static int char_dev_ioctl(struct idesc *idesc, int request, void *data) {
 	struct char_dev *cdev;
 
@@ -178,34 +156,47 @@ static void *char_dev_mmap(struct idesc *idesc, void *addr, size_t len,
 	return phy_addr;
 }
 
+void char_dev_close(struct idesc *idesc) {
+	struct char_dev *cdev;
+
+	cdev = idesc2cdev(idesc);
+
+	if (idesc->idesc_flags & O_PATH) {
+		goto out;
+	}
+
+	if (--cdev->usage_count > 0) {
+		goto out;
+	}
+
+	assert(cdev->usage_count == 0);
+
+	if (cdev->ops->close) {
+		cdev->ops->close(cdev);
+	}
+
+out:
+	pool_free(&cdev_idesc_pool, idesc);
+}
+
 static const struct idesc_ops char_dev_idesc_ops = {
     .id_readv = char_dev_readv,
     .id_writev = char_dev_writev,
-    .close = char_dev_close,
     .ioctl = char_dev_ioctl,
     .fstat = char_dev_fstat,
     .status = char_dev_status,
     .idesc_mmap = char_dev_mmap,
+    .close = char_dev_close,
 };
 
 struct idesc *char_dev_open_idesc(struct char_dev *cdev, int oflag) {
-	struct char_dev_idesc *cdev_idesc;
+	struct idesc *idesc;
 	int err;
+
+	err = 0;
 
 	assert(cdev);
 	assert(cdev->usage_count >= 0);
-
-	cdev_idesc = pool_alloc(&idesc_pool);
-	if (!cdev_idesc) {
-		return err2ptr(ENOMEM);
-	}
-
-	idesc_init((struct idesc *)cdev_idesc, &char_dev_idesc_ops, oflag);
-	cdev_idesc->cdev = cdev;
-
-	if (oflag & O_PATH) {
-		goto out;
-	}
 
 	if (!cdev->ops->read && ((oflag & O_ACCESS_MASK) != O_WRONLY)) {
 		return err2ptr(EACCES);
@@ -215,17 +206,36 @@ struct idesc *char_dev_open_idesc(struct char_dev *cdev, int oflag) {
 		return err2ptr(EACCES);
 	}
 
-	if (cdev->usage_count++ > 0) {
-		goto out;
+	idesc = pool_alloc(&cdev_idesc_pool);
+	if (!idesc) {
+		return err2ptr(ENOMEM);
 	}
 
-	if (cdev->ops->open && (err = cdev->ops->open(cdev, &cdev_idesc->idesc))) {
-		pool_free(&idesc_pool, cdev_idesc);
-		return err2ptr(-err);
+	idesc_init(idesc, &char_dev_idesc_ops, oflag);
+	((struct char_dev_idesc *)idesc)->cdev = cdev;
+
+	if (oflag & O_PATH) {
+		return idesc;
 	}
 
-out:
-	return (struct idesc *)cdev_idesc;
+	/* lock ??? */
+
+	if (cdev->ops->open && (cdev->usage_count == 0)) {
+		err = cdev->ops->open(cdev, idesc);
+	}
+
+	if (err) {
+		pool_free(&cdev_idesc_pool, idesc);
+		idesc = err2ptr(-err);
+	}
+	else {
+		cdev->usage_count++;
+		waitq_init(&cdev->waitq);
+	}
+
+	/* unlock ??? */
+
+	return idesc;
 }
 
 int char_dev_open(const char *name, int oflag) {

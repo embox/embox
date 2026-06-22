@@ -96,19 +96,20 @@
 #define MCP2515_RXB1DLC   0x75
 #define MCP2515_RXB1D0    0x76
 
+/* MCP2515_CANSTAT */
+#define MCP2515_CANSTAT_MOD       /* Operation Mode */
+#define MCP2515_CANSTAT_MOD_MASK  0x7
+#define MCP2515_CANSTAT_MOD_SHIFT 5
+#define MCP2515_CANSTAT_MOD_NORM  0b000 /* Normal Mode */
+#define MCP2515_CANSTAT_MOD_SLEEP 0b001 /* Sleep Mode */
+#define MCP2515_CANSTAT_MOD_LOOP  0b010 /* Loopback Mode` */
+#define MCP2515_CANSTAT_MOD_LISTN 0b011 /* Listen-only Mode */
+#define MCP2515_CANSTAT_MOD_CONF  0b100 /* Configuration Mode */
+
 /* MCP2515_CANCTRL */
 #define MCP2515_CANCTRL_CLKEN (1 << 2) /* CLKOUT Pin Enable */
 #define MCP2515_CANCTRL_OSM   (1 << 3) /* One-Shot Mode */
 #define MCP2515_CANCTRL_ABAT  (1 << 4) /* Abort All Pending TX */
-
-#define MCP2515_CANCTRL_REQOP       /* Request Operation Mode */
-#define MCP2515_CANCTRL_REQOP_MASK  0x7
-#define MCP2515_CANCTRL_REQOP_SHIFT 5
-#define MCP2515_CANCTRL_REQOP_NORM  0b000 /* Normal Mode */
-#define MCP2515_CANCTRL_REQOP_SLEEP 0b001 /* Sleep Mode */
-#define MCP2515_CANCTRL_REQOP_LOOP  0b010 /* Loopback Mode` */
-#define MCP2515_CANCTRL_REQOP_LISTN 0b011 /* Listen-only Mode */
-#define MCP2515_CANCTRL_REQOP_CONF  0b100 /* Configuration Mode */
 
 /* MCP2515_CANINTF */
 #define MCP2515_CANINTF_RX0  (1 << 0) /* RX Buffer 0 Full Interrupt */

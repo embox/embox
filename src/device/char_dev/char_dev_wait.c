@@ -7,7 +7,6 @@
 
 #include <errno.h>
 #include <stddef.h>
-#include <sys/poll.h>
 
 #include <drivers/char_dev.h>
 #include <kernel/sched/waitq.h>
@@ -20,7 +19,18 @@ int char_dev_wait(struct char_dev *cdev, int mask) {
 	waitq_link_init(&wql);
 	waitq_wait_prepare(&cdev->waitq, &wql);
 
-	err = SCHED_WAIT(cdev->ops->status(cdev, mask));
+	threadsig_lock();
+
+	while (0 == cdev->ops->status(cdev, mask)) {
+		sched_wait_prepare();
+		err = sched_wait_timeout(SCHED_TIMEOUT_INFINITE, NULL);
+		sched_wait_cleanup();
+		if (err) {
+			break;
+		}
+	}
+
+	threadsig_unlock();
 
 	waitq_wait_cleanup(&cdev->waitq, &wql);
 

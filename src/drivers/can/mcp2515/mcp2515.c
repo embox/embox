@@ -7,6 +7,7 @@
 
 #include <errno.h>
 #include <linux/can.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
@@ -24,6 +25,7 @@
 #include "mcp2515.h"
 
 #define CAN_DEV_ID OPTION_GET(NUMBER, dev_id)
+#define SLEEP_MODE OPTION_GET(BOOLEAN, sleep_mode)
 
 #define SPI_BUS OPTION_GET(NUMBER, spi_bus)
 #define SPI_CS  OPTION_GET(NUMBER, spi_cs)
@@ -117,6 +119,16 @@ static inline void mcp2515_reg_clear(unsigned int reg, uint8_t mask) {
 	return mcp2515_reg_store(reg, mcp2515_reg_load(reg) & ~mask);
 }
 
+static void mcp2515_set_opmod(uint8_t opmod) {
+	uint8_t reg;
+
+	reg = mcp2515_reg_load(MCP2515_CANCTRL);
+	reg = FIELD_SET(reg, MCP2515_CANSTAT_MOD, opmod);
+	mcp2515_reg_store(MCP2515_CANCTRL, reg);
+
+	usleep(1000);
+}
+
 static void mcp2515_reset(struct can_dev *can) {
 	uint8_t reg;
 
@@ -142,12 +154,12 @@ static void mcp2515_reset(struct can_dev *can) {
 	mcp2515_reg_store(MCP2515_CNF3, reg);
 
 	reg = mcp2515_reg_load(MCP2515_RXB0CTRL);
-	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
+	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_ALL);
 	reg |= MCP2515_RXB_CTRL_BUKT;
 	mcp2515_reg_store(MCP2515_RXB0CTRL, reg);
 
 	reg = mcp2515_reg_load(MCP2515_RXB1CTRL);
-	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
+	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_ALL);
 	mcp2515_reg_store(MCP2515_RXB1CTRL, reg);
 
 	mcp2515_reg_store(MCP2515_RXM0SIDH, 0);
@@ -165,43 +177,47 @@ static void mcp2515_reset(struct can_dev *can) {
 	mcp2515_reg_modify(MCP2515_RXM1SIDL, MCP2515_RXB_SIDL_EXIDE,
 	    MCP2515_RXB_SIDL_EXIDE);
 
-	/* Enable normal mode */
 	reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_NORM);
-	mcp2515_reg_store(MCP2515_CANCTRL, reg);
-}
-
-static int mcp2515_open(struct can_dev *can) {
-	uint8_t reg;
-
-	reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	if (FIELD_GET(reg, MCP2515_CANCTRL_REQOP) == MCP2515_CANCTRL_REQOP_SLEEP) {
-		/* Generate wake-up interrupt */
-		mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK,
-		    MCP2515_CANINTF_WAK);
-		mcp2515_reg_modify(MCP2515_CANINTF, MCP2515_CANINTF_WAK,
-		    MCP2515_CANINTF_WAK);
-
-		while (mcp2515_reg_load(MCP2515_CANINTE) & MCP2515_CANINTF_WAK) {}
+	if (reg != MCP2515_CANCTRL_DEFAULT) {
+		log_error("Invalid CANCTRL value");
 	}
 
 	/* Enable normal mode */
-	reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_NORM);
-	mcp2515_reg_store(MCP2515_CANCTRL, reg);
+	mcp2515_set_opmod(MCP2515_CANSTAT_MOD_NORM);
+}
 
-	usleep(1000);
+static int mcp2515_open(struct can_dev *can) {
+#if SLEEP_MODE
+	uint8_t mode;
+	uint8_t reg;
+
+	reg = mcp2515_reg_load(MCP2515_CANSTAT);
+	mode = FIELD_GET(reg, MCP2515_CANSTAT_MOD);
+
+	if (mode != MCP2515_CANSTAT_MOD_NORM) {
+		if (mode == MCP2515_CANSTAT_MOD_SLEEP) {
+			/* Generate wake-up interrupt */
+			mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK,
+			    MCP2515_CANINTF_WAK);
+			mcp2515_reg_modify(MCP2515_CANINTF, MCP2515_CANINTF_WAK,
+			    MCP2515_CANINTF_WAK);
+
+			while (mcp2515_reg_load(MCP2515_CANINTE) & MCP2515_CANINTF_WAK) {}
+		}
+
+		/* Enable normal mode */
+		mcp2515_set_opmod(MCP2515_CANSTAT_MOD_NORM);
+	}
+#endif
 
 	return 0;
 }
 
 static void mcp2515_close(struct can_dev *can) {
-	uint8_t reg;
-
+#if SLEEP_MODE
 	/* Enable sleep mode */
-	reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	reg = FIELD_SET(reg, MCP2515_CANCTRL_REQOP, MCP2515_CANCTRL_REQOP_SLEEP);
-	mcp2515_reg_store(MCP2515_CANCTRL, reg);
+	mcp2515_set_opmod(MCP2515_CANSTAT_MOD_SLEEP);
+#endif
 }
 
 static void mcp2515_rxint(struct can_dev *can, int enable) {
@@ -312,6 +328,7 @@ static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
 	uint8_t rxbuf_addr[2];
 	uint8_t rxbuf_intf[2];
 	uint8_t canintf;
+	bool rx_done;
 	int i;
 
 	can = (struct can_dev *)data;
@@ -324,26 +341,31 @@ static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
 
 	canintf = mcp2515_reg_load(MCP2515_CANINTF);
 
+#if SLEEP_MODE
 	if (canintf & MCP2515_CANINTF_WAK) {
 		mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK, 0);
 		mcp2515_reg_modify(MCP2515_CANINTF, MCP2515_CANINTF_WAK, 0);
+		return 0;
 	}
+#endif
 
-	while (canintf & (MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1)) {
+	do {
+		rx_done = false;
 		for (i = 0; i < 2; i++) {
 			if (canintf & rxbuf_intf[i]) {
 				msg = can_msg_alloc(can);
 				if (!msg) {
+					rx_done = false;
 					can_rx_stop(can);
 					break;
 				}
+				rx_done = true;
 				mcp2515_receive(rxbuf_addr[i], rxbuf_intf[i], &msg->frame);
 				can_msg_queue_push(can, msg);
 			}
 		}
-
 		canintf = mcp2515_reg_load(MCP2515_CANINTF);
-	}
+	} while (rx_done);
 
 	can_rx_notify(can);
 
@@ -353,8 +375,6 @@ static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
 EMBOX_UNIT_INIT(mcp2515_init);
 
 static int mcp2515_init(void) {
-	uint8_t reg;
-
 	spi_bus_dev = spi_dev_by_id(SPI_BUS);
 	spi_bus_dev->spid_flags |= SPI_CS_ACTIVE;
 	spi_bus_dev->spid_flags |= SPI_CS_INACTIVE;
@@ -363,11 +383,7 @@ static int mcp2515_init(void) {
 
 	mcp2515_reset(&mcp2515_can_dev);
 
-	reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	if (reg != MCP2515_CANCTRL_DEFAULT) {
-		log_error("Invalid CANCTRL value");
-		return -1;
-	}
+	gpio_setup_mode(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN, GPIO_MODE_INT_FALLING);
 
 	return gpio_irq_attach(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN,
 	    mcp2515_irq_handler, &mcp2515_can_dev);
