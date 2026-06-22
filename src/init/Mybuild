@@ -78,6 +78,18 @@ module start_script {
 	depends embox.compat.libc.stdio.printf
 }
 
+module extra_shell {
+	option string shell_name=""
+	option string tty_dev=""
+
+	source "extra_shell.c"
+
+	depends setup_tty_api
+	depends embox.cmd.sh.shell_registry
+	depends embox.cmd.sh.shell_api
+	depends embox.kernel.task.api
+}
+
 @DefaultImpl(no_system_start)
 abstract module system_start {}
 
