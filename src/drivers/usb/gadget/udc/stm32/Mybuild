@@ -9,6 +9,7 @@ module stm32cube_udc {
 
 	source "stm32cube_udc.c"
 	source "stm32cube_usbd.c"
+	source "stm32cube_usbd_msp.c"
 
 }
 
