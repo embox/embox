@@ -96,6 +96,9 @@
 #define MCP2515_RXB1DLC   0x75
 #define MCP2515_RXB1D0    0x76
 
+/* MCP2515_RXF_SIDL */
+#define MCP2515_RXF_SIDL_EXIDE (1 << 3) /* Filter only Extended Frames */
+
 /* MCP2515_CANSTAT */
 #define MCP2515_CANSTAT_MOD       /* Operation Mode */
 #define MCP2515_CANSTAT_MOD_MASK  0x7
@@ -205,13 +208,13 @@
 #define MCP2515_RXB_CTRL_RXM_VALID 0b00 /* Receive All Valid Messages */
 
 /* MCP2515_RXB_SIDL */
-#define MCP2515_RXB_SIDL_EXIDE (1 << 3) /* Extended Identifier Enable */
+#define MCP2515_RXB_SIDL_IDE (1 << 3) /* Extended Identifier Flag */
 
-#define MCP2515_RXB_SIDL_EID       /* Extended Identifier Filter */
+#define MCP2515_RXB_SIDL_EID       /* Extended Identifier */
 #define MCP2515_RXB_SIDL_EID_MASK  0x3
 #define MCP2515_RXB_SIDL_EID_SHIFT 0
 
-#define MCP2515_RXB_SIDL_SID       /* Standard Identifier Filter */
+#define MCP2515_RXB_SIDL_SID       /* Standard Identifier */
 #define MCP2515_RXB_SIDL_SID_MASK  0x7
 #define MCP2515_RXB_SIDL_SID_SHIFT 5
 

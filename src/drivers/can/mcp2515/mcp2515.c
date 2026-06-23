@@ -25,7 +25,9 @@
 #include "mcp2515.h"
 
 #define CAN_DEV_ID OPTION_GET(NUMBER, dev_id)
-#define SLEEP_MODE OPTION_GET(BOOLEAN, sleep_mode)
+
+#define SLEEP_MODE    OPTION_GET(BOOLEAN, sleep_mode)
+#define LOOPBACK_MODE OPTION_GET(BOOLEAN, loopback_mode)
 
 #define SPI_BUS OPTION_GET(NUMBER, spi_bus)
 #define SPI_CS  OPTION_GET(NUMBER, spi_cs)
@@ -51,30 +53,38 @@
 /* CANCTRL register value after reset */
 #define MCP2515_CANCTRL_DEFAULT 0x87
 
+#if LOOPBACK_MODE
+#define MCP2515_DEFAULT_MODE MCP2515_CANSTAT_MOD_LOOP
+#else
+#define MCP2515_DEFAULT_MODE MCP2515_CANSTAT_MOD_NORM
+#endif
+
 static struct spi_device *spi_bus_dev;
 
 static void mcp2515_cmd(uint8_t cmd) {
 	uint8_t ibuf[4];
+	uint8_t obuf[4];
 
 	ibuf[0] = cmd;
 
-	spi_transfer(spi_bus_dev, ibuf, NULL, 1);
+	spi_transfer(spi_bus_dev, ibuf, obuf, 1);
 }
 
 static void mcp2515_regs_store(uint8_t addr, uint8_t *buf, size_t len) {
 	uint8_t ibuf[16];
+	uint8_t obuf[16];
 
 	ibuf[0] = MCP2515_WRITE;
 	ibuf[1] = addr;
 
 	memcpy(ibuf + 2, buf, len);
 
-	spi_transfer(spi_bus_dev, ibuf, NULL, len + 2);
+	spi_transfer(spi_bus_dev, ibuf, obuf, len + 2);
 }
 
 static void mcp2515_regs_load(uint8_t addr, uint8_t *buf, size_t len) {
+	uint8_t ibuf[16];
 	uint8_t obuf[16];
-	uint8_t ibuf[4];
 
 	ibuf[0] = MCP2515_READ;
 	ibuf[1] = addr;
@@ -98,13 +108,14 @@ static uint8_t mcp2515_reg_load(uint8_t addr) {
 
 static void mcp2515_reg_modify(uint8_t addr, uint8_t mask, uint8_t val) {
 	uint8_t ibuf[4];
+	uint8_t obuf[4];
 
 	ibuf[0] = MCP2515_BITMOD;
 	ibuf[1] = addr;
 	ibuf[2] = mask;
 	ibuf[3] = val;
 
-	spi_transfer(spi_bus_dev, ibuf, NULL, 4);
+	spi_transfer(spi_bus_dev, ibuf, obuf, 4);
 }
 
 static inline void mcp2515_reg_orin(unsigned int reg, uint8_t mask) {
@@ -136,6 +147,11 @@ static void mcp2515_reset(struct can_dev *can) {
 
 	/* Wait for mcp2515 to restart */
 	usleep(2000);
+
+	reg = mcp2515_reg_load(MCP2515_CANCTRL);
+	if (reg != MCP2515_CANCTRL_DEFAULT) {
+		log_error("Invalid CANCTRL value");
+	}
 
 	reg = mcp2515_reg_load(MCP2515_CNF1);
 	reg = FIELD_SET(reg, MCP2515_CNF1_BRP, MCP2515_BRP - 1);
@@ -172,19 +188,27 @@ static void mcp2515_reset(struct can_dev *can) {
 	mcp2515_reg_store(MCP2515_RXM1EID8, 0);
 	mcp2515_reg_store(MCP2515_RXM1EID0, 0);
 
-	mcp2515_reg_modify(MCP2515_RXM0SIDL, MCP2515_RXB_SIDL_EXIDE,
-	    MCP2515_RXB_SIDL_EXIDE);
-	mcp2515_reg_modify(MCP2515_RXM1SIDL, MCP2515_RXB_SIDL_EXIDE,
-	    MCP2515_RXB_SIDL_EXIDE);
-
-	reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	if (reg != MCP2515_CANCTRL_DEFAULT) {
-		log_error("Invalid CANCTRL value");
-	}
-
 	/* Enable normal mode */
-	mcp2515_set_opmod(MCP2515_CANSTAT_MOD_NORM);
+	mcp2515_set_opmod(MCP2515_DEFAULT_MODE);
 }
+
+#if 0
+static void mcp2515_rfilter(struct can_dev *can, canid_t id, canid_t mask) {
+	uint8_t reg;
+
+	reg = mcp2515_reg_load(MCP2515_RXB0CTRL);
+	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
+	mcp2515_reg_store(MCP2515_RXB0CTRL, reg);
+
+	reg = mcp2515_reg_load(MCP2515_RXB1CTRL);
+	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
+	mcp2515_reg_store(MCP2515_RXB1CTRL, reg);
+
+	reg = (id & mask & CAN_EFF_FLAG) ? MCP2515_RXF_SIDL_EXIDE : 0;
+	mcp2515_reg_modify(MCP2515_RXF0SIDL, MCP2515_RXF_SIDL_EXIDE, reg);
+	mcp2515_reg_modify(MCP2515_RXF1SIDL, MCP2515_RXF_SIDL_EXIDE, reg);
+}
+#endif
 
 static int mcp2515_open(struct can_dev *can) {
 #if SLEEP_MODE
@@ -194,7 +218,7 @@ static int mcp2515_open(struct can_dev *can) {
 	reg = mcp2515_reg_load(MCP2515_CANSTAT);
 	mode = FIELD_GET(reg, MCP2515_CANSTAT_MOD);
 
-	if (mode != MCP2515_CANSTAT_MOD_NORM) {
+	if (mode != MCP2515_DEFAULT_MODE) {
 		if (mode == MCP2515_CANSTAT_MOD_SLEEP) {
 			/* Generate wake-up interrupt */
 			mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK,
@@ -205,8 +229,7 @@ static int mcp2515_open(struct can_dev *can) {
 			while (mcp2515_reg_load(MCP2515_CANINTE) & MCP2515_CANINTF_WAK) {}
 		}
 
-		/* Enable normal mode */
-		mcp2515_set_opmod(MCP2515_CANSTAT_MOD_NORM);
+		mcp2515_set_opmod(MCP2515_DEFAULT_MODE);
 	}
 #endif
 
@@ -298,7 +321,7 @@ static int mcp2515_receive(uint8_t rxbuf_addr, uint8_t rxbuf_intf,
 		frame->len = 8;
 	}
 
-	if (rxbuf[MCP2515_RXB_SIDL] & MCP2515_RXB_SIDL_EXIDE) {
+	if (rxbuf[MCP2515_RXB_SIDL] & MCP2515_RXB_SIDL_IDE) {
 		can_id |= rxbuf[MCP2515_RXB_EID0];
 		can_id |= rxbuf[MCP2515_RXB_EID8] << 8;
 		can_id |= rxbuf[MCP2515_RXB_SIDH] << 21;
