@@ -26,9 +26,6 @@ static module bsp extends third_party.bsp.st_bsp_api {
 	source "stm32f4_discovery.h"
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
-    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
-
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
 	source "Drivers/BSP/STM32F4-Discovery/stm32f4_discovery.c",
 			"Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_accelerometer.c"
 
@@ -39,6 +36,7 @@ static module bsp extends third_party.bsp.st_bsp_api {
 	@NoRuntime depends platform.stm32.stm32cube_compat
 	@NoRuntime depends platform.stm32.stm32cube_osc_config_f4
 	@NoRuntime depends platform.stm32.stm32cube_sysclock_init
+	@NoRuntime depends platform.stm32.stm32cube_conf_eth_phy
 }
 
 @Build(stage=1)

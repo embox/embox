@@ -12,13 +12,10 @@ static module nucleo_f429zi_conf extends third_party.bsp.stmf4cube.stm32f4_conf 
 static module bsp extends third_party.bsp.st_bsp_api {
 	source "clock_config.c"
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
-    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
-
-
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends nucleo_f429zi_conf
 	@NoRuntime depends platform.stm32.stm32cube_compat
 	@NoRuntime depends platform.stm32.stm32cube_osc_config_f4
 	@NoRuntime depends platform.stm32.stm32cube_sysclock_init
+	@NoRuntime depends platform.stm32.stm32cube_conf_eth_phy
 }

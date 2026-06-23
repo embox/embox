@@ -21,3 +21,9 @@ module stm32cube_sysclock_init {
     @NoRuntime depends third_party.bsp.st_bsp_api
     @NoRuntime depends platform.stm32.osc_config
 }
+
+
+module stm32cube_conf_eth_phy {
+    @IncludeExport(path="stm32")
+    source "stm32cube_conf_eth_phy.h"
+}

@@ -17,6 +17,9 @@ static module cube {
 	@IncludeExport(path="bsp")
 	source "stm32cube_hal.h"
 
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf2cube/cube/STM32CubeF2-1.9.4/")
+	source "Drivers/CMSIS/Device/ST/STM32F2xx/Source/Templates/system_stm32f2xx.c"
+
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF2-1.9.4/Drivers/STM32F2xx_HAL_Driver/Src")
 	source 
 		"stm32f2xx_hal.c",

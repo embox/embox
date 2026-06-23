@@ -251,4 +251,54 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), UART(uarts), SPI(spis), I2C(i2cs), PWM(pwms), LED(leds))
+/* Ethernet pins configuration ************************************************/
+/*
+ ETH_MDIO --------------> PA2
+ ETH_MDC ---------------> PC1
+ ETH_RMII_REF_CLK-------> PA1
+ ETH_RMII_CRS_DV -------> PA7
+ ETH_MII_RX_ER   -------> PB10
+ ETH_RMII_RXD0   -------> PC4
+ ETH_RMII_RXD1   -------> PC5
+ ETH_RMII_TX_EN  -------> PB11
+ ETH_RMII_TXD0   -------> PB12
+ ETH_RMII_TXD1   -------> PB13
+ ETH_RST_PIN     -------> PE2
+ */
+struct eth_conf eths[] = {
+	[1] = {
+		.status = ENABLED,
+		.name = "ETH",
+		.dev = {
+			.name = "ETH",
+			.regs = {
+				REGMAP("BASE", (ETH_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", ETH_IRQn),
+			},
+			.pins = {
+				PIN("RMII_REF_CLK",    GPIO_PORT_A, 1, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MDIO",       GPIO_PORT_A, 2, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MDC",        GPIO_PORT_C, 1, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_CRS_DV", GPIO_PORT_A, 7, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_RXD0",   GPIO_PORT_C, 4, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_RXD1",   GPIO_PORT_C, 5, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_RXER",   GPIO_PORT_B, 10, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_TX_EN",  GPIO_PORT_B, 11, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_TXD0",   GPIO_PORT_B, 12, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_TXD1",   GPIO_PORT_B, 13, GPIO_MODE_ALT, AF11),
+				PIN("PHY_RESET",   GPIO_PORT_E, 2, GPIO_MODE_OUT, -1),
+			},
+			.clocks = {
+				VAL("ETH", STM32_CLK_ENABLE(ETH)),
+			},
+			.misc = {
+				VAL("PHY_ADDR", 0x01),
+				VAL("MEDIA_TYPE", RMII),
+			}
+		},
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), UART(uarts), SPI(spis), I2C(i2cs), PWM(pwms), LED(leds), ETH(eths))

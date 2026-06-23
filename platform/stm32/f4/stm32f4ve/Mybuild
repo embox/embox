@@ -21,12 +21,6 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 	source "clock_config.c"
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
-    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
-
-	/*@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/Drivers/BSP/STM32F4-Discovery")*/
-	//source "stm32f4ve.c"
-
 	@NoRuntime depends third_party.bsp.stmf4cube.bsp_drivers.stm324xg_eval_sd
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends stm32f4ve_conf
