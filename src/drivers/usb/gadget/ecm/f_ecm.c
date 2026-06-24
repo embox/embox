@@ -61,7 +61,7 @@ static struct usb_desc_endpoint bulk_ep_tx_desc = {
     .b_length = sizeof(struct usb_desc_endpoint),
     .b_desc_type = USB_DESC_TYPE_ENDPOINT,
     .bm_attributes = USB_DESC_ENDP_TYPE_BULK,
-    .w_max_packet_size = 64,
+    .w_max_packet_size = 512,
     .b_interval = 0,
 };
 
@@ -69,7 +69,7 @@ static struct usb_desc_endpoint bulk_ep_rx_desc = {
     .b_length = sizeof(struct usb_desc_endpoint),
     .b_desc_type = USB_DESC_TYPE_ENDPOINT,
     .bm_attributes = USB_DESC_ENDP_TYPE_BULK,
-    .w_max_packet_size = 64,
+    .w_max_packet_size = 512,
     .b_interval = 0,
 };
 
