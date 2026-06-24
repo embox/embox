@@ -67,7 +67,7 @@ static struct usb_gadget_composite ecm_gadget = {
 		[ECM_STR_CONFIGURATION]     = "ECM",
 		[ECM_STR_CONTROL_INTERFACE] = "ECM Control Interface",
 		[ECM_STR_DATA_INTERFACE]    = "ECM Data Interface",
-		[ECM_STR_ETHADDR]           = "aabbccddee00",
+		[ECM_STR_ETHADDR]           = "000202030000",
 	},
 	.configs = {
 		&ecm_config,
