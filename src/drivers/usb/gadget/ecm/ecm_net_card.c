@@ -22,7 +22,7 @@
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/gadget/gadget.h>
 
-#define ECM_RX_BUF_SZ    1024
+#define ECM_RX_BUF_SZ    USB_GADGET_REQ_BUFSIZE
 
 static struct net_device *ecm_card_nic;
 static const uint8_t ecm_card_mac[ETH_ALEN] = {
