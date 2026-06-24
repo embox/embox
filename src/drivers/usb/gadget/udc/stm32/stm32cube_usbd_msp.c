@@ -37,70 +37,8 @@
  * @retval None
  */
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
-#if 0
-	GPIO_InitTypeDef GPIO_InitStruct;
 
-	if (hpcd->Instance == USB_OTG_HS) {
-
-		__HAL_RCC_GPIOA_CLK_ENABLE();
-		__HAL_RCC_GPIOB_CLK_ENABLE();
-		__HAL_RCC_GPIOC_CLK_ENABLE();
-		__HAL_RCC_GPIOH_CLK_ENABLE();
-		__HAL_RCC_GPIOI_CLK_ENABLE();
-
-		/* CLK */
-		GPIO_InitStruct.Pin = GPIO_PIN_5;
-		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-		GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-		/* D0 */
-		GPIO_InitStruct.Pin = GPIO_PIN_3;
-		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-		GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-		/* D1 D2 D3 D4 D5 D6 D7 */
-		GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_5
-				| GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
-		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-		HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-		/* STP */
-		GPIO_InitStruct.Pin = GPIO_PIN_0;
-		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-		HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-		/* NXT */
-		GPIO_InitStruct.Pin = GPIO_PIN_4;
-		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-		HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
-
-		/* DIR */
-		GPIO_InitStruct.Pin = GPIO_PIN_11;
-		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-		HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
-
-		__HAL_RCC_USB_OTG_HS_ULPI_CLK_ENABLE();
-
-		/* Enable USB HS Clocks */
-		__HAL_RCC_USB_OTG_HS_CLK_ENABLE();
-
-	}
-#else
-
+#if CONF_USB_OTG_MISC_PHY_ITFACE == PCD_PHY_ULPI
 		/* CLK */
 		gpio_setup_mode(USB_PORT(CLK), (1 << USB_PIN(CLK)),
 	    	GPIO_MODE_ALT_SET(USB_AF(CLK)) | GPIO_MODE_OUT_PUSH_PULL);
@@ -145,11 +83,27 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 		/* Enable ULPI Clocks */
 		CONF_USB_OTG_CLK_DEF_PHY();
 
+
+#elif CONF_USB_OTG_MISC_PHY_ITFACE == PCD_PHY_EMBEDDED
+		/* DM */
+		gpio_setup_mode(USB_PORT(DM), (1 << USB_PIN(DM)),
+	    	GPIO_MODE_ALT_SET(USB_AF(DM)) | GPIO_MODE_OUT_PUSH_PULL);
+		/* DP */
+		gpio_setup_mode(USB_PORT(DP), (1 << USB_PIN(DP)),
+	    	GPIO_MODE_ALT_SET(USB_AF(DP)) | GPIO_MODE_OUT_PUSH_PULL);
+		/* VBUS */
+		gpio_setup_mode(USB_PORT(VBUS), (1 << USB_PIN(VBUS)),
+	    	GPIO_MODE_INPUT);
+		/* ID */
+		gpio_setup_mode(USB_PORT(ID), (1 << USB_PIN(ID)),
+	    	GPIO_MODE_ALT_SET(USB_AF(ID)) | GPIO_MODE_OUT_OPEN_DRAIN |
+			GPIO_MODE_IN_PULL_UP);
+#else
+#error "CONF_USB_OTG_MISC_PHY_ITFACE is not setup "
+#endif  /* CONF_USB_OTG_MISC_PHY_ITFACE */
+
 		/* Enable USB HS Clocks */
 		CONF_USB_OTG_CLK_DEF_USB();
-
-#endif
-
 }
 
 /**

@@ -76,7 +76,7 @@ int stm32cube_usbd_init(void) {
 	hpcd.Init.lpm_enable = 0;
 	hpcd.Init.phy_itface = CONF_USB_OTG_MISC_PHY_ITFACE;
 	hpcd.Init.Sof_enable = 0;
-	hpcd.Init.speed = PCD_SPEED_HIGH;
+	hpcd.Init.speed = CONF_USB_OTG_MISC_SPEED;
 	hpcd.Init.vbus_sensing_enable = 1;
 	/* Link The driver to the stack */
 //	hpcd.pData = pdev;
