@@ -8,6 +8,7 @@
 
 #include <util/log.h>
 
+#include <stdint.h>
 #include <assert.h>
 
 #include <kernel/irq.h>
@@ -16,11 +17,12 @@
 
 #include <framework/mod/options.h>
 
+#include <util/macro.h>
+#include <config/board_config.h>
 
 #include <kernel/printk.h>
 
 #include <bsp/stm32cube_hal.h>
-
 
 #define USB_IRQ OPTION_GET(NUMBER, irq)
 
@@ -66,13 +68,13 @@ int stm32cube_usbd_init(void) {
 
 	/*Set LL Driver parameters */
 	/* FIXME: should be dependent on gadget */
-	hpcd.Instance = USB_OTG_HS;
+	hpcd.Instance = (void *)(uintptr_t)CONF_USB_OTG_REGION_BASE;
 	hpcd.Init.dev_endpoints = 9;
 	hpcd.Init.use_dedicated_ep1 = 0;
 	hpcd.Init.dma_enable = 0;
 	hpcd.Init.low_power_enable = 0;
 	hpcd.Init.lpm_enable = 0;
-	hpcd.Init.phy_itface = PCD_PHY_ULPI;
+	hpcd.Init.phy_itface = CONF_USB_OTG_MISC_PHY_ITFACE;
 	hpcd.Init.Sof_enable = 0;
 	hpcd.Init.speed = PCD_SPEED_HIGH;
 	hpcd.Init.vbus_sensing_enable = 1;
