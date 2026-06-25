@@ -193,8 +193,6 @@ struct idesc *char_dev_open_idesc(struct char_dev *cdev, int oflag) {
 	struct idesc *idesc;
 	int err;
 
-	err = 0;
-
 	assert(cdev);
 	assert(cdev->usage_count >= 0);
 
@@ -220,18 +218,19 @@ struct idesc *char_dev_open_idesc(struct char_dev *cdev, int oflag) {
 
 	/* lock ??? */
 
-	if (cdev->ops->open && (cdev->usage_count == 0)) {
-		err = cdev->ops->open(cdev, idesc);
+	if (cdev->usage_count == 0) {
+		waitq_init(&cdev->waitq);
+
+		if (cdev->ops->open) {
+			err = cdev->ops->open(cdev, idesc);
+			if (err) {
+				pool_free(&cdev_idesc_pool, idesc);
+				return err2ptr(-err);
+			}
+		}
 	}
 
-	if (err) {
-		pool_free(&cdev_idesc_pool, idesc);
-		idesc = err2ptr(-err);
-	}
-	else {
-		cdev->usage_count++;
-		waitq_init(&cdev->waitq);
-	}
+	cdev->usage_count++;
 
 	/* unlock ??? */
 
