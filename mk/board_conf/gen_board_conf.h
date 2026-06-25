@@ -110,6 +110,11 @@ struct can_conf {
 	struct device_conf dev;
 };
 
+struct usb_conf {
+	int status;
+	const char *name;
+	struct device_conf dev;
+};
 
 struct conf_item {
 	void *ptr;
@@ -156,7 +161,8 @@ struct lcd_conf {
 #define LCD_IDX     10
 #define ETH_IDX     11
 #define CAN_IDX     12
-#define MAX_IDX     13
+#define USB_IDX     13
+#define MAX_IDX     14
 
 
 #define EXPORT_CONFIG(...) \
@@ -240,6 +246,12 @@ struct lcd_conf {
 	[CAN_IDX] = { \
 		(void *) &(cans)[0], \
 		ARRAY_SIZE(cans), \
+	}
+
+#define USB(usbs) \
+	[USB_IDX] = { \
+		(void *) &(usbs)[0], \
+		ARRAY_SIZE(usbs), \
 	}
 
 #define CONFIG   void config()

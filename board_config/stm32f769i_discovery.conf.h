@@ -262,8 +262,8 @@ struct mmc_conf mmcs[] = {
 				VAL("", 49),
 			},
 			.pins = {
-				PIN("TX", PC, PIN_6, GPIO_MODE_ALT, AF8),
-				PIN("RX", PC, PIN_7, GPIO_MODE_ALT, AF8),
+				PIN("TX", GPIO_PORT_C, 6, GPIO_MODE_ALT, AF8),
+				PIN("RX", GPIO_PORT_C, 7, GPIO_MODE_ALT, AF8),
 			},
 			.clocks = {
 				VAL("", CLK_SDMMC1),
@@ -317,4 +317,42 @@ struct mmc_conf mmcs[] = {
 };
 
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), MMC(mmcs))
+struct usb_conf usbs[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "USB_OTG",
+			.regs = {
+				REGMAP("BASE", (USB_OTG_HS_PERIPH_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 77), /* OTG_HS_IRQn */
+			},
+			.pins = {
+				PIN("CLK", GPIO_PORT_A,  5, GPIO_MODE_ALT, 10),
+				PIN("D0",  GPIO_PORT_A,  3, GPIO_MODE_ALT, 10),
+				PIN("D1",  GPIO_PORT_B,  0, GPIO_MODE_ALT, 10),
+				PIN("D2",  GPIO_PORT_B,  1, GPIO_MODE_ALT, 10),
+				PIN("D3",  GPIO_PORT_B,  5, GPIO_MODE_ALT, 10),
+				PIN("D4",  GPIO_PORT_B, 10, GPIO_MODE_ALT, 10),
+				PIN("D5",  GPIO_PORT_B, 11, GPIO_MODE_ALT, 10),
+				PIN("D6",  GPIO_PORT_B, 12, GPIO_MODE_ALT, 10),
+				PIN("D7",  GPIO_PORT_B, 13, GPIO_MODE_ALT, 10),
+				PIN("STP", GPIO_PORT_C,  0, GPIO_MODE_ALT, 10),
+				PIN("NXT", GPIO_PORT_H,  4, GPIO_MODE_ALT, 10),
+				PIN("DIR", GPIO_PORT_I, 11, GPIO_MODE_ALT, 10),
+			},
+			.clocks = {
+				VAL("USB", STM32_CLK_ENABLE(USB_OTG_HS)),
+				VAL("PHY", STM32_CLK_ENABLE(USB_OTG_HS_ULPI)),				
+			},
+			.misc = {
+				VAL("TYPE_HS", 1),
+				VAL("PHY_ITFACE", PCD_PHY_ULPI),
+				VAL("SPEED", PCD_SPEED_HIGH),
+			},
+		},
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), MMC(mmcs), USB(usbs))

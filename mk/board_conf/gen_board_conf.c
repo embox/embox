@@ -228,6 +228,8 @@ int main() {
 	const struct eth_conf *eth;
 	struct conf_item *can_conf = &board_config[CAN_IDX];
 	const struct can_conf *can;
+	struct conf_item *usb_conf = &board_config[USB_IDX];
+	const struct usb_conf *usb;
 
 	config();
 
@@ -386,6 +388,19 @@ int main() {
 		}
 
 		gen_device_conf(&can->dev);
+
+		printf("\n");
+	}
+
+	/* USB */
+	for (i = 0; i < usb_conf->array_size; i++) {
+		usb = &((const struct usb_conf *)usb_conf->ptr)[i];
+
+		if (usb->status != ENABLED) {
+			continue;
+		}
+
+		gen_device_conf(&usb->dev);
 
 		printf("\n");
 	}

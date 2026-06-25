@@ -143,4 +143,33 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), LED(leds))
+struct usb_conf usbs[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "USB_OTG",
+			.regs = {
+				REGMAP("BASE", (USB_OTG_FS_PERIPH_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 67), /* OTG_FS_IRQn */
+			},
+			.pins = {
+				PIN("VBUS", GPIO_PORT_A,  9, GPIO_MODE_INPUT, 0),
+				PIN("DM",  GPIO_PORT_A,  11, GPIO_MODE_ALT, 10),
+				PIN("DP",  GPIO_PORT_A,  12, GPIO_MODE_ALT, 10),
+				PIN("ID", GPIO_PORT_A, 10, GPIO_MODE_ALT | GPIO_MODE_IN_PULL_UP | GPIO_MODE_OUT_OPEN_DRAIN, 10),
+			},
+			.clocks = {
+				VAL("USB", STM32_CLK_ENABLE(USB_OTG_FS)),			
+			},
+			.misc = {
+				VAL("TYPE_FS", 1),
+				VAL("PHY_ITFACE", PCD_PHY_EMBEDDED),
+				VAL("SPEED", PCD_SPEED_FULL),
+			},
+		},
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), SPI(spis), LED(leds), USB(usbs))

@@ -167,17 +167,17 @@ static int acm_setup(struct usb_gadget_function *f,
 	}
 	/* 2) CLASS requests */
 	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_CLASS) {
-		log_error("USB_REQ_TYPE_CLASS EP0: bm=%02x bReq=%02x wValue=%04x wIndex=%04x wLen=%04x",
+		log_debug("USB_REQ_TYPE_CLASS EP0: bm=%02x bReq=%02x wValue=%04x wIndex=%04x wLen=%04x",
 	    ctrl->bm_request_type, ctrl->b_request, ctrl->w_value, ctrl->w_index,
 	    ctrl->w_length);
 		switch (ctrl->b_request) {
 		case SET_LINE_CODING:
-			log_error("ACM SET_LINE_CODING: val=%04x", ctrl->w_value);
+			log_debug("ACM SET_LINE_CODING: val=%04x", ctrl->w_value);
 			req->len = 0;
 			usb_gadget_ep_queue(&gadget->composite->ep0, req);
 			return 0;
 		case SET_CONTROL_LINE_STATE:
-			log_error("ACM SET_CONTROL_LINE_STATE: val=%04x", ctrl->w_value);
+			log_debug("ACM SET_CONTROL_LINE_STATE: val=%04x", ctrl->w_value);
 			req->len = 0;
 			usb_gadget_ep_queue(&gadget->composite->ep0, req);
 			return 0;
