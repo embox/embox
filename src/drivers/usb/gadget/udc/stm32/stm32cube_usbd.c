@@ -24,7 +24,7 @@
 
 #include <bsp/stm32cube_hal.h>
 
-#define USB_IRQ OPTION_GET(NUMBER, irq)
+#define USB_IRQ_NUM       CONF_USB_OTG_IRQ
 
 static int stm32cube_usbd_reset_hnd(struct lthread *self);
 static LTHREAD_DEF(stm32cube_usbd_reset_lt, stm32cube_usbd_reset_hnd, 200);
@@ -89,7 +89,7 @@ int stm32cube_usbd_init(void) {
 	HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x100);
 	HAL_PCDEx_SetTxFiFo(&hpcd, 2, 0x40);
 
-	ret = irq_attach(USB_IRQ, stm32cube_usbd_usb_irq_handler, 0, &hpcd, "usbd");
+	ret = irq_attach(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, 0, &hpcd, "usbd");
 	if (ret != 0) {
 		log_error("USB irq attach failed");
 		return ret;
@@ -100,4 +100,4 @@ int stm32cube_usbd_init(void) {
 	return 0;
 }
 
-STATIC_IRQ_ATTACH(USB_IRQ, stm32cube_usbd_usb_irq_handler, &hpcd);
+STATIC_IRQ_ATTACH(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, &hpcd);
