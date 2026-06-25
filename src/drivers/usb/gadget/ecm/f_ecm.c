@@ -61,7 +61,7 @@ static struct usb_desc_endpoint bulk_ep_tx_desc = {
     .b_length = sizeof(struct usb_desc_endpoint),
     .b_desc_type = USB_DESC_TYPE_ENDPOINT,
     .bm_attributes = USB_DESC_ENDP_TYPE_BULK,
-    .w_max_packet_size = 64,
+    .w_max_packet_size = 512,
     .b_interval = 0,
 };
 
@@ -69,7 +69,7 @@ static struct usb_desc_endpoint bulk_ep_rx_desc = {
     .b_length = sizeof(struct usb_desc_endpoint),
     .b_desc_type = USB_DESC_TYPE_ENDPOINT,
     .bm_attributes = USB_DESC_ENDP_TYPE_BULK,
-    .w_max_packet_size = 64,
+    .w_max_packet_size = 512,
     .b_interval = 0,
 };
 
@@ -239,11 +239,17 @@ static int ecm_setup(struct usb_gadget_function *f,
 extern int ecm_card_init(struct usb_gadget_ep *tx, struct usb_gadget_ep *rx);
 
 static int ecm_enumerate(struct usb_gadget_function *f) {
-	ecm_card_init(&bulk_tx, &bulk_rx);
+	int ret;
 
 	usb_gadget_ep_enable(&bulk_tx);
 	usb_gadget_ep_enable(&bulk_rx);
 	usb_gadget_ep_enable(&intr);
+
+	ret = ecm_card_init(&bulk_tx, &bulk_rx);
+	if (ret != 0) {
+		log_error("ECM net card init failed: %d", ret);
+		return ret;
+	}
 
 	return 0;
 }

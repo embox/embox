@@ -132,7 +132,7 @@ void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd) {
 PCD_HandleTypeDef hpcd;
 extern void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
 static irq_return_t usb_stm32f7_usb_irq_handler(unsigned int irq_nr, void *data) {
-	printk("usb: irq entry\n");
+	log_debug("usb: irq entry");
 	HAL_PCD_IRQHandler(&hpcd);
 	return IRQ_HANDLED;
 }
