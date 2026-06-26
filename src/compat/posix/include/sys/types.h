@@ -15,27 +15,27 @@
 #include <stdint.h>
 #include <sys/cdefs.h>
 
-typedef unsigned long blkcnt_t;   /* Used for file block counts */
-typedef unsigned long blksize_t;  /* Used for block sizes */
-typedef unsigned long clock_t;    /* Used for system times in clock ticks */
-typedef unsigned long fsblkcnt_t; /* Used for file system block counts */
-typedef unsigned long fsfilcnt_t; /* Used for file system file counts */
-typedef unsigned long ino_t;      /* Used for file serial numbers */
-typedef uint32_t clockid_t;       /* Used for clock ID type */
-typedef uint32_t timer_t;         /* Used for timer ID */
-typedef uint32_t dev_t;           /* Used for device IDs */
-typedef uint32_t key_t;           /* Used for XSI interprocess communication */
-typedef uint32_t mode_t;          /* Used for some file attributes */
-typedef unsigned short gid_t;     /* Used for group IDs */
-typedef unsigned short nlink_t;   /* Used for link counts */
-typedef unsigned short uid_t;     /* Used for user IDs */
-typedef int pid_t;                /* Used for process IDs */
-typedef int id_t;                 /* Used as a general identifier */
-typedef int ssize_t;              /* Used for a count of bytes or an error */
-typedef long off_t;               /* Used for file sizes */
-typedef long time_t;              /* Used for time in seconds */
-typedef long suseconds_t;         /* Used for time in microseconds (signed) */
-typedef unsigned long useconds_t; /* Used for time in microseconds */
+typedef unsigned long blkcnt_t;   /* file block counts */
+typedef unsigned long blksize_t;  /* block sizes */
+typedef uint64_t clock_t;         /* jiffies (can overflow if < 64-bit) */
+typedef unsigned long fsblkcnt_t; /* file system block counts */
+typedef unsigned long fsfilcnt_t; /* file system file counts */
+typedef unsigned long ino_t;      /* file serial numbers */
+typedef uint32_t clockid_t;       /* clock ID type */
+typedef uint32_t timer_t;         /* timer ID */
+typedef uint32_t dev_t;           /* device IDs */
+typedef uint32_t key_t;           /* XSI interprocess communication */
+typedef uint32_t mode_t;          /* some file attributes */
+typedef unsigned short gid_t;     /* group IDs */
+typedef unsigned short nlink_t;   /* link counts */
+typedef unsigned short uid_t;     /* user IDs */
+typedef int pid_t;                /* process IDs */
+typedef int id_t;                 /*  general identifier */
+typedef int ssize_t;              /* a count of bytes or an error */
+typedef long off_t;               /* file sizes */
+typedef long time_t;              /* time in seconds */
+typedef long suseconds_t;         /* time in microseconds (signed) */
+typedef unsigned long useconds_t; /* time in microseconds */
 
 /* Not part of posix */
 typedef uint64_t loff_t; /* Used for file sizes (64-bit version) */

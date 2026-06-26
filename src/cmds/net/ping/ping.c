@@ -130,7 +130,7 @@ static void parse_result(struct packet_in *rx_pack,
 			printf("time<1 ms\n");
 		}
 		else {
-			printf("time=%lu ms\n", elapsed);
+			printf("time=%lu ms\n", (unsigned long)elapsed);
 		}
 		stat->cnt_replies++;
 		break;
