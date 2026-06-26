@@ -5,7 +5,6 @@
  * @date 04.10.11
  * @author Alexander Kalmuk
  */
-#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,7 +36,9 @@ int system_start(void) {
 	int ret;
 
 	tty_dev_name = setup_tty(OPTION_STRING_GET(tty_dev));
-	assert(tty_dev_name);
+	if (NULL == tty_dev_name) {
+		tty_dev_name = "(none)";
+	}
 
 	printf("Default IO device[%s]\n", tty_dev_name);
 
