@@ -69,7 +69,7 @@ static void print_stat(void) {
 					sched_active(&t->schedee) ? 'A' : ' ',
 					t->schedee.ready        ? 'R' : ' ',
 					t->schedee.waiting      ? 'W' : ' ',
-					thread_get_running_time(t)/CLOCKS_PER_SEC,
+					(unsigned long)(thread_get_running_time(t)/CLOCKS_PER_SEC),
 					thread_stack_get_size(t),
 					task_get_id(t->task), task_get_name(t->task));
 
