@@ -1,8 +1,6 @@
 package embox.driver.pci_chip
 
-@DefaultImpl(pci_chip_x86)
 abstract module pci_chip {
-
 }
 
 module pci_chip_x86 extends pci_chip {
