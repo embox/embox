@@ -3,8 +3,13 @@ package embox.driver.usb.gadget
 module f_ecm {
 	option string log_level="LOG_ERR"
 
+	option number max_packet_size = 64
+
 	source "f_ecm.c"
 	source "ecm_net_card.c"
+
+	@IncludeExport(path="drivers/usb/function")
+	source "f_ecm_idx.h"
 
 	@NoRuntime depends embox.driver.usb.class.cdc
 
@@ -19,8 +24,6 @@ module ecm_gadget {
 	option number max_packet_size = 64
 
 	source "ecm_gadget.c"
-	@IncludeExport(path="drivers/usb/function")
-	source "f_ecm_idx.h"
 
 	depends f_ecm
 }
