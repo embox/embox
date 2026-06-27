@@ -26,14 +26,7 @@
 
 EMBOX_UNIT_INIT(ecm_init);
 
-#if 0
-/* TODO These defines should be moved to some CDC part. */
-#define USB_CDC_SUBCLASS_ETHERNET 0x06
-
-#define USB_CDC_HEADER_TYPE   0x00
-#define USB_CDC_UNION_TYPE    0x06
-#define USB_CDC_ETHERNET_TYPE 0x0f
-#endif
+#define MAX_PACKET_SIZE    OPTION_GET(NUMBER, max_packet_size)
 
 static int ecm_probe(struct usb_gadget *gadget);
 
@@ -61,7 +54,7 @@ static struct usb_desc_endpoint bulk_ep_tx_desc = {
     .b_length = sizeof(struct usb_desc_endpoint),
     .b_desc_type = USB_DESC_TYPE_ENDPOINT,
     .bm_attributes = USB_DESC_ENDP_TYPE_BULK,
-    .w_max_packet_size = 512,
+    .w_max_packet_size = MAX_PACKET_SIZE,
     .b_interval = 0,
 };
 
@@ -69,7 +62,7 @@ static struct usb_desc_endpoint bulk_ep_rx_desc = {
     .b_length = sizeof(struct usb_desc_endpoint),
     .b_desc_type = USB_DESC_TYPE_ENDPOINT,
     .bm_attributes = USB_DESC_ENDP_TYPE_BULK,
-    .w_max_packet_size = 512,
+    .w_max_packet_size = MAX_PACKET_SIZE,
     .b_interval = 0,
 };
 

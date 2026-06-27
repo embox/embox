@@ -69,7 +69,7 @@ int stm32cube_usbd_init(void) {
 	/*Set LL Driver parameters */
 	/* FIXME: should be dependent on gadget */
 	hpcd.Instance = (void *)(uintptr_t)CONF_USB_OTG_REGION_BASE;
-	hpcd.Init.dev_endpoints = 9;
+	hpcd.Init.dev_endpoints = CONF_USB_OTG_MISC_EP_MAX;
 	hpcd.Init.use_dedicated_ep1 = 0;
 	hpcd.Init.dma_enable = 0;
 	hpcd.Init.low_power_enable = 0;
@@ -84,10 +84,16 @@ int stm32cube_usbd_init(void) {
 	/*Initialize LL Driver */
 	HAL_PCD_Init(&hpcd);
 
+#if CONF_USB_OTG_MISC_SPEED == PCD_SPEED_HIGH
 	HAL_PCDEx_SetRxFiFo(&hpcd, 0x200);
 	HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x80);
 	HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x100);
 	HAL_PCDEx_SetTxFiFo(&hpcd, 2, 0x40);
+#else /* PCD_SPEED_FULL */
+	HAL_PCDEx_SetRxFiFo(&hpcd, 0x80);
+	HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x40);
+	HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x80);
+#endif /* CONF_USB_OTG_MISC_SPEED */
 
 	ret = irq_attach(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, 0, &hpcd, "usbd");
 	if (ret != 0) {

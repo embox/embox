@@ -167,6 +167,7 @@ struct usb_conf usbs[] = {
 				VAL("TYPE_FS", 1),
 				VAL("PHY_ITFACE", PCD_PHY_EMBEDDED),
 				VAL("SPEED", PCD_SPEED_FULL),
+				VAL("EP_MAX", 6),
 			},
 		},
 	},

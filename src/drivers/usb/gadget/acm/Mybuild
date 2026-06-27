@@ -3,6 +3,8 @@ package embox.driver.usb.gadget
 module f_acm {
 	option string log_level="LOG_ERR"
 
+	option number max_packet_size = 64
+
 	source "f_acm.c"
 	source "acm_tty.c"
 
