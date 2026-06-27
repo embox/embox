@@ -350,6 +350,7 @@ struct usb_conf usbs[] = {
 				VAL("TYPE_HS", 1),
 				VAL("PHY_ITFACE", PCD_PHY_ULPI),
 				VAL("SPEED", PCD_SPEED_HIGH),
+				VAL("EP_MAX", 9),
 			},
 		},
 	},
