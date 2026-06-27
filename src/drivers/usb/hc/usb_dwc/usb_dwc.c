@@ -405,7 +405,7 @@ static const struct usb_desc_device root_hub_device_descriptor = {
 	.b_dev_class = USB_CLASS_CODE_HUB,
 	.b_dev_subclass = 0,
 	.b_dev_protocol = 0,
-	.b_max_packet_size = 64,
+	.b_max_packet_size0 = 64,
 	.id_vendor = 0,
 	.id_product = 0,
 	.bcd_device = 0,
@@ -924,7 +924,7 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 		characteristics.endpoint_number = 0;
 		characteristics.endpoint_type = USB_COMM_CONTROL;
 		//characteristics.max_packet_size = req->endp->max_packet_size;
-		characteristics.max_packet_size = req->endp->dev->dev_desc.b_max_packet_size;
+		characteristics.max_packet_size = req->endp->dev->dev_desc.b_max_packet_size0;
 		characteristics.packets_per_frame = 1;
 	}
 
