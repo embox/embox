@@ -25,12 +25,10 @@
 
 #include <bsp/stm32cube_hal.h>
 
-EMBOX_UNIT_INIT(stm32cube_udc_init);
+#include "stm32cube_udc_priv.h"
 
-#define USB_MAX_EP0_SIZE 64U
 
 #define EP0_BUFFER_SIZE       1024
-#define STM32CUBE_UDC_EPS_COUNT 8 /* IN and OUT */
 
 #define STM32CUBE_UDC_IN_EP_MASK  ((1 << 1) | (1 << 2) | (1 << 3))
 #define STM32CUBE_UDC_OUT_EP_MASK ((1 << 1) | (1 << 2) | (1 << 3))
@@ -69,137 +67,8 @@ static void dump_bytes(const char *tag, const void *data, int len) {
 static inline void dump_bytes(const char *tag, const void *data, int len) { }
 #endif
 
-struct ep_status {
-	//	uint32_t status;
-	uint32_t total_length;
-	uint32_t rem_length;
-	uint32_t maxpacket;
-	uint8_t is_used;
-	//	uint16_t bInterval;
-};
-
-struct stm32cube_udc {
-	struct usb_udc udc;
-	struct usb_gadget_ep *eps[STM32CUBE_UDC_EPS_COUNT];
-	struct usb_gadget_request *requests[STM32CUBE_UDC_EPS_COUNT];
-	struct ep_status ep_info[STM32CUBE_UDC_EPS_COUNT];
-	uint32_t ep0_data_len;
-};
-
-extern PCD_HandleTypeDef hpcd;
-
 static uint8_t ep0_buffer[EP0_BUFFER_SIZE];
 
-static unsigned int stm32cube_udc_ep_in_idx(uint8_t epnum) {
-	return 0x4U | epnum;
-}
-
-static unsigned int stm32cube_udc_ep_out_idx(uint8_t epnum) {
-	return 0x0U | epnum;
-}
-
-static uint8_t stm32cube_udc_ep_type(struct usb_gadget_ep *ep) {
-	return ep->desc->bm_attributes & USB_DESC_ENDP_TYPE_MASK;
-}
-
-extern int stm32cube_usbd_init(void) ;
-static int stm32cube_udc_start(struct usb_udc *udc) {
-	stm32cube_usbd_init();
-
-	return 0;
-}
-
-static int stm32cube_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_request *req) {
-	struct stm32cube_udc *u = (struct stm32cube_udc *)ep->udc;
-	uint8_t n = (uint8_t)ep->nr;
-	unsigned int idx;
-
-	assert(ep && req);
-
-	log_debug("EPQ: ep=%u dir=%s len=%u",
-	    n, ep->dir == USB_DIR_IN ? "IN" : "OUT", (unsigned)req->len);
-
-	if (n == 0 || ep->dir == USB_DIR_IN) {
-		idx = stm32cube_udc_ep_in_idx(n);
-
-		if (u->ep_info[idx].is_used) {
-			return -EBUSY;
-		}
-		u->ep_info[idx].is_used = 1;
-		u->ep_info[idx].total_length = req->len;
-		u->ep_info[idx].rem_length = req->len;
-
-		u->requests[idx] = req;
-		u->eps[idx] = ep;
-
-		HAL_PCD_EP_Transmit(&hpcd, n, req->buf, req->len);
-		return 0;
-	}
-
-	idx = stm32cube_udc_ep_out_idx(n);
-
-	if (u->ep_info[idx].is_used) {
-		return -EBUSY;
-	}
-	u->ep_info[idx].is_used = 1;
-	u->ep_info[idx].total_length = req->len;
-	u->ep_info[idx].rem_length = req->len;
-
-	u->requests[idx] = req;
-	u->eps[idx] = ep;
-
-	HAL_PCD_EP_Receive(&hpcd, n, req->buf, req->len);
-	return 0;
-}
-
-static void stm32cube_udc_ep_enable(struct usb_gadget_ep *ep) {
-	struct stm32cube_udc *u;
-	unsigned int idx;
-	uint8_t ep_addr;
-	uint16_t maxpacket;
-	uint8_t type;
-
-	assert(ep);
-	assert(ep->desc);
-
-	u = (struct stm32cube_udc *)ep->udc;
-	ep_addr = ep->desc->b_endpoint_address;
-	maxpacket = ep->desc->w_max_packet_size;
-	type = stm32cube_udc_ep_type(ep);
-
-	if (ep->dir == USB_DIR_IN) {
-		idx = stm32cube_udc_ep_in_idx(ep->nr);
-	}
-	else {
-		idx = stm32cube_udc_ep_out_idx(ep->nr);
-	}
-
-	u->ep_info[idx].maxpacket = maxpacket;
-
-	log_debug("EPO: addr=0x%02x mps=%u type=%u",
-	    ep_addr, (unsigned)maxpacket, (unsigned)type);
-
-	HAL_PCD_EP_Open(&hpcd, ep_addr, maxpacket, type);
-}
-
-static struct stm32cube_udc stm32cube_udc = {
-    .udc =
-        {
-            .name = "stm32_udc",
-            .udc_start = stm32cube_udc_start,
-            .ep_queue = stm32cube_udc_ep_queue,
-            .ep_enable = stm32cube_udc_ep_enable,
-
-            .in_ep_mask = STM32CUBE_UDC_IN_EP_MASK,
-            .out_ep_mask = STM32CUBE_UDC_OUT_EP_MASK,
-        },
-};
-
-static int stm32cube_udc_init(void) {
-	usb_gadget_register_udc(&stm32cube_udc.udc);
-
-	return 0;
-}
 
 /* hardware-specific handlers */
 
