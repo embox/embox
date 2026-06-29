@@ -27,6 +27,6 @@ static const struct char_dev_ops zero_cdev_ops = {
     .write = zero_write,
 };
 
-static struct char_dev zero_cdev = CHAR_DEV_INIT(zero_cdev, "zero", &zero_cdev_ops);
+static struct char_dev zero_cdev = CHAR_DEV_INIT("zero", &zero_cdev_ops);
 
 CHAR_DEV_REGISTER(&zero_cdev);

@@ -30,7 +30,7 @@ static const struct char_dev_ops demo_char_dev_ops = {
     .ioctl = demo_char_dev_ioctl,
 };
 
-static struct char_dev demo_char_dev = CHAR_DEV_INIT(demo_char_dev,
-    "demo_char_dev", &demo_char_dev_ops);
+static struct char_dev demo_char_dev = CHAR_DEV_INIT("demo_char_dev",
+    &demo_char_dev_ops);
 
 CHAR_DEV_REGISTER(&demo_char_dev);

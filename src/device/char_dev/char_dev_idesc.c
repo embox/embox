@@ -17,10 +17,12 @@
 
 #include <drivers/char_dev.h>
 #include <framework/mod/options.h>
+#include <hal/ipl.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
+#include <kernel/thread/sync/mutex.h>
 #include <lib/libds/array.h>
 #include <mem/misc/pool.h>
 #include <mem/vmem_device_memory.h>
@@ -61,6 +63,15 @@ static ssize_t char_dev_readv(struct idesc *idesc, const struct iovec *iov,
 		return -EBADF;
 	}
 
+	if (idesc->idesc_flags & O_NONBLOCK) {
+		if (0 != mutex_trylock(&cdev->mutex)) {
+			return -EBUSY;
+		}
+	}
+	else {
+		mutex_lock(&cdev->mutex);
+	}
+
 	for (i = 0, nbyte = 0; i < iovcnt; i++) {
 		res = cdev->ops->read(cdev, iov[i].iov_base, iov[i].iov_len,
 		    idesc->idesc_flags);
@@ -70,6 +81,8 @@ static ssize_t char_dev_readv(struct idesc *idesc, const struct iovec *iov,
 		}
 		nbyte += res;
 	}
+
+	mutex_unlock(&cdev->mutex);
 
 	return nbyte;
 }
@@ -156,8 +169,10 @@ static void *char_dev_mmap(struct idesc *idesc, void *addr, size_t len,
 	return phy_addr;
 }
 
-void char_dev_close(struct idesc *idesc) {
+static void char_dev_close(struct idesc *idesc) {
 	struct char_dev *cdev;
+	ipl_t ipl;
+	int cnt;
 
 	cdev = idesc2cdev(idesc);
 
@@ -165,15 +180,24 @@ void char_dev_close(struct idesc *idesc) {
 		goto out;
 	}
 
-	if (--cdev->usage_count > 0) {
-		goto out;
+	ipl = ipl_save();
+	{
+		cnt = --cdev->usage_count;
+		if (cnt == 0) {
+			mutex_trylock(&cdev->mutex);
+		}
+	}
+	ipl_restore(ipl);
+
+	assert(cnt >= 0);
+
+	if (cnt == 0) {
+		if (cdev->ops->close) {
+			cdev->ops->close(cdev);
+		}
 	}
 
-	assert(cdev->usage_count == 0);
-
-	if (cdev->ops->close) {
-		cdev->ops->close(cdev);
-	}
+	while (0 == mutex_unlock(&cdev->mutex)) {}
 
 out:
 	pool_free(&cdev_idesc_pool, idesc);
@@ -191,10 +215,11 @@ static const struct idesc_ops char_dev_idesc_ops = {
 
 struct idesc *char_dev_open_idesc(struct char_dev *cdev, int oflag) {
 	struct idesc *idesc;
+	ipl_t ipl;
+	int cnt;
 	int err;
 
 	assert(cdev);
-	assert(cdev->usage_count >= 0);
 
 	if (!cdev->ops->read && ((oflag & O_ACCESS_MASK) != O_WRONLY)) {
 		return err2ptr(EACCES);
@@ -216,23 +241,39 @@ struct idesc *char_dev_open_idesc(struct char_dev *cdev, int oflag) {
 		return idesc;
 	}
 
-	/* lock ??? */
-
-	if (cdev->usage_count == 0) {
-		waitq_init(&cdev->waitq);
-
-		if (cdev->ops->open) {
-			err = cdev->ops->open(cdev, idesc);
-			if (err) {
-				pool_free(&cdev_idesc_pool, idesc);
-				return err2ptr(-err);
-			}
+	ipl = ipl_save();
+	{
+		if (0 != (cnt = cdev->usage_count)) {
+			cdev->usage_count++;
 		}
 	}
+	ipl_restore(ipl);
 
-	cdev->usage_count++;
+	if (cnt != 0) {
+		return idesc;
+	}
 
-	/* unlock ??? */
+	err = mutex_trylock(&cdev->mutex);
+	if (err) {
+		goto out;
+	}
+
+	if (cdev->ops->open) {
+		err = cdev->ops->open(cdev, idesc);
+	}
+
+	if (!err) {
+		waitq_init(&cdev->waitq);
+		cdev->usage_count++;
+	}
+
+	mutex_unlock(&cdev->mutex);
+
+out:
+	if (err) {
+		pool_free(&cdev_idesc_pool, idesc);
+		return err2ptr(-err);
+	}
 
 	return idesc;
 }

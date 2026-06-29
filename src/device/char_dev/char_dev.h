@@ -9,20 +9,21 @@
 #define DEVICE_CHAR_DEV_H_
 
 #include <limits.h>
+#include <sys/types.h>
 
 #include <kernel/sched/waitq.h>
 #include <kernel/task/resource/idesc.h>
+#include <kernel/thread/sync/mutex.h>
 #include <lib/libds/array_spread.h>
 #include <lib/libds/dlist.h>
 
 #include <config/embox/device/char_dev.h>
 
-#define CHAR_DEV_INIT(_self, _name, _ops)         \
-	((struct char_dev){                           \
-	    .list_item = DLIST_INIT(_self.list_item), \
-	    .usage_count = 0,                         \
-	    .ops = _ops,                              \
-	    .name = _name,                            \
+#define CHAR_DEV_INIT(_name, _ops) \
+	((struct char_dev){            \
+	    .usage_count = 0,          \
+	    .ops = _ops,               \
+	    .name = _name,             \
 	})
 
 #define CHAR_DEV_REGISTER(_cdev_ptr)                                          \
@@ -46,7 +47,8 @@ struct char_dev {
 	const struct char_dev_ops *ops;
 	struct dlist_head list_item;
 	struct waitq waitq;
-	int usage_count;
+	struct mutex mutex;
+	volatile int usage_count;
 	char name[NAME_MAX];
 };
 

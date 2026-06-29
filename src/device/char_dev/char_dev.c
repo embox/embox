@@ -12,6 +12,7 @@
 
 #include <drivers/char_dev.h>
 #include <embox/unit.h>
+#include <kernel/thread/sync/mutex.h>
 #include <lib/libds/array.h>
 #include <lib/libds/dlist.h>
 #include <util/log.h>
@@ -44,6 +45,12 @@ static int char_dev_check_name(const char *name) {
 	}
 
 	return 0;
+}
+
+static void __char_dev_init(struct char_dev *cdev) {
+	mutex_init(&cdev->mutex);
+	dlist_init(&cdev->list_item);
+	cdev->usage_count = 0;
 }
 
 struct char_dev *char_dev_iterate(struct char_dev *cdev) {
@@ -121,8 +128,7 @@ void char_dev_init(struct char_dev *cdev, const char *name,
 	assert(name);
 	assert(ops);
 
-	dlist_init(&cdev->list_item);
-	cdev->usage_count = 0;
+	__char_dev_init(cdev);
 	cdev->ops = ops;
 
 	strncpy(cdev->name, name, sizeof(cdev->name) - 1);
@@ -136,6 +142,8 @@ static int char_dev_registry_init(void) {
 	int err;
 
 	array_spread_foreach(cdev, __char_dev_static_registry) {
+		__char_dev_init(cdev);
+
 		if ((err = char_dev_register(cdev))) {
 			return err;
 		}

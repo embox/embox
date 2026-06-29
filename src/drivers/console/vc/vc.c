@@ -68,6 +68,6 @@ static const struct char_dev_ops vc_dev_ops = {
     .status = vc_status,
 };
 
-static struct char_dev vc_dev = CHAR_DEV_INIT(vc_dev, "vc", &vc_dev_ops);
+static struct char_dev vc_dev = CHAR_DEV_INIT("vc", &vc_dev_ops);
 
 CHAR_DEV_REGISTER(&vc_dev);

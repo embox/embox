@@ -17,14 +17,13 @@
 
 #define __TTYS_NAME(_name) MACRO_CONCAT(__tty_device__, _name)
 
-#define TTYS_DEF(_name, _uart_ptr)                                          \
-	ARRAY_SPREAD_DECLARE(struct uart *const, __uart_device_registry);       \
-	ARRAY_SPREAD_ADD(__uart_device_registry, _uart_ptr);                    \
-	static struct serial_dev __TTYS_NAME(_name) = {                         \
-	    .cdev = CHAR_DEV_INIT(__TTYS_NAME(_name).cdev, MACRO_STRING(_name), \
-	        serial_dev_get_ops()),                                          \
-	    .uart = _uart_ptr,                                                  \
-	};                                                                      \
+#define TTYS_DEF(_name, _uart_ptr)                                        \
+	ARRAY_SPREAD_DECLARE(struct uart *const, __uart_device_registry);     \
+	ARRAY_SPREAD_ADD(__uart_device_registry, _uart_ptr);                  \
+	static struct serial_dev __TTYS_NAME(_name) = {                       \
+	    .cdev = CHAR_DEV_INIT(MACRO_STRING(_name), serial_dev_get_ops()), \
+	    .uart = _uart_ptr,                                                \
+	};                                                                    \
 	CHAR_DEV_REGISTER((struct char_dev *)&__TTYS_NAME(_name))
 
 struct uart;
