@@ -32,6 +32,6 @@ static const struct char_dev_ops mem_cdev_ops = {
     .direct_access = mem_direct_access,
 };
 
-static struct char_dev mem_cdev = CHAR_DEV_INIT(mem_cdev, "mem", &mem_cdev_ops);
+static struct char_dev mem_cdev = CHAR_DEV_INIT("mem", &mem_cdev_ops);
 
 CHAR_DEV_REGISTER(&mem_cdev);

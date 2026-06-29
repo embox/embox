@@ -107,18 +107,17 @@ extern const struct char_dev_ops __spi_cdev_ops;
 
 /* Note: if you get linker error like "redefinition of 'spi_device0'"
  * then you should reconfig system so SPI bus indecies do not overlap */
-#define SPI_DEV_DEF(name, ops, priv, bus_idx, dev_idx, cs_pin)    \
-	struct spi_device SPID_STR_NAME(bus_idx, dev_idx) = {                     \
-	    .cdev = CHAR_DEV_INIT(SPID_STR_NAME(bus_idx, dev_idx).cdev,           \
-	        MACRO_STRING(name), &__spi_cdev_ops),                             \
-	    .spid_ops = ops,                                                      \
-	    .spid_priv = priv,                                                    \
-		.spid_bus_num = bus_idx,                                              \
-		.spid_idx = dev_idx,                                                  \
-		.spid_cs_pin  = cs_pin,                                               \
-	};                                                                        \
-	CHAR_DEV_REGISTER((struct char_dev *)&SPID_STR_NAME(bus_idx, dev_idx));   \
-	ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);         \
+#define SPI_DEV_DEF(name, ops, priv, bus_idx, dev_idx, cs_pin)              \
+	struct spi_device SPID_STR_NAME(bus_idx, dev_idx) = {                   \
+	    .cdev = CHAR_DEV_INIT(MACRO_STRING(name), &__spi_cdev_ops),         \
+	    .spid_ops = ops,                                                    \
+	    .spid_priv = priv,                                                  \
+	    .spid_bus_num = bus_idx,                                            \
+	    .spid_idx = dev_idx,                                                \
+	    .spid_cs_pin = cs_pin,                                              \
+	};                                                                      \
+	CHAR_DEV_REGISTER((struct char_dev *)&SPID_STR_NAME(bus_idx, dev_idx)); \
+	ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);       \
 	ARRAY_SPREAD_ADD(__spi_device_registry, &SPID_STR_NAME(bus_idx, dev_idx))
 
 /* IOCTL-related stuff */

@@ -364,8 +364,7 @@ static struct char_dev_ops etnaviv_dev_ops = {
     .direct_access = etnaviv_dev_direct_access,
 };
 
-static struct char_dev etnaviv_dev = CHAR_DEV_INIT(etnaviv_dev, "card",
-    &etnaviv_dev_ops);
+static struct char_dev etnaviv_dev = CHAR_DEV_INIT("card", &etnaviv_dev_ops);
 
 CHAR_DEV_REGISTER(&etnaviv_dev);
 

@@ -19,12 +19,11 @@
 
 #include <config/embox/device/char_dev.h>
 
-#define CHAR_DEV_INIT(_self, _name, _ops)         \
-	((struct char_dev){                           \
-	    .list_item = DLIST_INIT(_self.list_item), \
-	    .usage_count = 0,                         \
-	    .ops = _ops,                              \
-	    .name = _name,                            \
+#define CHAR_DEV_INIT(_name, _ops) \
+	((struct char_dev){            \
+	    .usage_count = 0,          \
+	    .ops = _ops,               \
+	    .name = _name,             \
 	})
 
 #define CHAR_DEV_REGISTER(_cdev_ptr)                                          \

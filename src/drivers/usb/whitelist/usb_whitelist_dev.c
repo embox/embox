@@ -296,7 +296,6 @@ static const struct char_dev_ops usb_whitelist_cdev_ops = {
     .read = usb_whitelist_read,
 };
 
-static struct char_dev usb_whitelist_cdev = CHAR_DEV_INIT(zero_cdev, "zero",
-    &zero_cdev_ops);
+static struct char_dev usb_whitelist_cdev = CHAR_DEV_INIT("zero", &zero_cdev_ops);
 
 CHAR_DEV_REGISTER(&usb_whitelist_cdev);
