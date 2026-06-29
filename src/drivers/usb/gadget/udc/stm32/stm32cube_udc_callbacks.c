@@ -73,32 +73,33 @@ static uint8_t ep0_buffer[EP0_BUFFER_SIZE];
 
 /* hardware-specific handlers */
 
-static void stm32cube_ll_set_address(struct usb_control_header *req) {
+static void stm32cube_ll_set_address(PCD_HandleTypeDef *hpcd, struct usb_control_header *req) {
 	uint8_t dev_addr;
 
 	if ((req->w_index == 0U) && (req->w_length == 0U) && (req->w_value < 128U)) {
 		dev_addr = (uint8_t)(req->w_value) & 0x7FU;
-		HAL_PCD_SetAddress(&hpcd, dev_addr);
+		HAL_PCD_SetAddress(hpcd, dev_addr);
 		log_debug("addr=0x%x", dev_addr);
 
 		//TODO: create function(CtlSendStatus)
-		HAL_PCD_EP_Transmit(&hpcd, 0x00U, NULL, 0U);
+		HAL_PCD_EP_Transmit(hpcd, 0x00U, NULL, 0U);
 	}
 	else {
-		HAL_PCD_EP_SetStall(&hpcd, 0x80U); //equivalent to CtlError()
-		HAL_PCD_EP_SetStall(&hpcd, 0U);
+		HAL_PCD_EP_SetStall(hpcd, 0x80U); //equivalent to CtlError()
+		HAL_PCD_EP_SetStall(hpcd, 0U);
 	}
 }
 
 
-static void stm32cube_ll_get_status(struct usb_control_header *req) {
+static void stm32cube_ll_get_status(PCD_HandleTypeDef *hpcd,
+			struct usb_control_header *req) {
 	uint16_t status = 0;
 
 	switch (req->bm_request_type & USB_REQ_RECIP_MASK) {
 	case USB_REQ_RECIP_DEVICE:
 		/*TODO: add check for w_length != 2bytes */
 
-		HAL_PCD_EP_Transmit(&hpcd, 0x00U, (uint8_t *)&status, 2U);
+		HAL_PCD_EP_Transmit(hpcd, 0x00U, (uint8_t *)&status, 2U);
 
 		break;
 	/* TODO: add case for EPs recipient */
@@ -106,7 +107,7 @@ static void stm32cube_ll_get_status(struct usb_control_header *req) {
 	default:
 		log_error("Unsupported RECIP 0x%x",
 		    req->bm_request_type & USB_REQ_RECIP_MASK);
-		HAL_PCD_EP_SetStall(&hpcd, req->bm_request_type & 0x80U);
+		HAL_PCD_EP_SetStall(hpcd, req->bm_request_type & 0x80U);
 		break;
 	}
 }
@@ -117,12 +118,12 @@ static void stm32cube_ll_get_status(struct usb_control_header *req) {
 * @param  req: USB request
 * @retval status
 */
-static void stm32cube_ll_handle_standard_request(struct usb_control_header *req) {
+static void stm32cube_ll_handle_standard_request(PCD_HandleTypeDef *hpcd, struct usb_control_header *req) {
 	int ret;
 
 	switch (req->b_request) {
 	case USB_REQ_SET_ADDRESS:
-		stm32cube_ll_set_address(req);
+		stm32cube_ll_set_address(hpcd, req);
 		break;
 	case USB_REQ_SET_CONFIG:
 		ret = usb_gadget_setup(stm32cube_udc.udc.composite,
@@ -130,10 +131,10 @@ static void stm32cube_ll_handle_standard_request(struct usb_control_header *req)
 
     if (ret != 0) {
         log_error("SET_CONFIGURATION failed, req=0x%x", req->b_request);
-        HAL_PCD_EP_SetStall(&hpcd, req->bm_request_type & 0x80U);
+        HAL_PCD_EP_SetStall(hpcd, req->bm_request_type & 0x80U);
     } else {
         /* status stage for control-OUT request */
-        HAL_PCD_EP_Transmit(&hpcd, 0x00U, NULL, 0U);
+        HAL_PCD_EP_Transmit(hpcd, 0x00U, NULL, 0U);
         // HAL_PCD_EP_Receive(&hpcd, 0x00U, NULL, 0U);
     }
     break;
@@ -142,7 +143,7 @@ static void stm32cube_ll_handle_standard_request(struct usb_control_header *req)
 		log_debug("GET_CONFIGURATION");
 		break;
 	case USB_REQ_GET_STATUS:
-		stm32cube_ll_get_status(req);
+		stm32cube_ll_get_status(hpcd, req);
 		break;
 	case USB_REQ_SET_FEATURE:
 		//stm32cube_ll_set_feature(req);
@@ -159,7 +160,7 @@ static void stm32cube_ll_handle_standard_request(struct usb_control_header *req)
 		if (ret != 0) {
 			log_debug("if_error\n");
 			log_error("Not implemented req 0x%x", req->b_request);
-			HAL_PCD_EP_SetStall(&hpcd, req->bm_request_type & 0x80U);
+			HAL_PCD_EP_SetStall(hpcd, req->bm_request_type & 0x80U);
 		}
 		break;
 	}
@@ -189,7 +190,7 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
 
 	switch (ctrl.bm_request_type & USB_REQ_TYPE_MASK) {
 	case USB_REQ_TYPE_STANDARD:
-		stm32cube_ll_handle_standard_request(&ctrl);
+		stm32cube_ll_handle_standard_request(hpcd, &ctrl);
 		break;
 	default:
 		ret = usb_gadget_setup(stm32cube_udc.udc.composite,

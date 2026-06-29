@@ -78,7 +78,7 @@ static int stm32cube_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_re
 		u->requests[idx] = req;
 		u->eps[idx] = ep;
 
-		HAL_PCD_EP_Transmit(&hpcd, n, req->buf, req->len);
+		HAL_PCD_EP_Transmit(&u->hpcd, n, req->buf, req->len);
 		return 0;
 	}
 
@@ -94,7 +94,7 @@ static int stm32cube_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_re
 	u->requests[idx] = req;
 	u->eps[idx] = ep;
 
-	HAL_PCD_EP_Receive(&hpcd, n, req->buf, req->len);
+	HAL_PCD_EP_Receive(&u->hpcd, n, req->buf, req->len);
 	return 0;
 }
 
@@ -125,7 +125,7 @@ static void stm32cube_udc_ep_enable(struct usb_gadget_ep *ep) {
 	log_debug("EPO: addr=0x%02x mps=%u type=%u",
 	    ep_addr, (unsigned)maxpacket, (unsigned)type);
 
-	HAL_PCD_EP_Open(&hpcd, ep_addr, maxpacket, type);
+	HAL_PCD_EP_Open(&u->hpcd, ep_addr, maxpacket, type);
 }
 
 struct stm32cube_udc stm32cube_udc = {
@@ -144,7 +144,7 @@ struct stm32cube_udc stm32cube_udc = {
 static int stm32cube_udc_init(void) {
 	int ret;
 
-	ret = irq_attach(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, 0, &hpcd, "stm32_udc");
+	ret = irq_attach(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, 0, &stm32cube_udc.hpcd, "stm32_udc");
 	if (ret != 0) {
 		log_error("USB irq attach failed");
 		return ret;
@@ -155,4 +155,4 @@ static int stm32cube_udc_init(void) {
 	return 0;
 }
 
-STATIC_IRQ_ATTACH(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, &hpcd);
+STATIC_IRQ_ATTACH(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, &stm32cube_udc.hpcd);

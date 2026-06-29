@@ -12,7 +12,7 @@
 
 #define STM32CUBE_UDC_EPS_COUNT 8 /* IN and OUT */
 
-extern PCD_HandleTypeDef hpcd;
+//extern PCD_HandleTypeDef hpcd;
 
 
 struct ep_status {
