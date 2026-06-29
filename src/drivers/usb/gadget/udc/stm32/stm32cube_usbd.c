@@ -21,10 +21,9 @@
 #include <config/board_config.h>
 
 #include <kernel/printk.h>
+#include "stm32cube_udc_priv.h"
 
 #include <bsp/stm32cube_hal.h>
-
-#define USB_IRQ_NUM       CONF_USB_OTG_IRQ
 
 static int stm32cube_usbd_reset_hnd(struct lthread *self);
 static LTHREAD_DEF(stm32cube_usbd_reset_lt, stm32cube_usbd_reset_hnd, 200);
@@ -35,36 +34,10 @@ static int stm32cube_usbd_reset_hnd(struct lthread *self) {
 	return 0;
 }
 
-/*** PCD Driver required functions ***/
-
-
-/**
-	* @brief  Connect callback.
-	* @param  hpcd: PCD handle
-	* @retval None
-	*/
-void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd) {
-	if (log_level_self() >= LOG_DEBUG) {
-		printk("usb: vbus\n");
-	}
-}
-
-/*** END OF PCD Driver required functions ***/
-
-
-extern void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
-static irq_return_t stm32cube_usbd_usb_irq_handler(unsigned int irq_nr, void *data) {
-	PCD_HandleTypeDef *hpcd = data;
-	if (log_level_self() >= LOG_DEBUG) {
-		printk("usb: irq entry\n");
-	}
-	HAL_PCD_IRQHandler(hpcd);
-	return IRQ_HANDLED;
-}
 
 PCD_HandleTypeDef hpcd;
-int stm32cube_usbd_init(void) {
-	int ret = 0;
+
+int stm32cube_usbd_init(struct stm32cube_udc *stm32cube_udc) {
 
 	/*Set LL Driver parameters */
 	/* FIXME: should be dependent on gadget */
@@ -79,7 +52,7 @@ int stm32cube_usbd_init(void) {
 	hpcd.Init.speed = CONF_USB_OTG_MISC_SPEED;
 	hpcd.Init.vbus_sensing_enable = 1;
 	/* Link The driver to the stack */
-//	hpcd.pData = pdev;
+	hpcd.pData = stm32cube_udc;
 //	pdev->pData = &hpcd;
 	/*Initialize LL Driver */
 	HAL_PCD_Init(&hpcd);
@@ -95,15 +68,8 @@ int stm32cube_usbd_init(void) {
 	HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x80);
 #endif /* CONF_USB_OTG_MISC_SPEED */
 
-	ret = irq_attach(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, 0, &hpcd, "usbd");
-	if (ret != 0) {
-		log_error("USB irq attach failed");
-		return ret;
-	}
-
 	HAL_PCD_Start(&hpcd);
 
 	return 0;
 }
 
-STATIC_IRQ_ATTACH(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, &hpcd);

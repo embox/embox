@@ -30,9 +30,10 @@ struct stm32cube_udc {
 	struct usb_gadget_request *requests[STM32CUBE_UDC_EPS_COUNT];
 	struct ep_status ep_info[STM32CUBE_UDC_EPS_COUNT];
 	uint32_t ep0_data_len;
+	PCD_HandleTypeDef hpcd;
 };
 
-extern int stm32cube_usbd_init(void);
+extern int stm32cube_usbd_init(struct stm32cube_udc *stm32cube_udc);
 
 
 static inline unsigned int stm32cube_udc_ep_in_idx(uint8_t epnum) {

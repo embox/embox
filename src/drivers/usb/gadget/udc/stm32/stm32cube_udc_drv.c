@@ -16,6 +16,7 @@
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/usb_defines.h>
 
+#include <kernel/printk.h>
 #include <kernel/irq.h>
 #include <lib/libds/array.h>
 
@@ -24,17 +25,32 @@
 #include <util/math.h>
 
 #include <bsp/stm32cube_hal.h>
+#include <config/board_config.h>
 
 #include "stm32cube_udc_priv.h"
 
 EMBOX_UNIT_INIT(stm32cube_udc_init);
 
+#define USB_IRQ_NUM       CONF_USB_OTG_IRQ
+
 #define STM32CUBE_UDC_IN_EP_MASK  ((1 << 1) | (1 << 2) | (1 << 3))
 #define STM32CUBE_UDC_OUT_EP_MASK ((1 << 1) | (1 << 2) | (1 << 3))
 
+extern void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
+static irq_return_t stm32cube_usbd_usb_irq_handler(unsigned int irq_nr, void *data) {
+	PCD_HandleTypeDef *hpcd = data;
+	if (log_level_self() >= LOG_DEBUG) {
+		printk("usb: irq entry\n");
+	}
+	HAL_PCD_IRQHandler(hpcd);
+	return IRQ_HANDLED;
+}
 
 static int stm32cube_udc_start(struct usb_udc *udc) {
-	stm32cube_usbd_init();
+	
+	usb_gadget_set_ep0_size(&udc->composite->device_desc, USB_MAX_EP0_SIZE);
+
+	stm32cube_usbd_init(&stm32cube_udc);
 
 	return 0;
 }
@@ -126,7 +142,17 @@ struct stm32cube_udc stm32cube_udc = {
 };
 
 static int stm32cube_udc_init(void) {
+	int ret;
+
+	ret = irq_attach(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, 0, &hpcd, "stm32_udc");
+	if (ret != 0) {
+		log_error("USB irq attach failed");
+		return ret;
+	}
+
 	usb_gadget_register_udc(&stm32cube_udc.udc);
 
 	return 0;
 }
+
+STATIC_IRQ_ATTACH(USB_IRQ_NUM, stm32cube_usbd_usb_irq_handler, &hpcd);

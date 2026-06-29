@@ -18,6 +18,7 @@
 
 #include <kernel/irq.h>
 #include <lib/libds/array.h>
+#include <kernel/printk.h>
 
 #include <embox/unit.h>
 
@@ -214,8 +215,11 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
   * @retval None
   */
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
+	unsigned int idx = stm32cube_udc_ep_in_idx(epnum);
+
+	log_debug("usb: dataINstage of 0x%x\n", epnum);
+
 	if (epnum != 0U) {
-		unsigned int idx = stm32cube_udc_ep_in_idx(epnum);
 		struct usb_gadget_request *req;
 
 		stm32cube_udc.ep_info[idx].is_used = 0;
@@ -228,13 +232,9 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 			req->complete(stm32cube_udc.eps[idx], req);
 		}
 		return;
-	}
-	log_debug("usb: dataINstage of 0x%x\n", epnum);
-
-	struct ep_status *pep;
-
-	if (epnum == 0U) {
-		pep = &stm32cube_udc.ep_info[0x4 | epnum];
+	} else {
+		struct ep_status *pep;
+		pep = &stm32cube_udc.ep_info[idx];
 
 		if (pep->rem_length > pep->maxpacket) {
 			pep->rem_length -= pep->maxpacket;
@@ -252,6 +252,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 			if ((pep->maxpacket == pep->rem_length)
 			    && (pep->total_length >= pep->maxpacket)
 			    && (pep->total_length < stm32cube_udc.ep0_data_len)) {
+				
 				HAL_PCD_EP_Transmit(hpcd, 0U, NULL, 0U);
 				stm32cube_udc.ep0_data_len = 0U;
 				/* Prepare endpoint for premature end of transfer */
@@ -260,29 +261,13 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 				//HAL_PCD_EP_Receive(hpcd, 0U, NULL, 0U);
 			}
 			else {
-				stm32cube_udc.ep_info[0x4 | epnum].is_used = 0;
+				stm32cube_udc.ep_info[idx].is_used = 0;
 				HAL_PCD_EP_Receive(hpcd, 0U, NULL, 0U);
 			}
 		}
 		log_debug("IN: ep=%u xfer_count=%u",
           epnum, (unsigned)hpcd->IN_ep[epnum].xfer_count);
-
-#if 1
 	}
-	else {
-		log_debug("usb: din: EP%d\n", epnum);
-	}
-#else /*  uncomment for EP!=0 later */
-	}
-	else if ((pdev->pClass->DataIn != NULL)
-	         && (pdev->dev_state == USBD_STATE_CONFIGURED)) {
-		(USBD_StatusTypeDef) pdev->pClass->DataIn(pdev, epnum);
-	}
-	else {
-		/* should never be in this condition */
-		/* maybe add a log instead of return */
-	}
-#endif
 }
 
 /**
@@ -300,9 +285,7 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 	if (epnum < STM32CUBE_UDC_EPS_COUNT) {
 		stm32cube_udc.ep_info[idx].is_used = 0;
 	}
-	log_debug("usb: dataOUTstage of 0x%x\n", epnum);
-	log_debug("OUT: ep=%u xfer_count=%u",
-	    epnum, (unsigned)hpcd->OUT_ep[epnum].xfer_count);
+
 	dump_bytes("OUT payload", hpcd->OUT_ep[epnum].xfer_buff,
 	    hpcd->OUT_ep[epnum].xfer_count);
 
@@ -346,5 +329,16 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
 
 	for (i = 0; i < ARRAY_SIZE(stm32cube_udc.ep_info); i++) {
 		stm32cube_udc.ep_info[i].is_used = 0;
+	}
+}
+
+/**
+	* @brief  Connect callback.
+	* @param  hpcd: PCD handle
+	* @retval None
+	*/
+void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd) {
+	if (log_level_self() >= LOG_DEBUG) {
+		printk("usb: vbus\n");
 	}
 }
