@@ -35,4 +35,6 @@ extern void usb_gadget_ep_enable(struct usb_gadget_ep *ep);
 extern void usb_gadget_udc_event(struct usb_udc *udc, int event);
 extern int usb_gadget_udc_start(struct usb_udc *udc);
 
+extern int usb_gadget_set_ep0_size(struct usb_desc_device *d, uint8_t size);
+
 #endif /* DRIVERS_USB_GADGET_UDC_H_ */
