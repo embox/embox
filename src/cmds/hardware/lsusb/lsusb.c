@@ -45,7 +45,7 @@ static void show_usb_desc_device(struct usb_dev *usb_dev) {
 			"   b_dev_class          %5u\n"
 			"   b_dev_subclass       %5u\n"
 			"   b_dev_protocol       %5u\n"
-			"   b_max_packet_size    %5u\n"
+			"   b_max_packet_size0   %5u\n"
 			"   id_vendor           0x%04x\n"
 			"   id_product          0x%04x \n"
 			"   bcd_device           %2x.%02x\n"
@@ -59,7 +59,7 @@ static void show_usb_desc_device(struct usb_dev *usb_dev) {
 			usb_dev->dev_desc.b_dev_class,
 			usb_dev->dev_desc.b_dev_subclass,
 			usb_dev->dev_desc.b_dev_protocol, 
-			usb_dev->dev_desc.b_max_packet_size,
+			usb_dev->dev_desc.b_max_packet_size0,
 			usb_dev->dev_desc.id_vendor, 
 			usb_dev->dev_desc.id_product,
 			usb_dev->dev_desc.bcd_device >> 8, usb_dev->dev_desc.bcd_device & 0xff,

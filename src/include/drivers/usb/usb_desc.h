@@ -47,7 +47,7 @@ struct usb_desc_device {
 	uint8_t  b_dev_class;
 	uint8_t  b_dev_subclass;
 	uint8_t  b_dev_protocol;
-	uint8_t  b_max_packet_size;
+	uint8_t  b_max_packet_size0;
 	uint16_t id_vendor;
 	uint16_t id_product;
 	uint16_t bcd_device;
