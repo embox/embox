@@ -110,7 +110,7 @@ static int f_hid_probe(struct usb_gadget *gadget) {
 }
 
 static int f_hid_init(void) {
-	usb_gadget_register_function(&hid_func);
+	usb_gadget_function_register(&hid_func);
 
 	return 0;
 }

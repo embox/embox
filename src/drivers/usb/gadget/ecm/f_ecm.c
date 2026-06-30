@@ -277,7 +277,7 @@ static int ecm_probe(struct usb_gadget *gadget) {
 }
 
 static int ecm_init(void) {
-	usb_gadget_register_function(&ecm_func);
+	usb_gadget_function_register(&ecm_func);
 
 	return 0;
 }

@@ -241,6 +241,8 @@ int usb_gadget_register(struct usb_gadget_composite *composite) {
 	composite->ep0.udc = udc;
 
 	udc->composite = composite;
+		
+	usb_gadget_set_ep0_size(&udc->composite->device_desc, udc->udc_ep0_max_size);
 
 	for (i = 0; i < USB_GADGET_CONFIGS_MAX; i++) {
 		gadget = composite->configs[i];
@@ -255,7 +257,7 @@ int usb_gadget_register(struct usb_gadget_composite *composite) {
 	return 0;
 }
 
-void usb_gadget_register_function(struct usb_gadget_function *func) {
+void usb_gadget_function_register(struct usb_gadget_function *func) {
 	dlist_head_init(&func->link);
 	dlist_add_next(&func->link, &usb_gadget_func_list);
 }
@@ -366,5 +368,10 @@ int usb_gadget_set_config(struct usb_gadget_composite *composite, int config) {
 		prev_func = func;
 	}
 
+	return 0;
+}
+
+int usb_gadget_set_ep0_size(struct usb_desc_device *d, uint8_t size) {
+	d->b_max_packet_size0 = size;
 	return 0;
 }

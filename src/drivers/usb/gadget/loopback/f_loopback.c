@@ -130,7 +130,7 @@ static int f_loopback_probe(struct usb_gadget *gadget) {
 }
 
 static int f_loopback_init(void) {
-	usb_gadget_register_function(&loopback_func);
+	usb_gadget_function_register(&loopback_func);
 
 	return 0;
 }

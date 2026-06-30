@@ -5,6 +5,7 @@
 
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/usb_defines.h>
+//#include <drivers/usb/gadget/gadget.h>
 
 #include <bsp/stm32cube_hal.h>
 
@@ -42,10 +43,6 @@ static inline unsigned int stm32cube_udc_ep_in_idx(uint8_t epnum) {
 
 static inline unsigned int stm32cube_udc_ep_out_idx(uint8_t epnum) {
 	return 0x0U | epnum;
-}
-
-static inline uint8_t stm32cube_udc_ep_type(struct usb_gadget_ep *ep) {
-	return ep->desc->bm_attributes & USB_DESC_ENDP_TYPE_MASK;
 }
 
 extern struct stm32cube_udc stm32cube_udc;

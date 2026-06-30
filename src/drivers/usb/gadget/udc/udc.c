@@ -92,16 +92,11 @@ void usb_gadget_udc_event(struct usb_udc *udc, int event) {
 	}
 }
 
-int usb_gadget_register_udc(struct usb_udc *udc) {
+int usb_gadget_udc_register(struct usb_udc *udc) {
 	global_udc = udc;
 	return 0;
 }
 
 struct usb_udc *usb_gadget_find_udc(void) {
 	return global_udc;
-}
-
-int usb_gadget_set_ep0_size(struct usb_desc_device *d, uint8_t size) {
-	d->b_max_packet_size0 = size;
-	return 0;
 }

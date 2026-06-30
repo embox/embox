@@ -11,6 +11,7 @@
 
 #include <lib/libds/dlist.h>
 #include <drivers/usb/usb_desc.h>
+#include <drivers/usb/usb_defines.h>
 
 #define USB_GADGET_CONFIGS_MAX      2
 #define USB_GADGET_STR_MAX          16
@@ -88,7 +89,7 @@ extern int usb_gadget_set_config(struct usb_gadget_composite *composite,
 
 extern int usb_gadget_register(struct usb_gadget_composite *gadget);
 
-extern void usb_gadget_register_function(struct usb_gadget_function *f);
+extern void usb_gadget_function_register(struct usb_gadget_function *f);
 
 extern int usb_gadget_add_function(struct usb_gadget *gadget,
 	                              const char *func_name);
@@ -98,5 +99,13 @@ extern int usb_gadget_add_interface(struct usb_gadget *gadget,
 
 extern int usb_gadget_ep_configure(struct usb_gadget *gadget,
 	struct usb_gadget_ep *ep);
+
+
+extern int usb_gadget_set_ep0_size(struct usb_desc_device *d, uint8_t size);
+
+static inline uint8_t usb_gadget_ep_type(struct usb_gadget_ep *ep) {
+	return ep->desc->bm_attributes & USB_DESC_ENDP_TYPE_MASK;
+}
+
 
 #endif /* DRIVERS_USB_GADGET_GADGET_H_ */

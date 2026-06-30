@@ -170,6 +170,6 @@ static int rndis_probe(struct usb_gadget *gadget) {
 EMBOX_UNIT_INIT(rndis_init);
 
 static int rndis_init(void) {
-	usb_gadget_register_function(&rndis_func);
+	usb_gadget_function_register(&rndis_func);
 	return 0;
 }

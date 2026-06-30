@@ -225,7 +225,7 @@ static int acm_probe(struct usb_gadget *gadget) {
 }
 
 static int acm_init(void) {
-	usb_gadget_register_function(&acm_func);
+	usb_gadget_function_register(&acm_func);
 
 	return 0;
 }

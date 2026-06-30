@@ -24,8 +24,9 @@
 
 EMBOX_UNIT_INIT(da1469x_udc_init);
 
-#define EP0_BUFFER_SIZE 1024
-#define DA1469X_UDC_EPS_COUNT 7
+#define EP0_BUFFER_SIZE        1024
+#define DA1469X_UDC_EPS_COUNT  7
+#define USB_MAX_EP0_SIZE       8
 
 #define DA1469x_UDC_IN_EP_MASK   ((1 << 1) | (1 << 3) | (1 << 5))
 #define DA1469x_UDC_OUT_EP_MASK  ((1 << 2) | (1 << 4) | (1 << 6))
@@ -102,6 +103,8 @@ static struct da1469x_udc da1469x_udc = {
 
 		.in_ep_mask = DA1469x_UDC_IN_EP_MASK,
 		.out_ep_mask = DA1469x_UDC_OUT_EP_MASK,
+		.udc_ep0_max_size = USB_MAX_EP0_SIZE,
+		.udc_ep_max_size = 64, /* only for bulk */
 	},
 };
 
@@ -341,7 +344,7 @@ bool hw_usb_ep_rx_done(uint8_t ep_nr, uint8_t *buffer, uint16_t size) {
 }
 
 static int da1469x_udc_init(void) {
-	usb_gadget_register_udc(&da1469x_udc.udc);
+	usb_gadget_udc_register(&da1469x_udc.udc);
 
 	return 0;
 }

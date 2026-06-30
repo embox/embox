@@ -15,6 +15,7 @@
 
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/usb_defines.h>
+#include <drivers/usb/gadget/gadget.h>
 
 #include <kernel/irq.h>
 #include <lib/libds/array.h>
