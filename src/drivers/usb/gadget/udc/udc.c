@@ -84,8 +84,8 @@ void usb_gadget_udc_event(struct usb_udc *udc, int event) {
 			continue;
 		}
 
-		if (func->event) {
-			func->event(func, event);
+		if (func->ugf_ops->ugfo_event) {
+			func->ugf_ops->ugfo_event(func, event);
 		}
 
 		prev_func = func;

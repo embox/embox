@@ -31,12 +31,12 @@ static void usb_gadget_reconfigure(struct usb_gadget *gadget) {
 	for (i = 0; i < gadget->func_count; i++) {
 		f = gadget->functions[i];
 
-		if (f->fini) {
-			f->fini(f);
+		if (f->ugf_ops && f->ugf_ops->ugfo_fini) {
+			f->ugf_ops->ugfo_fini(f);
 		}
 
-		assert(f->probe);
-		res = f->probe(gadget);
+		assert(f->ugf_ops && f->ugf_ops->ugfo_probe);
+		res = f->ugf_ops->ugfo_probe(gadget);
 		assert(res == 0);
 	}
 }
@@ -216,8 +216,8 @@ func_setup:
 		break;
 	}
 
-	if (f && f->setup) {
-		return f->setup(f, ctrl, buffer);
+	if (f && f->ugf_ops && f->ugf_ops->ugfo_setup) {
+		return f->ugf_ops->ugfo_setup(f, ctrl, buffer);
 	}
 
 	log_error("Unsupported req: type=0x%02x, b_req=0x%02x w_value=0x%02x",
@@ -269,11 +269,11 @@ int usb_gadget_add_function(struct usb_gadget *gadget, const char *func_name) {
 	/* Check each hub for event occured. */
 	dlist_foreach_entry(func, &usb_gadget_func_list, link) {
 		if (!strcmp(func->name, func_name)) {
-			assert(func->probe);
+			assert(func->ugf_ops && func->ugf_ops->ugfo_probe);
 
 			gadget->functions[gadget->func_count++] = func;
 
-			res = func->probe(gadget);
+			res = func->ugf_ops->ugfo_probe(gadget);
 			if (!res) {
 				func->gadget = gadget;
 			}
@@ -359,8 +359,8 @@ int usb_gadget_set_config(struct usb_gadget_composite *composite, int config) {
 			continue;
 		}
 
-		if (func->enumerate) {
-			if (func->enumerate(func) != 0) {
+		if (func->ugf_ops && func->ugf_ops->ugfo_enumerate) {
+			if (func->ugf_ops->ugfo_enumerate(func) != 0) {
 				return -1;
 			}
 		}

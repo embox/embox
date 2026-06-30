@@ -197,12 +197,16 @@ static int acm_enumerate(struct usb_gadget_function *f) {
 	return 0;
 }
 
+static struct usb_gadget_function_ops acm_func_ops = {
+	.ugfo_probe = acm_probe,
+	.ugfo_setup = acm_setup,
+	.ugfo_enumerate = acm_enumerate,
+};
+
 static struct usb_gadget_function acm_func = {
 	.name = "acm",
 	.descs = acm_descs,
-	.probe = acm_probe,
-	.setup = acm_setup,
-	.enumerate = acm_enumerate,
+	.ugf_ops = &acm_func_ops,
 };
 
 static int acm_probe(struct usb_gadget *gadget) {

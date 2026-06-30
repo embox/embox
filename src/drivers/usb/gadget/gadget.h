@@ -65,6 +65,14 @@ struct usb_gadget_composite {
 	struct usb_gadget *configs[USB_GADGET_CONFIGS_MAX]; /* All configurations */
 };
 
+struct usb_gadget_function_ops {
+	int  (*ugfo_probe)(struct usb_gadget *);
+	int  (*ugfo_fini)(struct usb_gadget_function *);
+	int  (*ugfo_enumerate)(struct usb_gadget_function *);
+	int  (*ugfo_setup)(struct usb_gadget_function *, const struct usb_control_header *, uint8_t *);
+	void (*ugfo_event)(struct usb_gadget_function *, int event);
+};
+
 struct usb_gadget_function {
 	const char *name;
 
@@ -74,11 +82,7 @@ struct usb_gadget_function {
 
 	struct dlist_head link;
 
-	int (*probe)(struct usb_gadget *);
-	int (*fini)(struct usb_gadget_function *);
-	int (*enumerate)(struct usb_gadget_function *);
-	int (*setup)(struct usb_gadget_function *, const struct usb_control_header *, uint8_t *);
-	void (*event)(struct usb_gadget_function *, int event);
+	struct usb_gadget_function_ops *ugf_ops;
 };
 
 extern int usb_gadget_setup(struct usb_gadget_composite *composite,
