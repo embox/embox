@@ -240,9 +240,9 @@ int usb_gadget_register(struct usb_gadget_composite *composite) {
 	composite->ep0.nr = 0;
 	composite->ep0.udc = udc;
 
-	udc->composite = composite;
+	udc->udc_composite = composite;
 		
-	usb_gadget_set_ep0_size(&udc->composite->device_desc, udc->udc_ep0_max_size);
+	usb_gadget_set_ep0_size(&udc->udc_composite->device_desc, udc->udc_ep0_max_size);
 
 	for (i = 0; i < USB_GADGET_CONFIGS_MAX; i++) {
 		gadget = composite->configs[i];
@@ -303,11 +303,11 @@ int usb_gadget_ep_configure(struct usb_gadget *gadget, struct usb_gadget_ep *ep)
 	int i;
 
 	if (ep->dir == USB_DIR_OUT) {
-		all_eps = ep->udc->out_ep_mask;
+		all_eps = ep->udc->udc_out_ep_mask;
 		active_eps = gadget->out_ep_active_mask;
 	}
 	else {
-		all_eps = ep->udc->in_ep_mask;
+		all_eps = ep->udc->udc_in_ep_mask;
 		active_eps = gadget->in_ep_active_mask;
 	}
 	eps_mask = all_eps & ~active_eps;

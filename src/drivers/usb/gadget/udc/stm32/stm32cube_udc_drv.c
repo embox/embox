@@ -127,16 +127,20 @@ static void stm32cube_udc_ep_enable(struct usb_gadget_ep *ep) {
 	HAL_PCD_EP_Open(&u->hpcd, ep_addr, maxpacket, type);
 }
 
+static struct usb_udc_ops stm32cube_usb_udc_ops = {
+	.uuo_udc_start = stm32cube_udc_start,
+	.uuo_ep_queue = stm32cube_udc_ep_queue,
+	.uuo_ep_enable = stm32cube_udc_ep_enable,
+};
+
 struct stm32cube_udc stm32cube_udc = {
     .udc =
         {
-            .name = "stm32_udc",
-            .udc_start = stm32cube_udc_start,
-            .ep_queue = stm32cube_udc_ep_queue,
-            .ep_enable = stm32cube_udc_ep_enable,
+            .udc_name = "stm32_udc",
+            .udc_ops = &stm32cube_usb_udc_ops,
 
-            .in_ep_mask = STM32CUBE_UDC_IN_EP_MASK,
-            .out_ep_mask = STM32CUBE_UDC_OUT_EP_MASK,
+            .udc_in_ep_mask = STM32CUBE_UDC_IN_EP_MASK,
+            .udc_out_ep_mask = STM32CUBE_UDC_OUT_EP_MASK,
 
 			.udc_ep0_max_size = USB_MAX_EP0_SIZE,
 			.udc_ep_max_size = CONF_USB_OTG_MISC_EP_MAX_SIZE,

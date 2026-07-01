@@ -127,7 +127,7 @@ static void stm32cube_ll_handle_standard_request(PCD_HandleTypeDef *hpcd, struct
 		stm32cube_ll_set_address(hpcd, req);
 		break;
 	case USB_REQ_SET_CONFIG:
-		ret = usb_gadget_setup(stm32cube_udc.udc.composite,
+		ret = usb_gadget_setup(stm32cube_udc.udc.udc_composite,
         (const struct usb_control_header *)req, NULL);
 
     if (ret != 0) {
@@ -156,7 +156,7 @@ static void stm32cube_ll_handle_standard_request(PCD_HandleTypeDef *hpcd, struct
 		break;
 	default:
 		log_debug("usb:if\n");
-		ret = usb_gadget_setup(stm32cube_udc.udc.composite,
+		ret = usb_gadget_setup(stm32cube_udc.udc.udc_composite,
 		    (const struct usb_control_header *)req, NULL);
 		if (ret != 0) {
 			log_debug("if_error\n");
@@ -194,7 +194,7 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
 		stm32cube_ll_handle_standard_request(hpcd, &ctrl);
 		break;
 	default:
-		ret = usb_gadget_setup(stm32cube_udc.udc.composite,
+		ret = usb_gadget_setup(stm32cube_udc.udc.udc_composite,
 		    (const struct usb_control_header *)&ctrl, ep0_buffer);
 		if (ret != 0) {
 			log_error("Setup failed, request=0x%x", ctrl.b_request);

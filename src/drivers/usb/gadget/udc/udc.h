@@ -11,25 +11,27 @@
 
 #include <stdint.h>
 
-//#include <drivers/usb/gadget/gadget.h>
-
 struct usb_udc;
 struct usb_gadget_ep;
 struct usb_gadget_request;
 struct usb_gadget_composite;
 
+struct usb_udc_ops {
+	int  (*uuo_udc_start)(struct usb_udc *);
+	int  (*uuo_ep_queue)(struct usb_gadget_ep *, struct usb_gadget_request *);
+	void (*uuo_ep_enable)(struct usb_gadget_ep *);
+};
+
 struct usb_udc {
-	const char *name;
+	const char *udc_name;
 
-	int (*udc_start)(struct usb_udc *);
-	int (*ep_queue)(struct usb_gadget_ep *, struct usb_gadget_request *);
-	void (*ep_enable)(struct usb_gadget_ep *);
+	struct usb_udc_ops *udc_ops;
 
-	struct usb_gadget_composite *composite;
+	struct usb_gadget_composite *udc_composite;
 
 	/* all available endpoints */
-	uint32_t in_ep_mask;
-	uint32_t out_ep_mask;
+	uint32_t udc_in_ep_mask;
+	uint32_t udc_out_ep_mask;
 
 	uint8_t  udc_ep0_max_size;
 	int      udc_ep_max_size;
