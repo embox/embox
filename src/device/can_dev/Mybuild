@@ -1,13 +1,22 @@
 package embox.device
 
-module can_dev {
-	option number frame_pool_size=32
+module can_buff {
+	option number msg_pool_size=32
 
 	@IncludeExport(path="drivers")
-	source "can_dev.h"
+	source "can_buff.h"
+	source "can_buff.c"
 
+	@NoRuntime depends embox.mem.pool
+}
+
+module can_dev {
+	@IncludeExport(path="drivers")
+	source "can_dev.h"
 	source "can_dev.c"
 	source "can_dev_ops.c"
 
+	@NoRuntime depends can_buff
 	@NoRuntime depends embox.device.char_dev
+	@NoRuntime depends embox.kernel.irq_lock
 }
