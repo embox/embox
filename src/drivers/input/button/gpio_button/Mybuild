@@ -1,12 +1,12 @@
 package embox.driver.input.button
 
-module stm32cube_button {
+module gpio_button {
 	option string log_level="LOG_ERR"
 
 	option number pin_port = 0
 	option number pin_num = 0
 
-	source "stm32cube_button.c"
+	source "gpio_button.c"
 
 	depends embox.driver.input.core
 	depends embox.driver.gpio.core
