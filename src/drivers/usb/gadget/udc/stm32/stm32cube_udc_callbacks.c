@@ -15,9 +15,11 @@
 
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/usb_defines.h>
+#include <drivers/usb/gadget/gadget.h>
 
 #include <kernel/irq.h>
 #include <lib/libds/array.h>
+#include <kernel/printk.h>
 
 #include <embox/unit.h>
 
@@ -72,32 +74,33 @@ static uint8_t ep0_buffer[EP0_BUFFER_SIZE];
 
 /* hardware-specific handlers */
 
-static void stm32cube_ll_set_address(struct usb_control_header *req) {
+static void stm32cube_ll_set_address(PCD_HandleTypeDef *hpcd, struct usb_control_header *req) {
 	uint8_t dev_addr;
 
 	if ((req->w_index == 0U) && (req->w_length == 0U) && (req->w_value < 128U)) {
 		dev_addr = (uint8_t)(req->w_value) & 0x7FU;
-		HAL_PCD_SetAddress(&hpcd, dev_addr);
+		HAL_PCD_SetAddress(hpcd, dev_addr);
 		log_debug("addr=0x%x", dev_addr);
 
 		//TODO: create function(CtlSendStatus)
-		HAL_PCD_EP_Transmit(&hpcd, 0x00U, NULL, 0U);
+		HAL_PCD_EP_Transmit(hpcd, 0x00U, NULL, 0U);
 	}
 	else {
-		HAL_PCD_EP_SetStall(&hpcd, 0x80U); //equivalent to CtlError()
-		HAL_PCD_EP_SetStall(&hpcd, 0U);
+		HAL_PCD_EP_SetStall(hpcd, 0x80U); //equivalent to CtlError()
+		HAL_PCD_EP_SetStall(hpcd, 0U);
 	}
 }
 
 
-static void stm32cube_ll_get_status(struct usb_control_header *req) {
+static void stm32cube_ll_get_status(PCD_HandleTypeDef *hpcd,
+			struct usb_control_header *req) {
 	uint16_t status = 0;
 
 	switch (req->bm_request_type & USB_REQ_RECIP_MASK) {
 	case USB_REQ_RECIP_DEVICE:
 		/*TODO: add check for w_length != 2bytes */
 
-		HAL_PCD_EP_Transmit(&hpcd, 0x00U, (uint8_t *)&status, 2U);
+		HAL_PCD_EP_Transmit(hpcd, 0x00U, (uint8_t *)&status, 2U);
 
 		break;
 	/* TODO: add case for EPs recipient */
@@ -105,7 +108,7 @@ static void stm32cube_ll_get_status(struct usb_control_header *req) {
 	default:
 		log_error("Unsupported RECIP 0x%x",
 		    req->bm_request_type & USB_REQ_RECIP_MASK);
-		HAL_PCD_EP_SetStall(&hpcd, req->bm_request_type & 0x80U);
+		HAL_PCD_EP_SetStall(hpcd, req->bm_request_type & 0x80U);
 		break;
 	}
 }
@@ -116,23 +119,23 @@ static void stm32cube_ll_get_status(struct usb_control_header *req) {
 * @param  req: USB request
 * @retval status
 */
-static void stm32cube_ll_handle_standard_request(struct usb_control_header *req) {
+static void stm32cube_ll_handle_standard_request(PCD_HandleTypeDef *hpcd, struct usb_control_header *req) {
 	int ret;
 
 	switch (req->b_request) {
 	case USB_REQ_SET_ADDRESS:
-		stm32cube_ll_set_address(req);
+		stm32cube_ll_set_address(hpcd, req);
 		break;
 	case USB_REQ_SET_CONFIG:
-		ret = usb_gadget_setup(stm32cube_udc.udc.composite,
+		ret = usb_gadget_setup(stm32cube_udc.udc.udc_composite,
         (const struct usb_control_header *)req, NULL);
 
     if (ret != 0) {
         log_error("SET_CONFIGURATION failed, req=0x%x", req->b_request);
-        HAL_PCD_EP_SetStall(&hpcd, req->bm_request_type & 0x80U);
+        HAL_PCD_EP_SetStall(hpcd, req->bm_request_type & 0x80U);
     } else {
         /* status stage for control-OUT request */
-        HAL_PCD_EP_Transmit(&hpcd, 0x00U, NULL, 0U);
+        HAL_PCD_EP_Transmit(hpcd, 0x00U, NULL, 0U);
         // HAL_PCD_EP_Receive(&hpcd, 0x00U, NULL, 0U);
     }
     break;
@@ -141,7 +144,7 @@ static void stm32cube_ll_handle_standard_request(struct usb_control_header *req)
 		log_debug("GET_CONFIGURATION");
 		break;
 	case USB_REQ_GET_STATUS:
-		stm32cube_ll_get_status(req);
+		stm32cube_ll_get_status(hpcd, req);
 		break;
 	case USB_REQ_SET_FEATURE:
 		//stm32cube_ll_set_feature(req);
@@ -153,12 +156,12 @@ static void stm32cube_ll_handle_standard_request(struct usb_control_header *req)
 		break;
 	default:
 		log_debug("usb:if\n");
-		ret = usb_gadget_setup(stm32cube_udc.udc.composite,
+		ret = usb_gadget_setup(stm32cube_udc.udc.udc_composite,
 		    (const struct usb_control_header *)req, NULL);
 		if (ret != 0) {
 			log_debug("if_error\n");
 			log_error("Not implemented req 0x%x", req->b_request);
-			HAL_PCD_EP_SetStall(&hpcd, req->bm_request_type & 0x80U);
+			HAL_PCD_EP_SetStall(hpcd, req->bm_request_type & 0x80U);
 		}
 		break;
 	}
@@ -188,10 +191,10 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
 
 	switch (ctrl.bm_request_type & USB_REQ_TYPE_MASK) {
 	case USB_REQ_TYPE_STANDARD:
-		stm32cube_ll_handle_standard_request(&ctrl);
+		stm32cube_ll_handle_standard_request(hpcd, &ctrl);
 		break;
 	default:
-		ret = usb_gadget_setup(stm32cube_udc.udc.composite,
+		ret = usb_gadget_setup(stm32cube_udc.udc.udc_composite,
 		    (const struct usb_control_header *)&ctrl, ep0_buffer);
 		if (ret != 0) {
 			log_error("Setup failed, request=0x%x", ctrl.b_request);
@@ -214,8 +217,11 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
   * @retval None
   */
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
+	unsigned int idx = stm32cube_udc_ep_in_idx(epnum);
+
+	log_debug("usb: dataINstage of 0x%x\n", epnum);
+
 	if (epnum != 0U) {
-		unsigned int idx = stm32cube_udc_ep_in_idx(epnum);
 		struct usb_gadget_request *req;
 
 		stm32cube_udc.ep_info[idx].is_used = 0;
@@ -228,13 +234,9 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 			req->complete(stm32cube_udc.eps[idx], req);
 		}
 		return;
-	}
-	log_debug("usb: dataINstage of 0x%x\n", epnum);
-
-	struct ep_status *pep;
-
-	if (epnum == 0U) {
-		pep = &stm32cube_udc.ep_info[0x4 | epnum];
+	} else {
+		struct ep_status *pep;
+		pep = &stm32cube_udc.ep_info[idx];
 
 		if (pep->rem_length > pep->maxpacket) {
 			pep->rem_length -= pep->maxpacket;
@@ -252,6 +254,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 			if ((pep->maxpacket == pep->rem_length)
 			    && (pep->total_length >= pep->maxpacket)
 			    && (pep->total_length < stm32cube_udc.ep0_data_len)) {
+				
 				HAL_PCD_EP_Transmit(hpcd, 0U, NULL, 0U);
 				stm32cube_udc.ep0_data_len = 0U;
 				/* Prepare endpoint for premature end of transfer */
@@ -260,29 +263,13 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 				//HAL_PCD_EP_Receive(hpcd, 0U, NULL, 0U);
 			}
 			else {
-				stm32cube_udc.ep_info[0x4 | epnum].is_used = 0;
+				stm32cube_udc.ep_info[idx].is_used = 0;
 				HAL_PCD_EP_Receive(hpcd, 0U, NULL, 0U);
 			}
 		}
 		log_debug("IN: ep=%u xfer_count=%u",
           epnum, (unsigned)hpcd->IN_ep[epnum].xfer_count);
-
-#if 1
 	}
-	else {
-		log_debug("usb: din: EP%d\n", epnum);
-	}
-#else /*  uncomment for EP!=0 later */
-	}
-	else if ((pdev->pClass->DataIn != NULL)
-	         && (pdev->dev_state == USBD_STATE_CONFIGURED)) {
-		(USBD_StatusTypeDef) pdev->pClass->DataIn(pdev, epnum);
-	}
-	else {
-		/* should never be in this condition */
-		/* maybe add a log instead of return */
-	}
-#endif
 }
 
 /**
@@ -300,9 +287,7 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 	if (epnum < STM32CUBE_UDC_EPS_COUNT) {
 		stm32cube_udc.ep_info[idx].is_used = 0;
 	}
-	log_debug("usb: dataOUTstage of 0x%x\n", epnum);
-	log_debug("OUT: ep=%u xfer_count=%u",
-	    epnum, (unsigned)hpcd->OUT_ep[epnum].xfer_count);
+
 	dump_bytes("OUT payload", hpcd->OUT_ep[epnum].xfer_buff,
 	    hpcd->OUT_ep[epnum].xfer_count);
 
@@ -346,5 +331,16 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
 
 	for (i = 0; i < ARRAY_SIZE(stm32cube_udc.ep_info); i++) {
 		stm32cube_udc.ep_info[i].is_used = 0;
+	}
+}
+
+/**
+	* @brief  Connect callback.
+	* @param  hpcd: PCD handle
+	* @retval None
+	*/
+void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd) {
+	if (log_level_self() >= LOG_DEBUG) {
+		printk("usb: vbus\n");
 	}
 }

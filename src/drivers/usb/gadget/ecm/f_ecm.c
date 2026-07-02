@@ -247,12 +247,16 @@ static int ecm_enumerate(struct usb_gadget_function *f) {
 	return 0;
 }
 
+static struct usb_gadget_function_ops ecm_func_ops = {
+    .ugfo_probe = ecm_probe,
+    .ugfo_setup = ecm_setup,
+    .ugfo_enumerate = ecm_enumerate,
+};
+
 static struct usb_gadget_function ecm_func = {
     .name = "ecm",
     .descs = ecm_descs,
-    .probe = ecm_probe,
-    .setup = ecm_setup,
-    .enumerate = ecm_enumerate,
+    .ugf_ops = &ecm_func_ops,
 };
 
 static int ecm_probe(struct usb_gadget *gadget) {
@@ -277,7 +281,7 @@ static int ecm_probe(struct usb_gadget *gadget) {
 }
 
 static int ecm_init(void) {
-	usb_gadget_register_function(&ecm_func);
+	usb_gadget_function_register(&ecm_func);
 
 	return 0;
 }

@@ -11,6 +11,7 @@
 
 #include <lib/libds/dlist.h>
 #include <drivers/usb/usb_desc.h>
+#include <drivers/usb/usb_defines.h>
 
 #define USB_GADGET_CONFIGS_MAX      2
 #define USB_GADGET_STR_MAX          16
@@ -64,6 +65,14 @@ struct usb_gadget_composite {
 	struct usb_gadget *configs[USB_GADGET_CONFIGS_MAX]; /* All configurations */
 };
 
+struct usb_gadget_function_ops {
+	int  (*ugfo_probe)(struct usb_gadget *);
+	int  (*ugfo_fini)(struct usb_gadget_function *);
+	int  (*ugfo_enumerate)(struct usb_gadget_function *);
+	int  (*ugfo_setup)(struct usb_gadget_function *, const struct usb_control_header *, uint8_t *);
+	void (*ugfo_event)(struct usb_gadget_function *, int event);
+};
+
 struct usb_gadget_function {
 	const char *name;
 
@@ -73,11 +82,7 @@ struct usb_gadget_function {
 
 	struct dlist_head link;
 
-	int (*probe)(struct usb_gadget *);
-	int (*fini)(struct usb_gadget_function *);
-	int (*enumerate)(struct usb_gadget_function *);
-	int (*setup)(struct usb_gadget_function *, const struct usb_control_header *, uint8_t *);
-	void (*event)(struct usb_gadget_function *, int event);
+	struct usb_gadget_function_ops *ugf_ops;
 };
 
 extern int usb_gadget_setup(struct usb_gadget_composite *composite,
@@ -88,7 +93,7 @@ extern int usb_gadget_set_config(struct usb_gadget_composite *composite,
 
 extern int usb_gadget_register(struct usb_gadget_composite *gadget);
 
-extern void usb_gadget_register_function(struct usb_gadget_function *f);
+extern void usb_gadget_function_register(struct usb_gadget_function *f);
 
 extern int usb_gadget_add_function(struct usb_gadget *gadget,
 	                              const char *func_name);
@@ -98,5 +103,13 @@ extern int usb_gadget_add_interface(struct usb_gadget *gadget,
 
 extern int usb_gadget_ep_configure(struct usb_gadget *gadget,
 	struct usb_gadget_ep *ep);
+
+
+extern int usb_gadget_set_ep0_size(struct usb_desc_device *d, uint8_t size);
+
+static inline uint8_t usb_gadget_ep_type(struct usb_gadget_ep *ep) {
+	return ep->desc->bm_attributes & USB_DESC_ENDP_TYPE_MASK;
+}
+
 
 #endif /* DRIVERS_USB_GADGET_GADGET_H_ */

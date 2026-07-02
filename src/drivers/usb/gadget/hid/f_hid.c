@@ -93,15 +93,18 @@ static int f_hid_enumerate(struct usb_gadget_function *f) {
 	return 0;
 }
 
-
 static int f_hid_probe(struct usb_gadget *gadget) ;
+
+static struct usb_gadget_function_ops hid_func_ops = {
+	.ugfo_probe = f_hid_probe,
+	.ugfo_setup = f_hid_setup,
+	.ugfo_enumerate = f_hid_enumerate,
+};
 
 static struct usb_gadget_function hid_func = {
 	.name = "hid",
 	.descs = f_hid_descs,
-	.probe = f_hid_probe,
-	.setup = f_hid_setup,
-	.enumerate = f_hid_enumerate,
+	.ugf_ops = &hid_func_ops,
 };
 
 static int f_hid_probe(struct usb_gadget *gadget) {
@@ -110,7 +113,7 @@ static int f_hid_probe(struct usb_gadget *gadget) {
 }
 
 static int f_hid_init(void) {
-	usb_gadget_register_function(&hid_func);
+	usb_gadget_function_register(&hid_func);
 
 	return 0;
 }

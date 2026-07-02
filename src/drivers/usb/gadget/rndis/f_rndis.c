@@ -140,10 +140,13 @@ static struct usb_gadget_ep bulk_rx = {
 	.desc = &bulk_ep_rx_desc,
 };
 
+static struct usb_gadget_function_ops rndis_func_ops {
+	.ugfo_probe = rndis_probe,
+}
 static struct usb_gadget_function rndis_func = {
 	.name = "rndis",
 	.descs = rndis_descs,
-	.probe = rndis_probe,
+	.ugf_ops = &rndis_func_ops,
 };
 
 static int rndis_probe(struct usb_gadget *gadget) {
@@ -170,6 +173,6 @@ static int rndis_probe(struct usb_gadget *gadget) {
 EMBOX_UNIT_INIT(rndis_init);
 
 static int rndis_init(void) {
-	usb_gadget_register_function(&rndis_func);
+	usb_gadget_function_register(&rndis_func);
 	return 0;
 }

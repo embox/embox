@@ -24,8 +24,9 @@
 
 EMBOX_UNIT_INIT(da1469x_udc_init);
 
-#define EP0_BUFFER_SIZE 1024
-#define DA1469X_UDC_EPS_COUNT 7
+#define EP0_BUFFER_SIZE        1024
+#define DA1469X_UDC_EPS_COUNT  7
+#define USB_MAX_EP0_SIZE       8
 
 #define DA1469x_UDC_IN_EP_MASK   ((1 << 1) | (1 << 3) | (1 << 5))
 #define DA1469x_UDC_OUT_EP_MASK  ((1 << 2) | (1 << 4) | (1 << 6))
@@ -93,15 +94,21 @@ static void da1469x_udc_ep_enable(struct usb_gadget_ep *ep) {
 	}
 }
 
+static struct usb_udc_ops da1469x_usb_udc_ops = {
+	.uuo_udc_start = da1469x_udc_start,
+	.uuo_ep_queue = da1469x_udc_ep_queue,
+	.uuo_ep_enable = da1469x_udc_ep_enable,
+};
+
 static struct da1469x_udc da1469x_udc = {
 	.udc = {
-		.name = "da1496x udc",
-		.udc_start = da1469x_udc_start,
-		.ep_queue = da1469x_udc_ep_queue,
-		.ep_enable = da1469x_udc_ep_enable,
+		.udc_name = "da1496x udc",
+		.udc_ops = &da1469x_usb_udc_ops,
 
-		.in_ep_mask = DA1469x_UDC_IN_EP_MASK,
-		.out_ep_mask = DA1469x_UDC_OUT_EP_MASK,
+		.udc_in_ep_mask = DA1469x_UDC_IN_EP_MASK,
+		.udc_out_ep_mask = DA1469x_UDC_OUT_EP_MASK,
+		.udc_ep0_max_size = USB_MAX_EP0_SIZE,
+		.udc_ep_max_size = 64, /* only for bulk */
 	},
 };
 
@@ -250,7 +257,7 @@ static void da1469x_udc_set_configuration(void) {
 
 	log_debug("\nconf=0x%x\n", config);
 
-	usb_gadget_set_config(da1469x_udc.udc.composite, config);
+	usb_gadget_set_config(da1469x_udc.udc.udc_composite, config);
 
 	hw_usb_ep_tx_start(0, NULL, 0);
 }
@@ -273,7 +280,7 @@ static void da1469x_udc_handle_standard_req(int ep_nr) {
 		da1469x_udc_set_configuration();
 		break;
 	default:
-		ret = usb_gadget_setup(da1469x_udc.udc.composite,
+		ret = usb_gadget_setup(da1469x_udc.udc.udc_composite,
 		         (const struct usb_control_header *) &usb_setup, NULL);
 		if (ret != 0) {
 			log_error("Not implemented req 0x%x", usb_setup.request);
@@ -309,7 +316,7 @@ bool hw_usb_ep_rx_done(uint8_t ep_nr, uint8_t *buffer, uint16_t size) {
 			da1469x_udc_handle_standard_req(ep_nr);
 			break;
 		default:
-			ret = usb_gadget_setup(da1469x_udc.udc.composite,
+			ret = usb_gadget_setup(da1469x_udc.udc.udc_composite,
 			         (const struct usb_control_header *) &usb_setup,
 			         ep0_buffer);
 			if (ret != 0) {
@@ -341,7 +348,7 @@ bool hw_usb_ep_rx_done(uint8_t ep_nr, uint8_t *buffer, uint16_t size) {
 }
 
 static int da1469x_udc_init(void) {
-	usb_gadget_register_udc(&da1469x_udc.udc);
+	usb_gadget_udc_register(&da1469x_udc.udc);
 
 	return 0;
 }

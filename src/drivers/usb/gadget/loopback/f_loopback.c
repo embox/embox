@@ -116,12 +116,17 @@ static int f_loopback_enumerate(struct usb_gadget_function *f) {
 
 static int f_loopback_probe(struct usb_gadget *gadget) ;
 
+static struct usb_gadget_function_ops loopback_func_ops = {
+
+	.ugfo_probe = f_loopback_probe,
+	.ugfo_setup = f_loopback_setup,
+	.ugfo_enumerate = f_loopback_enumerate,
+};
+
 static struct usb_gadget_function loopback_func = {
 	.name = "loopback",
 	.descs = f_loopback_descs,
-	.probe = f_loopback_probe,
-	.setup = f_loopback_setup,
-	.enumerate = f_loopback_enumerate,
+	.ugf_ops = &loopback_func_ops,
 };
 
 static int f_loopback_probe(struct usb_gadget *gadget) {
@@ -130,7 +135,7 @@ static int f_loopback_probe(struct usb_gadget *gadget) {
 }
 
 static int f_loopback_init(void) {
-	usb_gadget_register_function(&loopback_func);
+	usb_gadget_function_register(&loopback_func);
 
 	return 0;
 }

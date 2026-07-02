@@ -18,11 +18,12 @@ static struct usb_udc *global_udc;
 
 int usb_gadget_udc_start(struct usb_udc *udc) {
 	assert(udc);
-	assert(udc->udc_start);
+	assert(udc->udc_ops);
+	assert(udc->udc_ops->uuo_udc_start);
 
-	log_debug("udc start name %s", udc->name);
+	log_debug("udc start name %s", udc->udc_name);
 
-	return udc->udc_start(udc);
+	return udc->udc_ops->uuo_udc_start(udc);
 }
 
 int usb_gadget_ep_queue(struct usb_gadget_ep *ep,
@@ -33,7 +34,8 @@ int usb_gadget_ep_queue(struct usb_gadget_ep *ep,
 	udc = ep->udc;
 
 	assert(udc);
-	assert(udc->ep_queue);
+	assert(udc->udc_ops);
+	assert(udc->udc_ops->uuo_ep_queue);
 
 	log_debug("udc usb_gadget_ep_queue actual_len=%d", req->actual_len);
 #if 0
@@ -49,7 +51,7 @@ int usb_gadget_ep_queue(struct usb_gadget_ep *ep,
 #endif /* __MAX_LOG_LEVEL >= LOG_DEBUG */
 #endif
 
-	res = udc->ep_queue(ep, req);
+	res = udc->udc_ops->uuo_ep_queue(ep, req);
 
 	return res;
 }
@@ -58,15 +60,16 @@ void usb_gadget_ep_enable(struct usb_gadget_ep *ep) {
 	struct usb_udc *udc = ep->udc;
 
 	assert(udc);
-	assert(udc->ep_enable);
+	assert(udc->udc_ops);
+	assert(udc->udc_ops->uuo_ep_enable);
 
 	log_debug("uusb_gadget_ep_enable %d", ep->nr);
 
-	udc->ep_enable(ep);
+	udc->udc_ops->uuo_ep_enable(ep);
 }
 
 void usb_gadget_udc_event(struct usb_udc *udc, int event) {
-	struct usb_gadget *gadget = udc->composite->config;
+	struct usb_gadget *gadget = udc->udc_composite->config;
 	struct usb_gadget_function *func = NULL, *prev_func = NULL;
 	int i;
 
@@ -84,15 +87,15 @@ void usb_gadget_udc_event(struct usb_udc *udc, int event) {
 			continue;
 		}
 
-		if (func->event) {
-			func->event(func, event);
+		if (func->ugf_ops->ugfo_event) {
+			func->ugf_ops->ugfo_event(func, event);
 		}
 
 		prev_func = func;
 	}
 }
 
-int usb_gadget_register_udc(struct usb_udc *udc) {
+int usb_gadget_udc_register(struct usb_udc *udc) {
 	global_udc = udc;
 	return 0;
 }

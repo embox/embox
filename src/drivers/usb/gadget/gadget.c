@@ -31,12 +31,12 @@ static void usb_gadget_reconfigure(struct usb_gadget *gadget) {
 	for (i = 0; i < gadget->func_count; i++) {
 		f = gadget->functions[i];
 
-		if (f->fini) {
-			f->fini(f);
+		if (f->ugf_ops && f->ugf_ops->ugfo_fini) {
+			f->ugf_ops->ugfo_fini(f);
 		}
 
-		assert(f->probe);
-		res = f->probe(gadget);
+		assert(f->ugf_ops && f->ugf_ops->ugfo_probe);
+		res = f->ugf_ops->ugfo_probe(gadget);
 		assert(res == 0);
 	}
 }
@@ -216,8 +216,8 @@ func_setup:
 		break;
 	}
 
-	if (f && f->setup) {
-		return f->setup(f, ctrl, buffer);
+	if (f && f->ugf_ops && f->ugf_ops->ugfo_setup) {
+		return f->ugf_ops->ugfo_setup(f, ctrl, buffer);
 	}
 
 	log_error("Unsupported req: type=0x%02x, b_req=0x%02x w_value=0x%02x",
@@ -240,7 +240,9 @@ int usb_gadget_register(struct usb_gadget_composite *composite) {
 	composite->ep0.nr = 0;
 	composite->ep0.udc = udc;
 
-	udc->composite = composite;
+	udc->udc_composite = composite;
+		
+	usb_gadget_set_ep0_size(&udc->udc_composite->device_desc, udc->udc_ep0_max_size);
 
 	for (i = 0; i < USB_GADGET_CONFIGS_MAX; i++) {
 		gadget = composite->configs[i];
@@ -255,7 +257,7 @@ int usb_gadget_register(struct usb_gadget_composite *composite) {
 	return 0;
 }
 
-void usb_gadget_register_function(struct usb_gadget_function *func) {
+void usb_gadget_function_register(struct usb_gadget_function *func) {
 	dlist_head_init(&func->link);
 	dlist_add_next(&func->link, &usb_gadget_func_list);
 }
@@ -267,11 +269,11 @@ int usb_gadget_add_function(struct usb_gadget *gadget, const char *func_name) {
 	/* Check each hub for event occured. */
 	dlist_foreach_entry(func, &usb_gadget_func_list, link) {
 		if (!strcmp(func->name, func_name)) {
-			assert(func->probe);
+			assert(func->ugf_ops && func->ugf_ops->ugfo_probe);
 
 			gadget->functions[gadget->func_count++] = func;
 
-			res = func->probe(gadget);
+			res = func->ugf_ops->ugfo_probe(gadget);
 			if (!res) {
 				func->gadget = gadget;
 			}
@@ -301,11 +303,11 @@ int usb_gadget_ep_configure(struct usb_gadget *gadget, struct usb_gadget_ep *ep)
 	int i;
 
 	if (ep->dir == USB_DIR_OUT) {
-		all_eps = ep->udc->out_ep_mask;
+		all_eps = ep->udc->udc_out_ep_mask;
 		active_eps = gadget->out_ep_active_mask;
 	}
 	else {
-		all_eps = ep->udc->in_ep_mask;
+		all_eps = ep->udc->udc_in_ep_mask;
 		active_eps = gadget->in_ep_active_mask;
 	}
 	eps_mask = all_eps & ~active_eps;
@@ -357,8 +359,8 @@ int usb_gadget_set_config(struct usb_gadget_composite *composite, int config) {
 			continue;
 		}
 
-		if (func->enumerate) {
-			if (func->enumerate(func) != 0) {
+		if (func->ugf_ops && func->ugf_ops->ugfo_enumerate) {
+			if (func->ugf_ops->ugfo_enumerate(func) != 0) {
 				return -1;
 			}
 		}
@@ -366,5 +368,10 @@ int usb_gadget_set_config(struct usb_gadget_composite *composite, int config) {
 		prev_func = func;
 	}
 
+	return 0;
+}
+
+int usb_gadget_set_ep0_size(struct usb_desc_device *d, uint8_t size) {
+	d->b_max_packet_size0 = size;
 	return 0;
 }
