@@ -233,26 +233,22 @@ static int mcp2515_open(struct can_dev *can) {
 	}
 #endif
 
+	/* Enable RX interrupt */
+	mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1,
+	    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1);
+
 	return 0;
 }
 
 static void mcp2515_close(struct can_dev *can) {
+	/* Disable RX interrupt */
+	mcp2515_reg_modify(MCP2515_CANINTE,
+	    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1, 0);
+
 #if SLEEP_MODE
 	/* Enable sleep mode */
 	mcp2515_set_opmod(MCP2515_CANSTAT_MOD_SLEEP);
 #endif
-}
-
-static void mcp2515_rxint(struct can_dev *can, int enable) {
-	if (enable) {
-		mcp2515_reg_modify(MCP2515_CANINTE,
-		    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1,
-		    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1);
-	}
-	else {
-		mcp2515_reg_modify(MCP2515_CANINTE,
-		    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1, 0);
-	}
 }
 
 static int mcp2515_send(struct can_dev *can, const void *data) {
@@ -298,27 +294,29 @@ static const struct can_ops mcp2515_can_ops = {
     .co_reset = mcp2515_reset,
     .co_open = mcp2515_open,
     .co_close = mcp2515_close,
-    .co_rxint = mcp2515_rxint,
     .co_send = mcp2515_send,
 };
 
 CAN_DEVICE_DEF(mcp2515_can_dev, &mcp2515_can_ops, NULL, CAN_DEV_ID);
 
-static int mcp2515_receive(uint8_t rxbuf_addr, uint8_t rxbuf_intf,
-    struct can_frame *frame) {
-	uint8_t rxbuf[MCP2515_RXB_SIZE];
-	canid_t can_id;
+static const uint8_t rxbuf_addr[2] = {MCP2515_RXB0CTRL, MCP2515_RXB1CTRL};
+static const uint8_t rxbuf_intf[2] = {MCP2515_CANINTF_RX0, MCP2515_CANINTF_RX1};
 
-	mcp2515_regs_load(rxbuf_addr, rxbuf, MCP2515_RXB_SIZE);
+static void mcp2515_receive(struct can_dev *can, size_t rxbuf_num) {
+	struct can_frame frame;
+	canid_t can_id;
+	uint8_t rxbuf[MCP2515_RXB_SIZE];
+
+	mcp2515_regs_load(rxbuf_addr[rxbuf_num], rxbuf, MCP2515_RXB_SIZE);
 
 	/* Release RX buffer */
-	mcp2515_reg_modify(MCP2515_CANINTF, rxbuf_intf, 0);
+	mcp2515_reg_modify(MCP2515_CANINTF, rxbuf_intf[rxbuf_num], 0);
 
 	can_id = 0;
 
-	frame->len = rxbuf[MCP2515_RXB_DLC] & 0xf;
-	if (frame->len > 8) {
-		frame->len = 8;
+	frame.len = rxbuf[MCP2515_RXB_DLC] & 0xf;
+	if (frame.len > 8) {
+		frame.len = 8;
 	}
 
 	if (rxbuf[MCP2515_RXB_SIDL] & MCP2515_RXB_SIDL_IDE) {
@@ -338,33 +336,24 @@ static int mcp2515_receive(uint8_t rxbuf_addr, uint8_t rxbuf_intf,
 		can_id |= CAN_RTR_FLAG;
 	}
 
-	frame->can_id = can_id;
+	frame.can_id = can_id;
 
-	memcpy(frame->data, &rxbuf[MCP2515_RXB_DATA], frame->len);
+	memcpy(frame.data, &rxbuf[MCP2515_RXB_DATA], frame.len);
 
-	return 0;
+	can_dev_receive(can, &frame);
 }
 
 static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
 	struct can_dev *can;
-	struct can_msg *msg;
-	uint8_t rxbuf_addr[2];
-	uint8_t rxbuf_intf[2];
 	uint8_t canintf;
 	bool rx_done;
 	int i;
 
 	can = (struct can_dev *)data;
 
-	rxbuf_addr[0] = MCP2515_RXB0CTRL;
-	rxbuf_addr[1] = MCP2515_RXB1CTRL;
-
-	rxbuf_intf[0] = MCP2515_CANINTF_RX0;
-	rxbuf_intf[1] = MCP2515_CANINTF_RX1;
-
+#if SLEEP_MODE
 	canintf = mcp2515_reg_load(MCP2515_CANINTF);
 
-#if SLEEP_MODE
 	if (canintf & MCP2515_CANINTF_WAK) {
 		mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK, 0);
 		mcp2515_reg_modify(MCP2515_CANINTF, MCP2515_CANINTF_WAK, 0);
@@ -374,23 +363,17 @@ static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
 
 	do {
 		rx_done = false;
+		canintf = mcp2515_reg_load(MCP2515_CANINTF);
+
 		for (i = 0; i < 2; i++) {
 			if (canintf & rxbuf_intf[i]) {
-				msg = can_msg_alloc(can);
-				if (!msg) {
-					rx_done = false;
-					can_rx_stop(can);
-					break;
-				}
 				rx_done = true;
-				mcp2515_receive(rxbuf_addr[i], rxbuf_intf[i], &msg->frame);
-				can_msg_queue_push(can, msg);
+				mcp2515_receive(can, i);
 			}
 		}
-		canintf = mcp2515_reg_load(MCP2515_CANINTF);
 	} while (rx_done);
 
-	can_rx_notify(can);
+	can_dev_notify(can);
 
 	return 0;
 }

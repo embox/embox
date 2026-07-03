@@ -7,16 +7,16 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <linux/can.h>
 #include <poll.h>
 #include <string.h>
 #include <sys/types.h>
 
+#include <drivers/can_buff.h>
 #include <drivers/can_dev.h>
 #include <drivers/char_dev.h>
-#include <kernel/sched/waitq.h>
-#include <kernel/task/resource/idesc.h>
-#include <kernel/thread/thread_sched_wait.h>
+#include <kernel/irq_lock.h>
 
 static int can_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	struct can_dev *can;
@@ -24,57 +24,51 @@ static int can_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 
 	can = (struct can_dev *)cdev;
 
+	/* Clear old messages */
+	can_buff_init(can->buff);
+
 	err = can->ops->co_open(can);
 	if (err) {
 		return err;
 	}
-
-	can_rx_start(can);
 
 	return 0;
 }
 
 static void can_dev_close(struct char_dev *cdev) {
 	struct can_dev *can;
-	struct can_msg *msg;
 
 	can = (struct can_dev *)cdev;
 
-	can_rx_stop(can);
-
 	can->ops->co_close(can);
-
-	while ((msg = can_msg_queue_pop(can))) {
-		can_msg_free(can, msg);
-	}
 }
 
 static ssize_t can_dev_read(struct char_dev *cdev, void *buf, size_t nbyte,
     int flags) {
 	struct can_dev *can;
-	struct can_msg *msg;
+	int err;
 
 	can = (struct can_dev *)cdev;
-	msg = NULL;
 
 	if ((nbyte != CANFD_MTU) && (nbyte != can->mtu)) {
 		return -EINVAL;
 	}
 
 	while (1) {
-		msg = can_msg_queue_pop(can);
-		if (msg) {
+		IRQ_LOCKED_DO(err = can_buff_read(can->buff, buf, nbyte));
+		if (!err) {
 			break;
 		}
 
-		can_rx_start(can);
-		char_dev_wait(cdev, POLLIN);
+		if (flags & O_NONBLOCK) {
+			return -EAGAIN;
+		}
+
+		err = can_dev_wait(can);
+		if (err) {
+			return err;
+		}
 	}
-
-	memset(buf, 0, nbyte);
-	memcpy(buf, &msg->frame, can->mtu);
-
-	can_msg_free(can, msg);
 
 	return nbyte;
 }
@@ -110,7 +104,7 @@ static int can_dev_status(struct char_dev *cdev, int mask) {
 	res = 0;
 
 	if (mask & POLLIN) {
-		if (can_msg_queue_front(can)) {
+		if (!can_buff_empty(can->buff)) {
 			res += can->mtu;
 		}
 	}

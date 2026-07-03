@@ -16,6 +16,8 @@ int char_dev_wait(struct char_dev *cdev, int mask) {
 	struct waitq_link wql;
 	int err;
 
+	err = 0;
+
 	waitq_link_init(&wql);
 	waitq_wait_prepare(&cdev->waitq, &wql);
 

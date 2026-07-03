@@ -258,12 +258,15 @@ struct idesc *char_dev_open_idesc(struct char_dev *cdev, int oflag) {
 		goto out;
 	}
 
+	/* waitq may contain waitq_link from aborted thread, */
+	/* it should be cleared before cdev->ops->open() */
+	waitq_init(&cdev->waitq);
+
 	if (cdev->ops->open) {
 		err = cdev->ops->open(cdev, idesc);
 	}
 
 	if (!err) {
-		waitq_init(&cdev->waitq);
 		cdev->usage_count++;
 	}
 

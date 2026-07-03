@@ -39,7 +39,7 @@
 
 static uintptr_t ctucanfd_base;
 
-static void ctucanfd_reset(struct can_dev *dev) {
+static void ctucanfd_reset(struct can_dev *can) {
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, CTUCANFD_MODE_RST);
 
 	CTUCANFD_REG_STORE(CTUCANFD_BTR, 0);
@@ -52,30 +52,25 @@ static void ctucanfd_reset(struct can_dev *dev) {
 	CTUCANFD_REG_STORE(CTUCANFD_TXP, 0x1);
 }
 
-static int ctucanfd_open(struct can_dev *dev) {
+static int ctucanfd_open(struct can_dev *can) {
 	/* Enable CAN device */
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, CTUCANFD_MODE_ENA | CTUCANFD_MODE_RXBAM);
+
+	/* Enable RX interrupt */
+	CTUCANFD_REG_STORE(CTUCANFD_IES, CTUCANFD_ISR_RBNEI);
 
 	return 0;
 }
 
-static void ctucanfd_close(struct can_dev *dev) {
+static void ctucanfd_close(struct can_dev *can) {
+	/* Disable RX interrupt */
+	CTUCANFD_REG_STORE(CTUCANFD_IEC, CTUCANFD_ISR_RBNEI);
+
 	/* Disable CAN device */
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, 0);
 }
 
-static void ctucanfd_rxint(struct can_dev *dev, int enable) {
-	if (enable) {
-		/* Enable RX interrupt */
-		CTUCANFD_REG_STORE(CTUCANFD_IES, CTUCANFD_ISR_RBNEI);
-	}
-	else {
-		/* Disable RX interrupt */
-		CTUCANFD_REG_STORE(CTUCANFD_IEC, CTUCANFD_ISR_RBNEI);
-	}
-}
-
-static int ctucanfd_send(struct can_dev *dev, const void *data) {
+static int ctucanfd_send(struct can_dev *can, const void *data) {
 	const struct canfd_frame *frame;
 	uint32_t fmt;
 	uint32_t id;
@@ -120,13 +115,13 @@ static const struct can_ops ctucanfd_ops = {
     .co_reset = ctucanfd_reset,
     .co_open = ctucanfd_open,
     .co_close = ctucanfd_close,
-    .co_rxint = ctucanfd_rxint,
     .co_send = ctucanfd_send,
 };
 
 CANFD_DEVICE_DEF(ctucanfd_dev, &ctucanfd_ops, NULL, CAN_DEV_ID);
 
-static void ctucanfd_receive(struct canfd_frame *frame) {
+static void ctucanfd_receive(struct can_dev *can) {
+	struct canfd_frame frame;
 	uint32_t rwcnt;
 	uint32_t tmp;
 	uint32_t fmt;
@@ -148,24 +143,25 @@ static void ctucanfd_receive(struct canfd_frame *frame) {
 
 	rwcnt = FIELD_GET(fmt, CTUCANFD_TXB_FMT_RWCNT) - 3;
 
-	frame->len = FIELD_GET(fmt, CTUCANFD_TXB_FMT_DLC);
+	frame.len = FIELD_GET(fmt, CTUCANFD_TXB_FMT_DLC);
 
 	if (fmt & CTUCANFD_TXB_FMT_IDE) {
-		frame->can_id = FIELD_GET(id, CTUCANFD_TXB_ID_EXT);
-		frame->can_id = CAN_EFF_FLAG;
+		frame.can_id = FIELD_GET(id, CTUCANFD_TXB_ID_EXT);
+		frame.can_id = CAN_EFF_FLAG;
 	}
 	else {
-		frame->can_id = FIELD_GET(id, CTUCANFD_TXB_ID_STD);
+		frame.can_id = FIELD_GET(id, CTUCANFD_TXB_ID_STD);
 	}
 
 	for (i = 0; i < rwcnt; i++) {
-		*((uint32_t *)(&frame->data[i * 4])) = CTUCANFD_REG_LOAD(CTUCANFD_RXD);
+		*((uint32_t *)(&frame.data[i * 4])) = CTUCANFD_REG_LOAD(CTUCANFD_RXD);
 	}
+
+	can_dev_receive(can, &frame);
 }
 
 static irq_return_t ctucanfd_irq_handler(unsigned int irq_num, void *data) {
 	struct can_dev *can;
-	struct can_msg *msg;
 
 	can = (struct can_dev *)data;
 
@@ -174,16 +170,10 @@ static irq_return_t ctucanfd_irq_handler(unsigned int irq_num, void *data) {
 
 	/* Check if RX buffer is not empty */
 	while (!(CTUCANFD_REG_LOAD(CTUCANFD_RXS) & CTUCANFD_RXS_RXE)) {
-		msg = can_msg_alloc(can);
-		if (!msg) {
-			can_rx_stop(can);
-			break;
-		}
-		ctucanfd_receive((struct canfd_frame *)&msg->frame);
-		can_msg_queue_push(can, msg);
+		ctucanfd_receive(can);
 	}
 
-	can_rx_notify(can);
+	can_dev_notify(can);
 
 	return IRQ_HANDLED;
 }
