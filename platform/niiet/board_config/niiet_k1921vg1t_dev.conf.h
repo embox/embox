@@ -152,6 +152,7 @@ struct gpio_conf gpios[] = {
 		.port_num = 8,
 		.port_width = 16,
 	},
+#if 0
 	[7] = {
 		.status = ENABLED,
 		.dev = {
@@ -169,6 +170,7 @@ struct gpio_conf gpios[] = {
 		.port_num = 8,
 		.port_width = 16,
 	},
+#endif
 };
 
 struct uart_conf uarts[] = {
