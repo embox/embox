@@ -52,8 +52,12 @@ static int gpio_bt_irq_hnd(unsigned int irq_nr, void *data) {
 }
 
 static int gpio_bt_start(struct input_dev *dev) {
-	gpio_setup_mode(GPIO_BTN_PORT, GPIO_BTN_PIN_MASK, GPIO_MODE_INT_RISING_FALLING);
-	if (0 > gpio_irq_attach(GPIO_BTN_PORT, GPIO_BTN_PIN_MASK, gpio_bt_irq_hnd, &gpio_bt_dev)) {
+	int res;
+	gpio_setup_mode(GPIO_BTN_PORT, GPIO_BTN_PIN_MASK,
+			GPIO_MODE_INT_EN | GPIO_MODE_IN | GPIO_MODE_INT_SECTION | GPIO_MODE_INT_RISING_FALLING);
+	res = gpio_irq_attach(GPIO_BTN_PORT, GPIO_BTN_PIN_MASK, gpio_bt_irq_hnd,
+			&gpio_bt_dev);
+	if (0 > res) {
 		log_error("Failed to attach IRQ handler");
 		return -1;
 	}
