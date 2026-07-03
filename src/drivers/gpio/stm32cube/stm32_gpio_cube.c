@@ -160,6 +160,13 @@ static int stm32_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 
+	if (mode & GPIO_MODE_IN_PULL_UP) {
+		GPIO_InitStruct.Pull = GPIO_PULLUP;
+	}
+	if (mode & GPIO_MODE_IN_PULL_DOWN) {
+		GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	}
+	
 	if (mode & GPIO_MODE_OUT) {
 		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 
@@ -172,15 +179,10 @@ static int stm32_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	}
 	else if (mode & GPIO_MODE_IN) {
 		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-
-		if (mode & GPIO_MODE_IN_PULL_UP) {
-			GPIO_InitStruct.Pull = GPIO_PULLUP;
-		}
-		if (mode & GPIO_MODE_IN_PULL_DOWN) {
-			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-		}
 	}
-	else if (mode & GPIO_MODE_ALT_SECTION) {
+
+	if (mode & GPIO_MODE_ALT_SECTION) {
+		GPIO_InitStruct.Mode = 0;
 #ifndef STM32F1_CUBE /* There is no Alternate field in GPIO_InitTypeDef */
 		GPIO_InitStruct.Alternate = GPIO_MODE_ALT_GET(mode);
 #endif
@@ -190,15 +192,9 @@ static int stm32_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 		if (mode & GPIO_MODE_OUT_PUSH_PULL) {
 			GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 		}
-
-		if (mode & GPIO_MODE_IN_PULL_UP) {
-			GPIO_InitStruct.Pull = GPIO_PULLUP;
-		}
-		if (mode & GPIO_MODE_IN_PULL_DOWN) {
-			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-		}
 	}
-	else if (mode & GPIO_MODE_INT_RISING_FALLING) {
+
+	if (mode & GPIO_MODE_INT_RISING_FALLING) {
 		if ((mode & GPIO_MODE_INT_RISING_FALLING)
 		    == GPIO_MODE_INT_RISING_FALLING) {
 			GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
