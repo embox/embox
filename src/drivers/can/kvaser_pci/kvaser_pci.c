@@ -78,8 +78,10 @@ static int kvaser_open(struct can_dev *can) {
 	sja_reg_store(sja_base, SJA_MOD, 0);
 #endif
 
-	/* Release RX buffer */
-	sja_reg_store(sja_base, SJA_CMR, SJA_CMR_RRB);
+	/* Clear RX buffer */
+	while (sja_reg_load(sja_base, SJA_SR) & SJA_SR_RBS) {
+		sja_reg_store(sja_base, SJA_CMR, SJA_CMR_RRB);
+	}
 
 	/* Enable RX interrupt */
 	sja_reg_orin(sja_base, SJA_IER, SJA_IER_RIE);
