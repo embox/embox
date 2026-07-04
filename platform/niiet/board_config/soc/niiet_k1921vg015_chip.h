@@ -5,6 +5,13 @@
 #define FLASH_BASE    (0x3000D000UL)
 #define PMUSYS_BASE   (0x3000F000UL)
 
+#define CAN_BASE               (0x20000000UL)
+#define CANMSG_BASE            (0x20001000UL)
+#define USB_BASE               (0x20010000UL)
+#define CRYPTO_BASE            (0x20020000UL)
+#define CRC0_BASE              (0x20030000UL)
+#define CRC1_BASE              (0x20031000UL)
+#define HASH_BASE              (0x20032000UL)
 
 #define GPIOA_BASE              0x28000000UL
 #define GPIOB_BASE              0x28001000UL
