@@ -397,4 +397,30 @@ struct pwm_conf pwms[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), SPI(spis), I2C(i2cs), PWM(pwms))
+struct usb_conf usbs[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "USB",
+			.regs = {
+				REGMAP("BASE", (USB_BASE), 0x1000),
+			},
+			.irqs = {
+				VAL("", PLIC_USB_VECTNUM),
+			},
+			.pins = {
+				/* there are no special pins */
+			},
+			.clocks = {
+				VAL("USB", "CLK_USB"),			
+			},
+			.misc = {
+				VAL("TYPE_FS", 1),
+				VAL("EP_MAX", 4),
+				VAL("EP_MAX_SIZE", 64),
+			},
+		},
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), SPI(spis), I2C(i2cs), PWM(pwms), USB(usbs))
