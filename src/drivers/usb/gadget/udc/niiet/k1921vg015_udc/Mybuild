@@ -1,0 +1,8 @@
+package embox.driver.usb.gadget.udc.niiet
+
+
+module k1921vg015_udc {
+	option string log_level="LOG_ERR"
+
+	source "k1921vg015_udc_drv.c"
+}
