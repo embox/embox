@@ -27,6 +27,8 @@
 #define CLK_NAME_SPI      "CLK_SPI"
 #define CLK_NAME_I2C      "CLK_I2C"
 #define CLK_NAME_TMR      "CLK_TMR"
+#define CLK_NAME_USB      "CLK_USB"
+#define CLK_NAME_CAN      "CLK_CAN"
 
 #define RCU          ((volatile struct rcu_reg *) CONF_RCU_REGION_BASE)
 
@@ -94,6 +96,25 @@ struct rcu_reg {
 #define RCU_CGCFGAHB_SPI1EN         (1 << 6)
 #define RCU_CGCFGAHB_SPI_EN(nr)     (1 << (5 + nr))
 
+#define RCU_AHB_BIT_NUM_CAN           (0)
+#define RCU_AHB_BIT_NUM_USB           (1)
+#define RCU_AHB_BIT_NUM_CRYPTO        (2)
+#define RCU_AHB_BIT_NUM_HASH          (3)
+#define RCU_AHB_BIT_NUM_QSPI          (4)
+#define RCU_AHB_BIT_NUM_SPI0          (5)
+#define RCU_AHB_BIT_NUM_SPI1          (6)
+#define RCU_AHB_BIT_NUM_GPIOA         (8)
+#define RCU_AHB_BIT_NUM_GPIOB         (9)
+#define RCU_AHB_BIT_NUM_GPIOC         (10)
+#define RCU_AHB_BIT_NUM_CRC0          (12)
+#define RCU_AHB_BIT_NUM_CRC1          (13)
+
+#define RCU_CGCFGAHB_CAN0EN         (1 << RCU_AHB_BIT_NUM_CAN)
+#define RCU_CGCFGAHB_CAN_EN(nr)     (1 << (RCU_AHB_BIT_NUM_CAN + nr))
+
+#define RCU_CGCFGAHB_USB0EN         (1 << RCU_AHB_BIT_NUM_USB)
+#define RCU_CGCFGAHB_USB_EN(nr)     (1 << (RCU_AHB_BIT_NUM_USB + nr))
+
 #define RCU_RSTDISAPB_TMR32EN        (1 << 0)
 #define RCU_RSTDISAPB_TMR0EN         (1 << 1)
 #define RCU_RSTDISAPB_TMR1EN         (1 << 2)
@@ -118,6 +139,12 @@ struct rcu_reg {
 #define RCU_RSTDISAHB_SPI0EN         (1 << 5)
 #define RCU_RSTDISAHB_SPI1EN         (1 << 6)
 #define RCU_RSTDISAHB_SPI_EN(num)    (1 << (5 + num))
+
+#define RCU_RSTDISAHB_CAN0EN         (1 << RCU_AHB_BIT_NUM_CAN)
+#define RCU_RSTDISAHB_CAN_EN(num)    (1 << (RCU_AHB_BIT_NUM_CAN + num))
+
+#define RCU_RSTDISAHB_USB0EN         (1 << RCU_AHB_BIT_NUM_USB)
+#define RCU_RSTDISAHB_USB_EN(num)    (1 << (RCU_AHB_BIT_NUM_USB + num))
 
 #define RCU_CLKSTAT_SRC_MASK        (0x3)
 #define  RCU_CLKSTAT_SRC_HSICLK      (0x0)
@@ -230,6 +257,16 @@ void niiet_i2c_set_rcu(int num) {
 	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_I2C_EN(num);
 }
 
+void niiet_usb_set_rcu(int num) {
+	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_USB_EN(num);
+	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_USB_EN(num);
+}
+
+void niiet_can_set_rcu(int num) {
+	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_CAN_EN(num);
+	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_CAN_EN(num);
+}
+
 int clk_enable(char *clk_name) {
     int num;
 
@@ -256,6 +293,16 @@ int clk_enable(char *clk_name) {
     if (0 == strncmp(clk_name, CLK_NAME_I2C, sizeof(CLK_NAME_I2C) - 1)) {
         num = clk_name[sizeof(CLK_NAME_I2C) - 1]  - '0';
         niiet_i2c_set_rcu(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_USB, sizeof(CLK_NAME_USB) - 1)) {
+        num = 0;
+        niiet_usb_set_rcu(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_CAN, sizeof(CLK_NAME_CAN) - 1)) {
+        num = 0;
+        niiet_can_set_rcu(num);
         return 0;
     }
 
