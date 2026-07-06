@@ -25,6 +25,8 @@
 
 #include <util/math.h>
 
+#include <drivers/clk/niiet_rcu.h>
+
 #include <config/board_config.h>
 
 #include "k1921vg015_udc_priv.h"
@@ -36,6 +38,7 @@ EMBOX_UNIT_INIT(niiet_udc_init);
 #define NIIET_UDC_IN_EP_MASK  ((1 << 1) | (1 << 2) | (1 << 3))
 #define NIIET_UDC_OUT_EP_MASK ((1 << 1) | (1 << 2) | (1 << 3))
 
+#define USB      ((struct niiet_usbd_regs *)(uintptr_t) CONF_USB_REGION_BASE)
 
 static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 
@@ -80,8 +83,23 @@ struct niiet_udc niiet_udc = {
         },
 };
 
+static inline void niiet_udc_pll_init() {
+
+	/* SYSCLK */
+	USB->PLLUSBCFG0 &= ~(PLLUSBCFG0_PLLEN);
+	USB->PLLUSBCFG3 |= PLLUSBCFG3_USBCLKSEL;
+
+	// небольшая пауза
+	for (volatile int i = 0; i < 10000; ++i) {}
+
+}
+
 static int niiet_udc_init(void) {
 	int ret;
+
+	clk_enable(CONF_USB_CLK_DEF_USB);
+
+	USB->PHY_PD = 0;
 
 	ret = irq_attach(USB_IRQ_NUM, niiet_usbd_irq_handler, 0, &niiet_udc.hpcd, "udc");
 	if (ret != 0) {

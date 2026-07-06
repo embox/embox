@@ -92,6 +92,10 @@ struct niiet_usbd_regs {
 	volatile const uint32_t PLLUSBSTAT; /*!< 0x810 PLLUSBSTAT PLL Status Register */
 };
 
+#define PLLUSBCFG0_PLLEN         (1 << 0)
+
+#define PLLUSBCFG3_USBCLKSEL     (1 << 24)
+
 struct niiet_udc {
 	struct usb_udc udc;
 	struct usb_gadget_ep *eps[NIIET_UDC_EPS_COUNT];
