@@ -98,6 +98,15 @@ static int stm32cube_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_re
 	return 0;
 }
 
+static int stm32cube_udc_ep_stall(struct usb_gadget_ep *ep,
+    const struct usb_control_header *ctrl) {
+	struct stm32cube_udc *u = (struct stm32cube_udc *)ep->udc;
+
+	HAL_PCD_EP_SetStall(&u->hpcd, ctrl->bm_request_type & 0x80U);
+
+	return 0;
+}
+
 static void stm32cube_udc_ep_enable(struct usb_gadget_ep *ep) {
 	struct stm32cube_udc *u;
 	unsigned int idx;
@@ -131,6 +140,7 @@ static void stm32cube_udc_ep_enable(struct usb_gadget_ep *ep) {
 static struct usb_udc_ops stm32cube_usb_udc_ops = {
 	.uuo_udc_start = stm32cube_udc_start,
 	.uuo_ep_queue = stm32cube_udc_ep_queue,
+	.uuo_ep_stall = stm32cube_udc_ep_stall,
 	.uuo_ep_enable = stm32cube_udc_ep_enable,
 };
 

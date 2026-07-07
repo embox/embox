@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 
+#include <drivers/usb/usb_desc.h>
+
 struct usb_udc;
 struct usb_gadget_ep;
 struct usb_gadget_request;
@@ -19,6 +21,7 @@ struct usb_gadget_composite;
 struct usb_udc_ops {
 	int  (*uuo_udc_start)(struct usb_udc *);
 	int  (*uuo_ep_queue)(struct usb_gadget_ep *, struct usb_gadget_request *);
+	int  (*uuo_ep_stall)(struct usb_gadget_ep *, const struct usb_control_header *);
 	void (*uuo_ep_enable)(struct usb_gadget_ep *);
 };
 
@@ -38,7 +41,10 @@ struct usb_udc {
 };
 
 extern int usb_gadget_ep_queue(struct usb_gadget_ep *ep,
-	struct usb_gadget_request *req);
+    struct usb_gadget_request *req);
+
+extern int usb_gadget_ep_stall(struct usb_gadget_ep *ep,
+    const struct usb_control_header *ctrl);
 
 extern int usb_gadget_udc_register(struct usb_udc *udc);
 extern struct usb_udc *usb_gadget_find_udc(void);
