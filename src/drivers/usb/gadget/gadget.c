@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <drivers/usb/class/usb_cdc.h>
 #include <drivers/usb/gadget/gadget.h>
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/usb_defines.h>
@@ -154,6 +155,21 @@ int usb_gadget_setup(struct usb_gadget_composite *composite,
 	struct usb_gadget *gadget = composite->config;
 	struct usb_gadget_function *f = NULL;
 	int intf;
+
+	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_CLASS) {
+		switch (ctrl->b_request) {
+		case SET_LINE_CODING:
+			req->len = sizeof(uint16_t);
+			*(uint16_t *)req->buf = 0;
+			goto submit_req;
+		case SET_CONTROL_LINE_STATE:
+			req->len = sizeof(uint16_t);
+			*(uint16_t *)req->buf = 0;
+			goto submit_req;
+		default:
+			return -1;
+		}
+	}
 
 	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) != USB_REQ_TYPE_STANDARD) {
 		goto func_setup;

@@ -68,7 +68,8 @@ static int stm32cube_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_re
 		idx = stm32cube_udc_ep_in_idx(n);
 
 		if (u->ep_info[idx].is_used) {
-			return -EBUSY;
+			// return -EBUSY;
+			HAL_PCD_EP_Receive(&u->hpcd, 0U, NULL, 0U); /* XXX */
 		}
 		u->ep_info[idx].is_used = 1;
 		u->ep_info[idx].total_length = req->len;
