@@ -56,6 +56,22 @@ int usb_gadget_ep_queue(struct usb_gadget_ep *ep,
 	return res;
 }
 
+int usb_gadget_ep_stall(struct usb_gadget_ep *ep,
+    const struct usb_control_header *ctrl) {
+	struct usb_udc *udc;
+
+	udc = ep->udc;
+
+	assert(udc);
+	assert(udc->udc_ops);
+
+	if (udc->udc_ops->uuo_ep_stall) {
+		return udc->udc_ops->uuo_ep_stall(ep, ctrl);
+	}
+
+	return -1;
+}
+
 void usb_gadget_ep_enable(struct usb_gadget_ep *ep) {
 	struct usb_udc *udc = ep->udc;
 
