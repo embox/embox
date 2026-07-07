@@ -142,6 +142,7 @@ int usb_gadget_setup_req_get_descriptor(struct usb_gadget_composite *composite,
 			len = usb_gadget_prepare_string_desc(composite, ctrl->w_value & 0xff);
 			req->len = min(ctrl->w_length, len);
 			return 0;
+		case USB_DESC_TYPE_QUALIFIER:
 		default:
 			return -1;
 	}
@@ -181,10 +182,13 @@ int usb_gadget_setup(struct usb_gadget_composite *composite,
 		*(uint16_t *)req->buf = 0;
 		goto submit_req;
 	case USB_REQ_GET_DESCRIPTOR:
-		if (!usb_gadget_setup_req_get_descriptor(composite, ctrl, buffer)) {
+		if (0 == usb_gadget_setup_req_get_descriptor(composite, ctrl, buffer)) {
 			goto submit_req;
 		}
-		break;
+		if (0 == usb_gadget_ep_stall(&composite->ep0, ctrl)) {
+			return 0;
+		}
+		return -1;
 
 	case USB_REQ_GET_CONFIG: {
 		uint8_t cfg = 0;
