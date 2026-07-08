@@ -9,4 +9,5 @@ module gadget {
 	source "gadget.h"
 
 	depends udc
+	@NoRuntime depends embox.driver.usb.class.cdc
 }
