@@ -6,8 +6,8 @@
  * @date    03.07.2026
  */
 
-#ifndef _DRIVERS_USB_GADGET_UDC_STM32CUBE_PRIV_H_
-#define _DRIVERS_USB_GADGET_UDC_STM32CUBE_PRIV_H_
+#ifndef _DRIVERS_USB_GADGET_UDC_NIIET_PRIV_H_
+#define _DRIVERS_USB_GADGET_UDC_NIIET_PRIV_H_
 
 #include <stdint.h>
 
@@ -19,12 +19,12 @@
 #define NIIET_UDC_EPS_COUNT 4 /* IN and OUT */
 
 struct ep_status {
-  uint32_t status;
+	uint32_t status;
 	uint32_t total_length;
-  uint32_t rem_length;
-  uint32_t maxpacket;
-  uint8_t  is_used;
-  uint16_t bInterval;
+	uint32_t rem_length;
+	uint32_t maxpacket;
+	uint8_t is_used;
+	uint16_t bInterval;
 };
 
 struct niiet_usbd_ep_regs {
@@ -96,14 +96,54 @@ struct niiet_usbd_regs {
 
 #define PLLUSBCFG3_USBCLKSEL     (1 << 24)
 
+#define INTEN0_USBBUSINTEN       (1 << 0)
+#define INTEN0_CEP_INTEN         (1 << 1)
+#define INTEN0_EP0_INTEN         (1 << 2)
+#define INTEN0_EP1_INTEN         (1 << 3)
+#define INTEN0_EP2_INTEN         (1 << 4)
+#define INTEN0_EP3_INTEN         (1 << 5)
+
+#define INTEN1_SOF               (1 << 0)
+#define INTEN1_RESTATUS          (1 << 1)
+#define INTEN1_RESUME            (1 << 2)
+#define INTEN1_SUSPEND           (1 << 3)
+#define INTEN1_HSSETTLE          (1 << 4)
+#define INTEN1_DMACMPL           (1 << 5)
+#define INTEN1_CLKUNSTBL         (1 << 6)
+
+#define CEP_IRQ_SETUPTOKEN       (1 << 0)
+#define CEP_IRQ_SETUPPKT         (1 << 1)
+#define CEP_IRQ_OUTTOKEN         (1 << 2)
+#define CEP_IRQ_INTOKEN          (1 << 3)
+#define CEP_IRQ_PINGTOKEN        (1 << 4)
+#define CEP_IRQ_DATAPKTTR        (1 << 5)
+#define CEP_IRQ_DATAPKTREC       (1 << 6)
+#define CEP_IRQ_NAKSENT          (1 << 7)
+#define CEP_IRQ_STALLSENT        (1 << 8)
+#define CEP_IRQ_USBERR           (1 << 9)
+#define CEP_IRQ_STATCMPLN        (1 << 10)
+#define CEP_IRQ_BUFFULL          (1 << 11)
+#define CEP_IRQ_BUFFEMPTY        (1 << 12)
+
+#define CEP_CTRL_STAT_ACK        (0)
+#define CEP_CTRL_STAT_NAKCLEAR   (1 << 0)
+#define CEP_CTRL_STAT_STALL      (1 << 1)
+#define CEP_CTRL_STAT_ZEROLEN    (1 << 2)
+#define CEP_CTRL_STAT_CEPFLUSH   (1 << 3)
+
+#define DMA_CTRL_STS_OP_READ     (0 << 4)
+#define DMA_CTRL_STS_OP_WRITE    (1 << 4)
+#define DMA_CTRL_STS_DMAEN       (1 << 5)
+
+
 struct niiet_udc {
 	struct usb_udc udc;
 	struct usb_gadget_ep *eps[NIIET_UDC_EPS_COUNT];
 	struct usb_gadget_request *requests[NIIET_UDC_EPS_COUNT];
 	struct ep_status ep_info[NIIET_UDC_EPS_COUNT];
 	uint32_t ep0_data_len;
-	struct niiet_usbd_regs hpcd;
+	struct niiet_usbd_regs regs;
 };
 
 
-#endif /* _DRIVERS_USB_GADGET_UDC_STM32CUBE_PRIV_H_ */
+#endif /* _DRIVERS_USB_GADGET_UDC_NIIET_PRIV_H_ */
