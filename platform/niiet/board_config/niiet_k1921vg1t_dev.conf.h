@@ -669,5 +669,118 @@ struct can_conf cans[] = {
 	},
 };
 
+struct usb_conf usbs[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "USB0",
+			.regs = {
+				REGMAP("USBDC_BASE", (USBDC0_BASE), 0x1000),
+				REGMAP("USBCTR_BASE", (USBCTR0_BASE), 0x1000),
+				REGMAP("USBHC_BASE", (USBHC0_BASE), 0x1000),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_USB0),
+			},
+			.pins = {
+				PIN("CLK",            GPIO_PORT_C,  13, GPIO_MODE_ALT, 4),
+				PIN("D0",             GPIO_PORT_F,  0, GPIO_MODE_ALT, 4),
+				PIN("D1",             GPIO_PORT_F,  1, GPIO_MODE_ALT, 4),
+				PIN("D2",             GPIO_PORT_F,  2, GPIO_MODE_ALT, 4),
+				PIN("D3",             GPIO_PORT_F,  3, GPIO_MODE_ALT, 4),
+				PIN("D4",             GPIO_PORT_F,  4, GPIO_MODE_ALT, 4),
+				PIN("D5",             GPIO_PORT_F,  5, GPIO_MODE_ALT, 4),
+				PIN("D6",             GPIO_PORT_F,  6, GPIO_MODE_ALT, 4),
+				PIN("D7",             GPIO_PORT_F,  7, GPIO_MODE_ALT, 4),
+				PIN("RESET",          GPIO_PORT_F,  9, GPIO_MODE_ALT, 4),
+				PIN("XCVRSELECT0",    GPIO_PORT_F, 10, GPIO_MODE_ALT, 4),
+				PIN("XCVRSELECT1",    GPIO_PORT_F, 11, GPIO_MODE_ALT, 4),
+				PIN("TERMSELECT",     GPIO_PORT_F, 12, GPIO_MODE_ALT, 4),
+				PIN("SUSPENDM",       GPIO_PORT_F, 13, GPIO_MODE_ALT, 4),
+				PIN("OPMODE0",        GPIO_PORT_F, 14, GPIO_MODE_ALT, 4),
+				PIN("OPMODE1",        GPIO_PORT_F, 15, GPIO_MODE_ALT, 4),
+
+				PIN("LINESTATE0",     GPIO_PORT_G,  0, GPIO_MODE_ALT, 4),
+				PIN("LINESTATE1",     GPIO_PORT_G,  1, GPIO_MODE_ALT, 4),
+				PIN("TXVALID",        GPIO_PORT_G,  2, GPIO_MODE_ALT, 4),
+				PIN("TXREADY",        GPIO_PORT_G,  3, GPIO_MODE_ALT, 4),
+				PIN("RXACTIVE",       GPIO_PORT_G,  4, GPIO_MODE_ALT, 4),
+				PIN("RXVALID",        GPIO_PORT_G,  5, GPIO_MODE_ALT, 4),
+				PIN("RXERROR",        GPIO_PORT_G,  6, GPIO_MODE_ALT, 4),
+				PIN("VBUSVALID",      GPIO_PORT_G,  7, GPIO_MODE_ALT, 4),
+				PIN("CHRGVBUS",       GPIO_PORT_G,  8, GPIO_MODE_ALT, 4),
+				PIN("DISCHRGVBUS",    GPIO_PORT_G,  9, GPIO_MODE_ALT, 4),
+				PIN("DPPULLDOWN",     GPIO_PORT_G, 10, GPIO_MODE_ALT, 4),
+				PIN("DMPULLDOWN",     GPIO_PORT_G, 11, GPIO_MODE_ALT, 4),
+				PIN("IDPULLUP",       GPIO_PORT_G, 12, GPIO_MODE_ALT, 4),
+				PIN("HOSTDISCONNECT", GPIO_PORT_G, 13, GPIO_MODE_ALT, 4),
+			},
+			.clocks = {
+				VAL("USB", "CLK_USB0"),
+			},
+			.misc = {
+				VAL("TYPE_FS", 1),
+				VAL("EP_MAX", 4),
+				VAL("EP_MAX_SIZE", 64),
+			},
+		},
+	},
+	[1] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "USB1",
+			.regs = {
+				REGMAP("USBDC_BASE", (USBDC1_BASE), 0x1000),
+				REGMAP("USBCTR_BASE", (USBCTR1_BASE), 0x1000),
+				REGMAP("USBHC_BASE", (USBHC1_BASE), 0x1000),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_USB1),
+			},
+			.pins = {
+				PIN("CLK",            GPIO_PORT_A,  1, GPIO_MODE_ALT, 4),
+				PIN("RESET",          GPIO_PORT_A,  0, GPIO_MODE_ALT, 4),
+				PIN("XCVRSELECT0",    GPIO_PORT_A,  2, GPIO_MODE_ALT, 4),
+				PIN("XCVRSELECT1",    GPIO_PORT_A,  3, GPIO_MODE_ALT, 4),
+				PIN("TERMSELECT",     GPIO_PORT_A,  4, GPIO_MODE_ALT, 4),
+				PIN("SUSPENDM",       GPIO_PORT_A,  5, GPIO_MODE_ALT, 4),
+				PIN("OPMODE0",        GPIO_PORT_A,  6, GPIO_MODE_ALT, 4),
+				PIN("OPMODE1",        GPIO_PORT_A,  7, GPIO_MODE_ALT, 4),
+				PIN("LINESTATE0",     GPIO_PORT_A,  8, GPIO_MODE_ALT, 4),
+				PIN("LINESTATE1",     GPIO_PORT_A,  9, GPIO_MODE_ALT, 4),
+				PIN("TXVALID",        GPIO_PORT_A, 10, GPIO_MODE_ALT, 4),
+				PIN("TXREADY",        GPIO_PORT_A, 11, GPIO_MODE_ALT, 4),
+				PIN("RXACTIVE",       GPIO_PORT_A, 12, GPIO_MODE_ALT, 4),
+				PIN("RXVALID",        GPIO_PORT_A, 13, GPIO_MODE_ALT, 4),
+				PIN("RXERROR",        GPIO_PORT_A, 14, GPIO_MODE_ALT, 4),
+				PIN("VBUSVALID",      GPIO_PORT_A, 15, GPIO_MODE_ALT, 4),
+
+				PIN("CHRGVBUS",       GPIO_PORT_B,  0, GPIO_MODE_ALT, 4),
+				PIN("DISCHRGVBUS",    GPIO_PORT_B,  1, GPIO_MODE_ALT, 4),
+				PIN("DPPULLDOWN",     GPIO_PORT_B,  2, GPIO_MODE_ALT, 4),
+				PIN("DMPULLDOWN",     GPIO_PORT_B,  3, GPIO_MODE_ALT, 4),
+				PIN("IDPULLUP",       GPIO_PORT_B,  4, GPIO_MODE_ALT, 4),
+				PIN("HOSTDISCONNECT", GPIO_PORT_B,  5, GPIO_MODE_ALT, 4),
+				PIN("D0",             GPIO_PORT_B,  6, GPIO_MODE_ALT, 4),
+				PIN("D1",             GPIO_PORT_B,  7, GPIO_MODE_ALT, 4),
+				PIN("D2",             GPIO_PORT_B,  8, GPIO_MODE_ALT, 4),
+				PIN("D3",             GPIO_PORT_B,  9, GPIO_MODE_ALT, 4),
+				PIN("D4",             GPIO_PORT_B, 10, GPIO_MODE_ALT, 4),
+				PIN("D5",             GPIO_PORT_B, 11, GPIO_MODE_ALT, 4),
+				PIN("D6",             GPIO_PORT_B, 12, GPIO_MODE_ALT, 4),
+				PIN("D7",             GPIO_PORT_B, 13, GPIO_MODE_ALT, 4),
+			},
+			.clocks = {
+				VAL("USB", "CLK_USB1"),
+			},
+			.misc = {
+				VAL("TYPE_FS", 1),
+				VAL("EP_MAX", 4),
+				VAL("EP_MAX_SIZE", 64),
+			},
+		},
+	},
+};
+
 EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds),
-					PWM(pwms), SPI(spis), I2C(i2cs), ETH(eths), CAN(cans))
+					PWM(pwms), SPI(spis), I2C(i2cs), ETH(eths), CAN(cans), USB(usbs))
