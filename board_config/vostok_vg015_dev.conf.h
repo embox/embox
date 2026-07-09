@@ -412,7 +412,7 @@ struct usb_conf usbs[] = {
 				/* there are no special pins */
 			},
 			.clocks = {
-				VAL("USB", "CLK_USB"),			
+				VAL("USB", "CLK_USBD"),
 			},
 			.misc = {
 				VAL("TYPE_FS", 1),

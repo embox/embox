@@ -26,6 +26,9 @@
 #define CLK_NAME_SPI      "CLK_SPI"
 #define CLK_NAME_I2C      "CLK_I2C"
 #define CLK_NAME_TMR      "CLK_TMR"
+#define CLK_NAME_USBD     "CLK_USBD"
+#define CLK_NAME_CAN      "CLK_CAN"
+#define CLK_NAME_CANFD    "CLK_CANFD"
 
 #define RCU          ((volatile struct rcu_reg *) CONF_RCU_REGION_BASE)
 
@@ -110,6 +113,9 @@ struct rcu_reg {
 
 #define RCU_CGCFGAHB_GPIOEN(port)   (1 << (0 + port))
 
+#define RCU_AHB_USBD_OFFSET    16
+#define RCU_CGCFGAHB_USBDEN(port)   (1 << (RCU_AHB_USBD_OFFSET + port * 2))
+
 #define RCU_CGCFGAPB2_SPI_OFFSET     8
 #define RCU_CGCFGAPB2_SPI0EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 0))
 #define RCU_CGCFGAPB2_SPI1EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 1))
@@ -164,6 +170,9 @@ struct rcu_reg {
 #define RCU_RSTDISAHB_GPIOBEN        (1 << (RCU_RSTDISAHB_GPIO_OFFSET + 1))
 #define RCU_RSTDISAHB_GPIOCEN        (1 << (RCU_RSTDISAHB_GPIO_OFFSET + 2))
 
+#define RCU_RSTDISAHB_USBDEN(port)   (1 << (RCU_AHB_USBD_OFFSET + port * 2))
+#define RCU_RSTDISAHB_USBD0EN        (1 << (RCU_AHB_USBD_OFFSET + 0))
+#define RCU_RSTDISAHB_USBD1EN        (1 << (RCU_AHB_USBD_OFFSET + 1 * 2))
 
 #define RCU_CLKSTAT_SRC_MASK        (0x3)
 #define  RCU_CLKSTAT_SRC_HSICLK      (0x0)
@@ -315,7 +324,6 @@ void niiet_spi_set_rcu(int num) {
     *rcu_clkcfg_reg |= RCU_SPICLKCFG_RSTDIS_MASK;
 }
 
-
 void niiet_i2c_set_rcu(int num) {
     volatile uint32_t dummy;
 
@@ -335,6 +343,17 @@ void niiet_tmr_set_rcu(int num) {
 	RCU->RCU_CGCFGAPB1_reg |= RCU_CGCFGAPB1_TMR_EN(num);
 	RCU->RCU_RSTDISAPB1_reg |= RCU_RSTDISAPB1_TMR_EN(num);
 }
+
+void niiet_usbd_set_rcu(int num) {
+	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_USBDEN(num);
+	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_USBDEN(num);
+}
+#if 0
+void niiet_can_set_rcu(int num) {
+	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_CAN_EN(num);
+	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_CAN_EN(num);
+}
+#endif
 
 int clk_enable(char *clk_name) {
     int num;
@@ -365,6 +384,18 @@ int clk_enable(char *clk_name) {
         return 0;
     }
 
+    if (0 == strncmp(clk_name, CLK_NAME_USBD, sizeof(CLK_NAME_USBD) - 1)) {
+        num = 0;
+        niiet_usbd_set_rcu(num);
+        return 0;
+    }
+#if 0
+    if (0 == strncmp(clk_name, CLK_NAME_CAN, sizeof(CLK_NAME_CAN) - 1)) {
+        num = 0;
+        niiet_can_set_rcu(num);
+        return 0;
+    }
+#endif
     return -ENOSUPP;
 }
 
