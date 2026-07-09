@@ -27,7 +27,7 @@
 #define CLK_NAME_SPI      "CLK_SPI"
 #define CLK_NAME_I2C      "CLK_I2C"
 #define CLK_NAME_TMR      "CLK_TMR"
-#define CLK_NAME_USB      "CLK_USB"
+#define CLK_NAME_USBD     "CLK_USBD"
 #define CLK_NAME_CAN      "CLK_CAN"
 
 #define RCU          ((volatile struct rcu_reg *) CONF_RCU_REGION_BASE)
@@ -295,7 +295,7 @@ int clk_enable(char *clk_name) {
         niiet_i2c_set_rcu(num);
         return 0;
     }
-    if (0 == strncmp(clk_name, CLK_NAME_USB, sizeof(CLK_NAME_USB) - 1)) {
+    if (0 == strncmp(clk_name, CLK_NAME_USBD, sizeof(CLK_NAME_USBD) - 1)) {
         num = 0;
         niiet_usb_set_rcu(num);
         return 0;

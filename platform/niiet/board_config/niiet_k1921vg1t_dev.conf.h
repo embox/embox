@@ -716,7 +716,7 @@ struct usb_conf usbs[] = {
 				PIN("HOSTDISCONNECT", GPIO_PORT_G, 13, GPIO_MODE_ALT, 4),
 			},
 			.clocks = {
-				VAL("USB", "CLK_USB0"),
+				VAL("USB", "CLK_USBD0"),
 			},
 			.misc = {
 				VAL("TYPE_FS", 1),
@@ -771,7 +771,7 @@ struct usb_conf usbs[] = {
 				PIN("D7",             GPIO_PORT_B, 13, GPIO_MODE_ALT, 4),
 			},
 			.clocks = {
-				VAL("USB", "CLK_USB1"),
+				VAL("USB", "CLK_USBD1"),
 			},
 			.misc = {
 				VAL("TYPE_FS", 1),
