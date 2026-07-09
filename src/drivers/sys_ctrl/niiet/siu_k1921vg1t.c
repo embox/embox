@@ -16,6 +16,8 @@
 /* FROM board_config.h*/
 
 #define MOD_NAME_TMR      "TMR"
+#define MOD_NAME_USBD     "USBD"
+#define MOD_NAME_USBH     "USBH"
 
 #define SIU_REGS          ((volatile struct siu_regs *) CONF_SIU_REGION_BASE)
 
@@ -104,23 +106,11 @@ struct siu_regs {
 	volatile uint32_t NODE4CTRL; /*!< Node 4 control register */
 };
 
-#if 0
-// FIXME USE separate SIU module instead 
-#define SIU_BASE_ADDR   0x50003000UL
 
-#define SIU_TMREN_REG   (SIU_BASE_ADDR + 0x54)
-
-int sys_ctrl_enable_tmr(int num)  {
-	// FIXME USE separate SIU module instead 
-	REG32_STORE(SIU_TMREN_REG, (1 << num)); /* TMR0*/
-	return 0;
-}
-#else
 int sys_ctrl_enable_tmr(int num) {
 	REG32_ORIN(&SIU_REGS->TMREN, (1 << num));
 	return 0;
 }
-#endif
 
 int sys_ctrl_enable_dev(const char *name) {
     int num;
@@ -131,5 +121,26 @@ int sys_ctrl_enable_dev(const char *name) {
         return 0;
     }
 
+    return -ENOSUPP;
+}
+
+int sys_ctrl_set_pwr_usbd(int num, int mode) {
+#if 0
+	uint32_t reg;
+
+	reg = SIU_REGS->PSRAMSMCR;
+	reg &= ~(USB0DC_RM)
+#endif
+	return 0;
+}
+
+int sys_ctrl_set_pwr_mode(const char *name, int mode) {
+	int num;
+
+    if (0 == strncmp(name, MOD_NAME_USBD, sizeof(MOD_NAME_USBD) - 1)) {
+        num = name[sizeof(MOD_NAME_USBD) - 1]  - '0';
+        sys_ctrl_set_pwr_usbd(num, mode);
+        return 0;
+    }
     return -ENOSUPP;
 }
