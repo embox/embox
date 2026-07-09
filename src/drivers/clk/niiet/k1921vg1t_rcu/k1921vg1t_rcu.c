@@ -288,44 +288,53 @@ struct rcu_reg {
 #define RCU_SPICLKCFG_DIVEN_MASK               0x00001000UL
 #define RCU_SPICLKCFG_DIVN_MASK                0x003F0000UL
 
+#define RCU_USBCLKCFG_CLKEN_MASK                0x00000001UL
+#define RCU_USBCLKCFG_CLKSEL_MASK               0x000300UL
+# define  RCU_USBCLKCFG_CLKSEL_SYSPLL0CLK_MASK   0x000000UL
+# define  RCU_USBCLKCFG_CLKSEL_SYSPLL1CLK_MASK   0x000100UL
+# define  RCU_USBCLKCFG_CLKSEL_SYSPLL2CLK_MASK   0x000200UL
+# define  RCU_USBCLKCFG_CLKSEL_EXTCLK_MASK       0x000300UL
+#define RCU_USBCLKCFG_DIVEN_MASK                0x001000UL
+#define RCU_USBCLKCFG_DIVN_MASK	                0x3f0000UL
+
 int niiet_gpio_clock_setup(unsigned char port) {
-    RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOEN(port);
-    RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOEN(port);
+	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOEN(port);
+	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOEN(port);
 
 	return 0;
 }
 
 void niiet_uart_set_rcu(int num) {
-    volatile uint32_t *rcu_clkcfg_reg = &RCU->RCU_UARTCLKCFG_reg[num];
+	volatile uint32_t *rcu_clkcfg_reg = &RCU->RCU_UARTCLKCFG_reg[num];
 
 	RCU->RCU_CGCFGAPB2_reg |= RCU_CGCFGAPB2_UART_EN(num);
 	RCU->RCU_RSTDISAPB2_reg |= RCU_RSTDISAPB2_UART_EN(num);
 
-    //rcu_clkcfg_reg += num;
+	//rcu_clkcfg_reg += num;
 
 	*rcu_clkcfg_reg = 0;
 	//*rcu_clkcfg_reg |= RCU_UARTCLKCFG_CLKSEL_SYSPLL0CLK_MASK;
-    *rcu_clkcfg_reg |= RCU_UARTCLKCFG_CLKSEL_HSECLK_MASK;
+	*rcu_clkcfg_reg |= RCU_UARTCLKCFG_CLKSEL_HSECLK_MASK;
 
 	*rcu_clkcfg_reg |= RCU_UARTCLKCFG_CLKEN_MASK;
-    *rcu_clkcfg_reg |= RCU_UARTCLKCFG_RSTDIS_MASK;
+	*rcu_clkcfg_reg |= RCU_UARTCLKCFG_RSTDIS_MASK;
 }
 
 void niiet_spi_set_rcu(int num) {
-    volatile uint32_t *rcu_clkcfg_reg = &RCU->RCU_SPICLKCFG_reg[num];
+	volatile uint32_t *rcu_clkcfg_reg = &RCU->RCU_SPICLKCFG_reg[num];
 
 	RCU->RCU_CGCFGAPB2_reg |= RCU_CGCFGAPB2_SPI_EN(num);
 	RCU->RCU_RSTDISAPB2_reg |= RCU_RSTDISAPB2_SPI_EN(num);
 
-    *rcu_clkcfg_reg = 0;
-    *rcu_clkcfg_reg |= RCU_SPICLKCFG_CLKSEL_HSECLK_MASK;
+	*rcu_clkcfg_reg = 0;
+	*rcu_clkcfg_reg |= RCU_SPICLKCFG_CLKSEL_HSECLK_MASK;
 
 	*rcu_clkcfg_reg |= RCU_SPICLKCFG_CLKEN_MASK;
-    *rcu_clkcfg_reg |= RCU_SPICLKCFG_RSTDIS_MASK;
+	*rcu_clkcfg_reg |= RCU_SPICLKCFG_RSTDIS_MASK;
 }
 
 void niiet_i2c_set_rcu(int num) {
-    volatile uint32_t dummy;
+	volatile uint32_t dummy;
 
 	/* Put I2C in reset state first */
 	RCU->RCU_RSTDISAPB2_reg &= ~RCU_RSTDISAPB2_I2C_EN(num);
@@ -347,6 +356,8 @@ void niiet_tmr_set_rcu(int num) {
 void niiet_usbd_set_rcu(int num) {
 	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_USBDEN(num);
 	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_USBDEN(num);
+	/* PLL0CLK by default */
+	RCU->RCU_USBCFG_reg[num] |= RCU_USBCLKCFG_CLKEN_MASK;
 }
 #if 0
 void niiet_can_set_rcu(int num) {
@@ -356,39 +367,39 @@ void niiet_can_set_rcu(int num) {
 #endif
 
 int clk_enable(char *clk_name) {
-    int num;
+	int num;
 
-    if (0 == strncmp(clk_name, CLK_NAME_GPIO, sizeof(CLK_NAME_GPIO) - 1)) {
-        num = clk_name[sizeof(CLK_NAME_GPIO) - 1] - 'A';
-        niiet_gpio_clock_setup(num);
-        return 0;
-    }
-    if (0 == strncmp(clk_name, CLK_NAME_UART, sizeof(CLK_NAME_UART) - 1)) {
-        num = clk_name[sizeof(CLK_NAME_UART) - 1]  - '0';
-        niiet_uart_set_rcu(num);
-        return 0;
-    }
-    if (0 == strncmp(clk_name, CLK_NAME_TMR, sizeof(CLK_NAME_TMR) - 1)) {
-        num = clk_name[sizeof(CLK_NAME_TMR) - 1]  - '0';
-        niiet_tmr_set_rcu(num);
-        return 0;
-    }
-    if (0 == strncmp(clk_name, CLK_NAME_SPI, sizeof(CLK_NAME_SPI) - 1)) {
-        num = clk_name[sizeof(CLK_NAME_SPI) - 1]  - '0';
-        niiet_spi_set_rcu(num);
-        return 0;
-    }
-    if (0 == strncmp(clk_name, CLK_NAME_I2C, sizeof(CLK_NAME_I2C) - 1)) {
-        num = clk_name[sizeof(CLK_NAME_I2C) - 1]  - '0';
-        niiet_i2c_set_rcu(num);
-        return 0;
-    }
+	if (0 == strncmp(clk_name, CLK_NAME_GPIO, sizeof(CLK_NAME_GPIO) - 1)) {
+		num = clk_name[sizeof(CLK_NAME_GPIO) - 1] - 'A';
+		niiet_gpio_clock_setup(num);
+		return 0;
+	}
+	if (0 == strncmp(clk_name, CLK_NAME_UART, sizeof(CLK_NAME_UART) - 1)) {
+		num = clk_name[sizeof(CLK_NAME_UART) - 1] - '0';
+		niiet_uart_set_rcu(num);
+		return 0;
+	}
+	if (0 == strncmp(clk_name, CLK_NAME_TMR, sizeof(CLK_NAME_TMR) - 1)) {
+		num = clk_name[sizeof(CLK_NAME_TMR) - 1] - '0';
+		niiet_tmr_set_rcu(num);
+		return 0;
+	}
+	if (0 == strncmp(clk_name, CLK_NAME_SPI, sizeof(CLK_NAME_SPI) - 1)) {
+		num = clk_name[sizeof(CLK_NAME_SPI) - 1] - '0';
+		niiet_spi_set_rcu(num);
+		return 0;
+	}
+	if (0 == strncmp(clk_name, CLK_NAME_I2C, sizeof(CLK_NAME_I2C) - 1)) {
+		num = clk_name[sizeof(CLK_NAME_I2C) - 1] - '0';
+		niiet_i2c_set_rcu(num);
+		return 0;
+	}
 
-    if (0 == strncmp(clk_name, CLK_NAME_USBD, sizeof(CLK_NAME_USBD) - 1)) {
-        num = 0;
-        niiet_usbd_set_rcu(num);
-        return 0;
-    }
+	if (0 == strncmp(clk_name, CLK_NAME_USBD, sizeof(CLK_NAME_USBD) - 1)) {
+		num = 0;
+		niiet_usbd_set_rcu(num);
+		return 0;
+	}
 #if 0
     if (0 == strncmp(clk_name, CLK_NAME_CAN, sizeof(CLK_NAME_CAN) - 1)) {
         num = 0;
@@ -396,7 +407,7 @@ int clk_enable(char *clk_name) {
         return 0;
     }
 #endif
-    return -ENOSUPP;
+	return -ENOSUPP;
 }
 
 void niiet_sysclk_init(void) {
