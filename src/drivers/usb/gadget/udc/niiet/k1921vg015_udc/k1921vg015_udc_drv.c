@@ -185,12 +185,26 @@ static void niiet_ep_ctrl_handler(struct niiet_udc *niiet_udc) {
 		printk("irq_ep_ctrl irq_stat (0x%x)\n", irq_stat);
 	}
 
+	    // usb ERROR
+    if(irq_stat & CEP_IRQ_USBERR) {
+        //discard data
+		printk("irq_ep_ctrl CEP_IRQ_USBERR\n");
+        //USB->CEP_CTRL_STAT = CEP_CTRL_STAT_CEPFLUSH | CEP_CTRL_STAT_STALL;
+		USB->CEP_CTRL_STAT = CEP_CTRL_STAT_NAKCLEAR;
+        //and set for ready receive new SETUP packet
+        //TODO:
+        USB->CEP_IRQ_STAT = irq_stat;
+		return ;
+    }
+
     // SETUP packet was received
     if(irq_stat & CEP_IRQ_SETUPPKT) {
 		USB->CEP_IRQ_STAT = CEP_IRQ_SETUPPKT;
 
     	USBDev_ParseSetupPacket(&ctrl);
     	usb_control_header_show(&ctrl);
+		USBDev_CEPSendResponse(CEP_CTRL_STAT_STALL);
+
     }
 
     // DATA packet received
@@ -236,16 +250,6 @@ printk("irq_ep_ctrl CEP_IRQ_DATAPKTREC\n");
 		USBDev_SetAddress(0);
 	}
 
-    // usb ERROR
-    if(irq_stat & CEP_IRQ_USBERR) {
-        //discard data
-		printk("irq_ep_ctrl CEP_IRQ_STATCMPLN\n");
-        USB->CEP_CTRL_STAT = CEP_CTRL_STAT_CEPFLUSH | CEP_CTRL_STAT_STALL;
-        //and set for ready receive new SETUP packet
-        //TODO:
-        USB->CEP_IRQ_STAT = CEP_IRQ_USBERR;
-    }
-
     if((irq_stat & CEP_IRQ_SETUPTOKEN) != 0) {
         //TODO:
         USB->CEP_IRQ_STAT = CEP_IRQ_SETUPTOKEN;
@@ -274,7 +278,7 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 	}
 
 	if (log_level_self() >= LOG_DEBUG) {
-		printk("usb: irq entry irq_stat (0x%x)\n", irq_stat);
+		printk("usb: irq entry INTSTAT0 (0x%x)\n", irq_stat);
 	}
 
 	ipl = ipl_save();
@@ -289,6 +293,9 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 		uint32_t usbirq_stat;
 
 		usbirq_stat = USB->INTSTAT1;
+		if (log_level_self() >= LOG_DEBUG) {
+			printk("niiet_usb: INTEN0_USBBUSINTEN INTSTAT1(%x)\n", usbirq_stat);
+	    }
 		usbirq_stat &= USB->INTEN1;
 
 		if (usbirq_stat & INTEN1_CLKUNSTBL) {
@@ -341,10 +348,10 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 
 			USB->INTSTAT1 = INTEN1_SUSPEND; //clear bit
 		}
-		/*
-        if((usbirq_stat & USB_INTSTAT1_DMACMPL_Msk) != 0) {
-            USB->INTSTAT1 = USB_INTSTAT1_DMACMPL_Msk; //clear bit
-        }*/
+		
+        if((usbirq_stat & INTEN1_DMACMPL) != 0) {
+            USB->INTSTAT1 = INTEN1_DMACMPL; //clear bit
+        }
 
 		if (usbirq_stat & INTEN1_CLKUNSTBL) {
 			USB->INTSTAT1 = INTEN1_CLKUNSTBL; //clear bit
@@ -358,13 +365,39 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 }
 
 static inline void niiet_udc_pll_init() {
-
+#if 0
 	/* SYSCLK */
 	USB->PLLUSBCFG0 &= ~(PLLUSBCFG0_PLLEN);
 	USB->PLLUSBCFG3 |= PLLUSBCFG3_USBCLKSEL;
 
 	for (volatile int i = 0; i < 10000; ++i) {}
+#endif
 
+    uint32_t timeout_counter = 0;
+	USB->PLLUSBCFG0 =( 7 << PLLUSBCFG0_PD1B_Pos) |  //PD1B
+					 ( 7 << PLLUSBCFG0_PD1A_Pos) |  //PD1A
+					 ( 1 << PLLUSBCFG0_PD0B_Pos) |  //PD0B 120FPRE/(1+1) = 60FOUT
+					 ( 7 << PLLUSBCFG0_PD0A_Pos) |  //PD0A 960FVCO/(1+7) = 120FPRE
+					 ( 1 << PLLUSBCFG0_REFDIV_Pos) 	  |  //refdiv 16/1 = 16FREF
+					 ( 0 << PLLUSBCFG0_FOUTEN_Pos)    |  //fouten
+					 ( 0 << PLLUSBCFG0_DSMEN_Pos)     |  //dsmen
+					 ( 0 << PLLUSBCFG0_DACEN_Pos)     |  //dacen
+					 ( 0 << PLLUSBCFG0_BYP_Pos)       |  //bypass
+					 ( 1 << PLLUSBCFG0_PLLEN_Pos);       //en
+	USB->PLLUSBCFG1 = 0;          //FRAC = 0
+	USB->PLLUSBCFG2 = 59;         //FBDIV 16FREF*60=960FVCO
+
+	USB->PLLUSBCFG0 |= ( 1 << PLLUSBCFG0_FOUTEN_Pos); 	// Fout0 Enable
+
+	timeout_counter = 1000;
+	while(timeout_counter) timeout_counter--;
+
+	while (USB->PLLUSBSTAT & PLLUSBCFG0_LOCK)
+	{}; 								// wait lock signal
+
+	USB->PLLUSBCFG0 |= (2 << PLLUSBCFG0_BYP_Pos) ; 		// Bypass for Fout1
+
+	USB->PLLUSBCFG3 &= ~PLLUSBCFG3_USBCLKSEL; //0-PLLUSBClk (FOUT0); 1- SYSClk
 }
 
 static int niiet_udc_start(struct usb_udc *udc) {
@@ -373,7 +406,7 @@ static int niiet_udc_start(struct usb_udc *udc) {
 
 	USB->PHY_PD = 0;
 
-    USB->INTEN1 = INTEN1_SUSPEND | INTEN1_RESUME | INTEN1_RESTATUS;
+    USB->INTEN1 = /* INTEN1_SUSPEND | INTEN1_RESUME | */ INTEN1_RESTATUS;
     USB->INTEN0 = INTEN0_USBBUSINTEN;
 
 	return 0;

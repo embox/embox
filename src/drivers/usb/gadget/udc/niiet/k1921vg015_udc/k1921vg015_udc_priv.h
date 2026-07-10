@@ -92,7 +92,23 @@ struct niiet_usbd_regs {
 	volatile const uint32_t PLLUSBSTAT; /*!< 0x810 PLLUSBSTAT PLL Status Register */
 };
 
-#define PLLUSBCFG0_PLLEN         (1 << 0)
+/* Bit field positions: */
+#define PLLUSBCFG0_PLLEN_Pos              0                      /*!< PLL enable */
+#define PLLUSBCFG0_BYP_Pos                1                      /*!< Bypass */
+#define PLLUSBCFG0_DACEN_Pos              3                      /*!<  */
+#define PLLUSBCFG0_DSMEN_Pos              4                      /*!<  */
+#define PLLUSBCFG0_FOUTEN_Pos             5                      /*!< Output frequency enabled */
+#define PLLUSBCFG0_REFDIV_Pos             7                      /*!<  */
+#define PLLUSBCFG0_PD0A_Pos               13                     /*!<  */
+#define PLLUSBCFG0_PD0B_Pos               16                     /*!<  */
+#define PLLUSBCFG0_PD1A_Pos               22                     /*!<  */
+#define PLLUSBCFG0_PD1B_Pos               25                     /*!<  */
+
+#define PLLUSBCFG0_LOCK_Pos               0                      /*!< Lock status PLL */
+
+#define PLLUSBCFG0_LOCK                   (1 << PLLUSBCFG0_LOCK_Pos)
+
+#define PLLUSBCFG0_PLLEN         (1 << PLLUSBCFG0_PLLEN_Pos)
 
 #define PLLUSBCFG3_USBCLKSEL     (1 << 24)
 
