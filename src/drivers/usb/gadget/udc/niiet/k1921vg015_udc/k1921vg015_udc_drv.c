@@ -176,10 +176,13 @@ static inline void usb_control_header_show(struct usb_control_header *ctrl) {
 /*----- cep handler ------- */
 static void niiet_ep_ctrl_handler(struct niiet_udc *niiet_udc) {
 	struct usb_control_header ctrl = {0};
+	struct niiet_usbd_regs *regs;
     uint32_t irq_stat;
 
-	irq_stat = USB->CEP_IRQ_STAT;
-    irq_stat &= USB->CEP_IRQ_ENB;
+	regs = niiet_udc->regs;
+
+	irq_stat = regs->CEP_IRQ_STAT;
+    irq_stat &= regs->CEP_IRQ_ENB;
 
 	if (log_level_self() >= LOG_DEBUG) {
 		printk("irq_ep_ctrl irq_stat (0x%x)\n", irq_stat);
@@ -190,26 +193,27 @@ static void niiet_ep_ctrl_handler(struct niiet_udc *niiet_udc) {
         //discard data
 		printk("irq_ep_ctrl CEP_IRQ_USBERR\n");
         //USB->CEP_CTRL_STAT = CEP_CTRL_STAT_CEPFLUSH | CEP_CTRL_STAT_STALL;
-		USB->CEP_CTRL_STAT = CEP_CTRL_STAT_NAKCLEAR;
+		regs->CEP_CTRL_STAT = CEP_CTRL_STAT_NAKCLEAR;
         //and set for ready receive new SETUP packet
         //TODO:
-        USB->CEP_IRQ_STAT = irq_stat;
+        regs->CEP_IRQ_STAT = irq_stat;
 		return ;
     }
 
     // SETUP packet was received
     if(irq_stat & CEP_IRQ_SETUPPKT) {
-		USB->CEP_IRQ_STAT = CEP_IRQ_SETUPPKT;
+		regs->CEP_IRQ_STAT = CEP_IRQ_SETUPPKT;
 
     	USBDev_ParseSetupPacket(&ctrl);
     	usb_control_header_show(&ctrl);
-		USBDev_CEPSendResponse(CEP_CTRL_STAT_STALL);
+		usb_gadget_setup(niiet_udc->udc.udc_composite, &ctrl, niiet_udc->buf);
+		//USBDev_CEPSendResponse(CEP_CTRL_STAT_STALL);
 
     }
 
     // DATA packet received
     if(irq_stat & CEP_IRQ_DATAPKTREC) {
-        USB->CEP_IRQ_STAT = CEP_IRQ_DATAPKTREC;
+        regs->CEP_IRQ_STAT = CEP_IRQ_DATAPKTREC;
         USBDev_GetNextCEPPacket();
 printk("irq_ep_ctrl CEP_IRQ_DATAPKTREC\n");
         if (0){
@@ -223,7 +227,7 @@ printk("irq_ep_ctrl CEP_IRQ_DATAPKTREC\n");
 
     // DATA packet transmitted
     if(irq_stat & CEP_IRQ_DATAPKTTR) {
-        USB->CEP_IRQ_STAT = CEP_IRQ_DATAPKTTR;
+        regs->CEP_IRQ_STAT = CEP_IRQ_DATAPKTTR;
 		printk("irq_ep_ctrl CEP_IRQ_DATAPKTTR\n");
         if(0) {
         		//TODO: add callback TX data event
@@ -245,45 +249,48 @@ printk("irq_ep_ctrl CEP_IRQ_DATAPKTREC\n");
 
     // end STATUS stage of SETUP xfer
     if(irq_stat & CEP_IRQ_STATCMPLN) {
-    	USB->CEP_IRQ_STAT = CEP_IRQ_STATCMPLN;
+    	regs->CEP_IRQ_STAT = CEP_IRQ_STATCMPLN;
 		printk("irq_ep_ctrl CEP_IRQ_STATCMPLN\n");
 		USBDev_SetAddress(0);
 	}
 
     if((irq_stat & CEP_IRQ_SETUPTOKEN) != 0) {
         //TODO:
-        USB->CEP_IRQ_STAT = CEP_IRQ_SETUPTOKEN;
+        regs->CEP_IRQ_STAT = CEP_IRQ_SETUPTOKEN;
     }
 
     if((irq_stat & CEP_IRQ_INTOKEN) != 0) {
         //TODO:
-        USB->CEP_IRQ_STAT = CEP_IRQ_INTOKEN;
+        regs->CEP_IRQ_STAT = CEP_IRQ_INTOKEN;
     }
 
     if((irq_stat & CEP_IRQ_OUTTOKEN) != 0) {
         //TODO:
-        USB->CEP_IRQ_STAT = CEP_IRQ_OUTTOKEN;
+        regs->CEP_IRQ_STAT = CEP_IRQ_OUTTOKEN;
     }
 }
 
 static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 	uint32_t irq_stat;
 	struct niiet_udc *niiet_udc = data;
+	struct niiet_usbd_regs *regs;
 	ipl_t ipl;
 
-	irq_stat = USB->INTSTAT0;
+	regs = niiet_udc->regs;
+
+	irq_stat = regs->INTSTAT0;
 
 	if (irq_stat == 0) {
 		return 0;
 	}
 
-	if (log_level_self() >= LOG_DEBUG) {
-		printk("usb: irq entry INTSTAT0 (0x%x)\n", irq_stat);
-	}
+	// if (log_level_self() >= LOG_DEBUG) {
+	// 	printk("usb: irq entry INTSTAT0 (0x%x)\n", irq_stat);
+	// }
 
 	ipl = ipl_save();
 
-	irq_stat &= USB->INTEN0;
+	irq_stat &= regs->INTEN0;
 
 	if (irq_stat & CEP_IRQ_SETUPPKT) {
 		niiet_ep_ctrl_handler(niiet_udc);
@@ -292,19 +299,19 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 	if (irq_stat & INTEN0_USBBUSINTEN) {
 		uint32_t usbirq_stat;
 
-		usbirq_stat = USB->INTSTAT1;
+		usbirq_stat = regs->INTSTAT1;
 		if (log_level_self() >= LOG_DEBUG) {
 			printk("niiet_usb: INTEN0_USBBUSINTEN INTSTAT1(%x)\n", usbirq_stat);
 	    }
-		usbirq_stat &= USB->INTEN1;
+		usbirq_stat &= regs->INTEN1;
 
 		if (usbirq_stat & INTEN1_CLKUNSTBL) {
-			USB->INTSTAT1 = INTEN1_CLKUNSTBL;
+			regs->INTSTAT1 = INTEN1_CLKUNSTBL;
 		}
 
 		if (usbirq_stat & INTEN1_SOF) {
 			//usb_framecnt = USB->FRAMECNT_bit.FRAME_COUNTER;
-			USB->INTSTAT1 = INTEN1_SOF;
+			regs->INTSTAT1 = INTEN1_SOF;
 		}
 
 		if (usbirq_stat & INTEN1_RESTATUS) {
@@ -312,24 +319,24 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 		        printk("niiet_usb: INTEN1_RESTATUS\n");
 	        }
 			// configure control endpoint here for setup transactions
-			USB->CEP_START_ADDR = 0;
-			USB->CEP_END_ADDR = 64 - 1; //TODO: set as max control endpoint buffer value
+			regs->CEP_START_ADDR = 0;
+			regs->CEP_END_ADDR = 64 - 1; //TODO: set as max control endpoint buffer value
 			// enable interrupts for CEP
-			USB->CEP_IRQ_ENB = CEP_IRQ_SETUPPKT | CEP_IRQ_DATAPKTREC
+			regs->CEP_IRQ_ENB = CEP_IRQ_SETUPPKT | CEP_IRQ_DATAPKTREC
 			                   | CEP_IRQ_DATAPKTTR | CEP_IRQ_STATCMPLN
 			                   | CEP_IRQ_USBERR | CEP_IRQ_SETUPTOKEN;
 
-			USB->INTEN0 |= INTEN0_CEP_INTEN;
+			regs->INTEN0 |= INTEN0_CEP_INTEN;
 
-			USB->INTSTAT1 = INTEN1_RESTATUS; //clear bit
+			regs->INTSTAT1 = INTEN1_RESTATUS; //clear bit
 
-			USB->INTEN1 |= INTEN1_SOF;
+			regs->INTEN1 |= INTEN1_SOF;
 
-			USB->INTEN0 &= 0x3;
-			USB->USB_EP[0].USB_EP_CFG = 0;
-			USB->USB_EP[1].USB_EP_CFG = 0;
-			USB->USB_EP[2].USB_EP_CFG = 0;
-			USB->USB_EP[3].USB_EP_CFG = 0;
+			regs->INTEN0 &= 0x3;
+			regs->USB_EP[0].USB_EP_CFG = 0;
+			regs->USB_EP[1].USB_EP_CFG = 0;
+			regs->USB_EP[2].USB_EP_CFG = 0;
+			regs->USB_EP[3].USB_EP_CFG = 0;
 
 			//hid_report_updated = 0;
 
@@ -340,21 +347,21 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 		if (usbirq_stat & INTEN1_RESUME) {
 			//USBDev_RevertState(&USBDev_0);
 
-			USB->INTSTAT1 = INTEN1_RESUME; //clear bit
+			regs->INTSTAT1 = INTEN1_RESUME; //clear bit
 		}
 
 		if (usbirq_stat & INTEN1_SUSPEND) {
 			//USBDev_ChangeState(&USBDev_0, Suspended);
 
-			USB->INTSTAT1 = INTEN1_SUSPEND; //clear bit
+			regs->INTSTAT1 = INTEN1_SUSPEND; //clear bit
 		}
 		
         if((usbirq_stat & INTEN1_DMACMPL) != 0) {
-            USB->INTSTAT1 = INTEN1_DMACMPL; //clear bit
+            regs->INTSTAT1 = INTEN1_DMACMPL; //clear bit
         }
 
 		if (usbirq_stat & INTEN1_CLKUNSTBL) {
-			USB->INTSTAT1 = INTEN1_CLKUNSTBL; //clear bit
+			regs->INTSTAT1 = INTEN1_CLKUNSTBL; //clear bit
 			//USB->INTEN1_bit.CLKUNSTBL = 0; //disable this irq
 		}
 	}
@@ -364,7 +371,7 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static inline void niiet_udc_pll_init() {
+static inline void niiet_udc_pll_init(struct niiet_usbd_regs *regs) {
 #if 0
 	/* SYSCLK */
 	USB->PLLUSBCFG0 &= ~(PLLUSBCFG0_PLLEN);
@@ -374,7 +381,8 @@ static inline void niiet_udc_pll_init() {
 #endif
 
     uint32_t timeout_counter = 0;
-	USB->PLLUSBCFG0 =( 7 << PLLUSBCFG0_PD1B_Pos) |  //PD1B
+
+	regs->PLLUSBCFG0 =( 7 << PLLUSBCFG0_PD1B_Pos) |  //PD1B
 					 ( 7 << PLLUSBCFG0_PD1A_Pos) |  //PD1A
 					 ( 1 << PLLUSBCFG0_PD0B_Pos) |  //PD0B 120FPRE/(1+1) = 60FOUT
 					 ( 7 << PLLUSBCFG0_PD0A_Pos) |  //PD0A 960FVCO/(1+7) = 120FPRE
@@ -384,35 +392,45 @@ static inline void niiet_udc_pll_init() {
 					 ( 0 << PLLUSBCFG0_DACEN_Pos)     |  //dacen
 					 ( 0 << PLLUSBCFG0_BYP_Pos)       |  //bypass
 					 ( 1 << PLLUSBCFG0_PLLEN_Pos);       //en
-	USB->PLLUSBCFG1 = 0;          //FRAC = 0
-	USB->PLLUSBCFG2 = 59;         //FBDIV 16FREF*60=960FVCO
+	regs->PLLUSBCFG1 = 0;          //FRAC = 0
+	regs->PLLUSBCFG2 = 59;         //FBDIV 16FREF*60=960FVCO
 
-	USB->PLLUSBCFG0 |= ( 1 << PLLUSBCFG0_FOUTEN_Pos); 	// Fout0 Enable
+	regs->PLLUSBCFG0 |= ( 1 << PLLUSBCFG0_FOUTEN_Pos); 	// Fout0 Enable
 
 	timeout_counter = 1000;
 	while(timeout_counter) timeout_counter--;
 
-	while (USB->PLLUSBSTAT & PLLUSBCFG0_LOCK)
+	while (0 == (regs->PLLUSBSTAT & PLLUSBCFG0_LOCK))
 	{}; 								// wait lock signal
 
-	USB->PLLUSBCFG0 |= (2 << PLLUSBCFG0_BYP_Pos) ; 		// Bypass for Fout1
+	regs->PLLUSBCFG0 |= (2 << PLLUSBCFG0_BYP_Pos) ; 		// Bypass for Fout1
 
-	USB->PLLUSBCFG3 &= ~PLLUSBCFG3_USBCLKSEL; //0-PLLUSBClk (FOUT0); 1- SYSClk
+	regs->PLLUSBCFG3 &= ~PLLUSBCFG3_USBCLKSEL; //0-PLLUSBClk (FOUT0); 1- SYSClk
 }
 
 static int niiet_udc_start(struct usb_udc *udc) {
+	struct niiet_udc *niiet_udc = member_cast_out(udc, struct niiet_udc, udc);
+	struct niiet_usbd_regs *regs = niiet_udc->regs;
+
 	clk_enable(CONF_USB_CLK_DEF_USB);
-	niiet_udc_pll_init();
+	niiet_udc_pll_init(regs);
 
-	USB->PHY_PD = 0;
+	regs->PHY_PD = 0;
 
-    USB->INTEN1 = /* INTEN1_SUSPEND | INTEN1_RESUME | */ INTEN1_RESTATUS;
-    USB->INTEN0 = INTEN0_USBBUSINTEN;
+	regs->INTSTAT0 = 0xFFFF;
+	regs->INTSTAT1 = 0xFFFF;
+
+    regs->INTEN1 = /* INTEN1_SUSPEND | INTEN1_RESUME | */ INTEN1_RESTATUS;
+    regs->INTEN0 = INTEN0_USBBUSINTEN;
 
 	return 0;
 }
 
 static int niiet_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_request *req) {
+
+	log_debug("EPQ: ep=%u dir=%s len=%u",
+	    ep->nr, ep->dir == USB_DIR_IN ? "IN" : "OUT", (unsigned)req->len);
+	USBDev_EPSendData( req->buf, req->len, ep->nr);
 
 	return 0;
 }
@@ -449,6 +467,10 @@ struct niiet_udc niiet_udc = {
 
 static int niiet_udc_init(void) {
 	int ret;
+
+	niiet_udc.regs = USB;
+	niiet_udc.regs->INTEN0 = 0;
+	niiet_udc.regs->INTEN1 = 0;
 
 	ret = irq_attach(USB_IRQ_NUM, niiet_usbd_irq_handler, 0, &niiet_udc, "udc");
 	if (ret != 0) {

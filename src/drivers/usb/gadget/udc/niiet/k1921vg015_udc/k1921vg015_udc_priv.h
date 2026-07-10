@@ -157,8 +157,9 @@ struct niiet_udc {
 	struct usb_gadget_ep *eps[NIIET_UDC_EPS_COUNT];
 	struct usb_gadget_request *requests[NIIET_UDC_EPS_COUNT];
 	struct ep_status ep_info[NIIET_UDC_EPS_COUNT];
+	uint8_t buf[1024];
 	uint32_t ep0_data_len;
-	struct niiet_usbd_regs regs;
+	struct niiet_usbd_regs *regs;
 };
 
 
