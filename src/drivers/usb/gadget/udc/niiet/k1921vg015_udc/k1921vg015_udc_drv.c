@@ -126,37 +126,39 @@ static inline int USBDev_WritePacket(uint8_t *src, uint32_t len, uint8_t epnum) 
     return 0;
 }
 
-static inline int USBDev_PutNextCEPPacket(void) {
-    uint32_t data_size = 0;
-	void *buf = NULL;
-#if 0
-    if((USBDev_0.setup_pkt.xfer_len - USBDev_0.setup_pkt.xfer_count) > USB_DEVICE_MAX_EP0_SIZE )
-    	data_size = USB_DEVICE_MAX_EP0_SIZE;
-    else
-    	data_size  = USBDev_0.setup_pkt.xfer_len - USBDev_0.setup_pkt.xfer_count;
-#endif
+static inline int USBDev_PutNextCEPPacket(struct niiet_udc *u, uint8_t *pbuf, uint32_t len, uint8_t epnum) {
+    uint32_t data_size = len;
+	void *buf = pbuf;
+
+	if (len > USB_MAX_EP0_SIZE) {
+		data_size = USB_MAX_EP0_SIZE;
+		printk("!!!!len > USB_MAX_EP0_SIZE)\n");
+	} else {
+		data_size = len;
+	}
+
     if(data_size == 0) {
     	USBDev_CEPSendResponse(CEP_CTRL_STAT_ZEROLEN);
 	} else {
     	USBDev_DMAOpStart((uint8_t*)(buf),
-    	                          data_size, 0, DMA_CTRL_STS_OP_WRITE | DMA_CTRL_STS_DMAEN);
+    	                          data_size, epnum, DMA_CTRL_STS_OP_WRITE | DMA_CTRL_STS_DMAEN);
     	USB->CEP_IN_XFRCNT = data_size;
     }
 
     return 0;
 }
 
-static inline int USBDev_EPSendData(uint8_t *pbuf, uint32_t len, uint8_t epnum) {
+static inline int USBDev_EPSendData(struct niiet_udc *u, uint8_t *pbuf, uint32_t len, uint8_t epnum) {
     if(epnum == 0) {
         if(len == 0) {
             USBDev_CEPSendResponse(CEP_CTRL_STAT_ZEROLEN);
             return 0;
         }
 
-        USBDev_PutNextCEPPacket();
+        USBDev_PutNextCEPPacket(u, pbuf, len, epnum);
     }
     else {
-
+		printk("!!!!if(epnum != 0)\n");
     }
 
     return 0;
@@ -214,7 +216,7 @@ static void niiet_ep_ctrl_handler(struct niiet_udc *niiet_udc) {
     // DATA packet received
     if(irq_stat & CEP_IRQ_DATAPKTREC) {
         regs->CEP_IRQ_STAT = CEP_IRQ_DATAPKTREC;
-        USBDev_GetNextCEPPacket();
+        //USBDev_GetNextCEPPacket();
 printk("irq_ep_ctrl CEP_IRQ_DATAPKTREC\n");
         if (0){
 			USBDev_CEPSendResponse(CEP_CTRL_STAT_ZEROLEN);
@@ -229,13 +231,13 @@ printk("irq_ep_ctrl CEP_IRQ_DATAPKTREC\n");
     if(irq_stat & CEP_IRQ_DATAPKTTR) {
         regs->CEP_IRQ_STAT = CEP_IRQ_DATAPKTTR;
 		printk("irq_ep_ctrl CEP_IRQ_DATAPKTTR\n");
-        if(0) {
+        if(1) {
         		//TODO: add callback TX data event
         		USBDev_CEPSendResponse(CEP_CTRL_STAT_ACK);
         		//USBDev_SetSetupStage(USBDev_SetupStage_Status);
         } else {
         		//TODO:
-        		USBDev_PutNextCEPPacket();
+        		//USBDev_PutNextCEPPacket();
         	}
 
         } 
@@ -372,14 +374,6 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 }
 
 static inline void niiet_udc_pll_init(struct niiet_usbd_regs *regs) {
-#if 0
-	/* SYSCLK */
-	USB->PLLUSBCFG0 &= ~(PLLUSBCFG0_PLLEN);
-	USB->PLLUSBCFG3 |= PLLUSBCFG3_USBCLKSEL;
-
-	for (volatile int i = 0; i < 10000; ++i) {}
-#endif
-
     uint32_t timeout_counter = 0;
 
 	regs->PLLUSBCFG0 =( 7 << PLLUSBCFG0_PD1B_Pos) |  //PD1B
@@ -427,10 +421,11 @@ static int niiet_udc_start(struct usb_udc *udc) {
 }
 
 static int niiet_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_request *req) {
+	struct niiet_udc *u = (struct niiet_udc *)ep->udc;
 
 	log_debug("EPQ: ep=%u dir=%s len=%u",
 	    ep->nr, ep->dir == USB_DIR_IN ? "IN" : "OUT", (unsigned)req->len);
-	USBDev_EPSendData( req->buf, req->len, ep->nr);
+	USBDev_EPSendData(u, req->buf, req->len, ep->nr);
 
 	return 0;
 }
