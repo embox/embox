@@ -215,6 +215,14 @@ int usb_gadget_setup(struct usb_gadget_composite *composite,
 		req->len = 0;
 		goto submit_req;
 	}
+	case USB_REQ_SET_ADDRESS: {
+		if (usb_gadget_set_address(composite->ep0.udc, ctrl) != 0) {
+			log_error("usb_gadget_set_address() failed");
+			return -1;
+		}
+		req->len = 0;
+		goto submit_req;
+	}
 	default:
 		goto func_setup;
 	}
