@@ -170,7 +170,7 @@ static inline void usb_control_header_show(struct usb_control_header *ctrl) {
 		printk("\tb_request: %x\n", ctrl->b_request);
 		printk("\tw_value: %x\n", ctrl->w_value);
 		printk("\tw_index: %x\n", ctrl->w_index);
-		printk("\tw_index: %x\n", ctrl->w_length);
+		printk("\tw_length: %x\n", ctrl->w_length);
 	}
 
 }
@@ -253,7 +253,12 @@ printk("irq_ep_ctrl CEP_IRQ_DATAPKTREC\n");
     if(irq_stat & CEP_IRQ_STATCMPLN) {
     	regs->CEP_IRQ_STAT = CEP_IRQ_STATCMPLN;
 		printk("irq_ep_ctrl CEP_IRQ_STATCMPLN\n");
-		USBDev_SetAddress(0);
+		if (niiet_udc->addr) {
+			log_debug("set_addr (%u)", niiet_udc->addr);
+			regs->USBADDR = niiet_udc->addr;
+			niiet_udc->addr = 0;
+		}
+		//USBDev_SetAddress(0);
 	}
 
     if((irq_stat & CEP_IRQ_SETUPTOKEN) != 0) {
@@ -432,11 +437,21 @@ static int niiet_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_reques
 
 static int niiet_udc_ep_stall(struct usb_gadget_ep *ep,
     const struct usb_control_header *ctrl)  {
+	USBDev_CEPSendResponse(CEP_CTRL_STAT_STALL);
 	return 0;
 }
 
 static void niiet_udc_ep_enable(struct usb_gadget_ep *ep) {
+	log_debug("ep_enable: ep=%u", ep->nr);
+}
 
+static int niiet_udc_set_addr(struct usb_udc *udc, uint8_t addr) {
+	struct niiet_udc *niiet_udc = member_cast_out(udc, struct niiet_udc, udc);
+	//struct niiet_usbd_regs *regs = niiet_udc->regs;
+	log_debug("niiet_udc_set_addr: addr=%u", addr);
+	//regs->USBADDR = addr;
+	niiet_udc->addr = addr;
+	return 0;
 }
 
 static struct usb_udc_ops niiet_usb_udc_ops = {
@@ -444,6 +459,7 @@ static struct usb_udc_ops niiet_usb_udc_ops = {
 	.uuo_ep_queue = niiet_udc_ep_queue,
 	.uuo_ep_stall = niiet_udc_ep_stall,
 	.uuo_ep_enable = niiet_udc_ep_enable,
+	.uuo_set_addr = niiet_udc_set_addr,
 };
 
 struct niiet_udc niiet_udc = {
@@ -462,6 +478,8 @@ struct niiet_udc niiet_udc = {
 
 static int niiet_udc_init(void) {
 	int ret;
+
+	niiet_udc.addr= 0;
 
 	niiet_udc.regs = USB;
 	niiet_udc.regs->INTEN0 = 0;

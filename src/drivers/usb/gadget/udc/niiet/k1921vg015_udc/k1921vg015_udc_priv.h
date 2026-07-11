@@ -160,6 +160,8 @@ struct niiet_udc {
 	uint8_t buf[1024];
 	uint32_t ep0_data_len;
 	struct niiet_usbd_regs *regs;
+	uint32_t status;
+	uint8_t addr;
 };
 
 
