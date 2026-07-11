@@ -38,31 +38,26 @@ EMBOX_UNIT_INIT(niiet_udc_init);
 #define NIIET_UDC_IN_EP_MASK  ((1 << 1) | (1 << 2) | (1 << 3))
 #define NIIET_UDC_OUT_EP_MASK ((1 << 1) | (1 << 2) | (1 << 3))
 
-#define USB      ((struct niiet_usbd_regs *)(uintptr_t) CONF_USB_REGION_BASE)
+#define USB_BASE      ((struct niiet_usbd_regs *)(uintptr_t) CONF_USB_REGION_BASE)
 
 static uint8_t __attribute__ ((aligned(1024))) dma_tmpbuf[1024]; // for max ISOC HIGHSPEED transaction
 
-static inline void USBDev_ParseSetupPacket(struct usb_control_header *ctrl) {
-	ctrl->bm_request_type = (uint8_t)(USB->CEP_SETUP1_0 & 0xff);
-	ctrl->b_request = (uint8_t)((USB->CEP_SETUP1_0 >> 8) & 0xff);
-	ctrl->w_value = USB->CEP_SETUP3_2;
-	ctrl->w_index = USB->CEP_SETUP5_4;
-	ctrl->w_length = USB->CEP_SETUP7_6;
+static inline void USBDev_ParseSetupPacket(struct niiet_usbd_regs *regs, 
+				struct usb_control_header *ctrl) {
+	ctrl->bm_request_type = (uint8_t)(regs->CEP_SETUP1_0 & 0xff);
+	ctrl->b_request = (uint8_t)((regs->CEP_SETUP1_0 >> 8) & 0xff);
+	ctrl->w_value = regs->CEP_SETUP3_2;
+	ctrl->w_index = regs->CEP_SETUP5_4;
+	ctrl->w_length = regs->CEP_SETUP7_6;
 }
 
-static inline int USBDev_CEPSendResponse(uint32_t resp) {
-	USB->CEP_CTRL_STAT = resp;
+static inline int USBDev_CEPSendResponse(struct niiet_usbd_regs *regs, uint32_t resp) {
+	regs->CEP_CTRL_STAT = resp;
 
 	return 0;
 }
 
-static inline int USBDev_SetAddress(uint8_t address) {
-	USB->USBADDR = address;
-
-	return 0;
-}
-
-static inline int USBDev_DMAOpStart(uint8_t *pbuf, uint32_t len, uint8_t epnum, uint32_t op) {
+static inline int USBDev_DMAOpStart(struct niiet_usbd_regs *regs, uint8_t *pbuf, uint32_t len, uint8_t epnum, uint32_t op) {
 	uint32_t wr_to_ep = DMA_CTRL_STS_OP_WRITE & op;
 
 	if (len > 1024) {
@@ -73,11 +68,11 @@ static inline int USBDev_DMAOpStart(uint8_t *pbuf, uint32_t len, uint8_t epnum, 
 		memcpy(dma_tmpbuf, pbuf, len);
 	}
 
-	USB->AHB_DMA_ADDR = (uint32_t)&dma_tmpbuf[0];
-	USB->DMA_CNT = len;
-	USB->DMA_CTRL_STS = op | epnum;
+	regs->AHB_DMA_ADDR = (uint32_t)&dma_tmpbuf[0];
+	regs->DMA_CNT = len;
+	regs->DMA_CTRL_STS = op | epnum;
 
-	while (0 != (USB->DMA_CTRL_STS & DMA_CTRL_STS_DMAEN)) {
+	while (0 != (regs->DMA_CTRL_STS & DMA_CTRL_STS_DMAEN)) {
     };
 
 	if (wr_to_ep == 0) {
@@ -87,20 +82,19 @@ static inline int USBDev_DMAOpStart(uint8_t *pbuf, uint32_t len, uint8_t epnum, 
 	return 0;
 }
 
-static inline int USBDev_GetNextCEPPacket(void) {
+static inline int USBDev_GetNextCEPPacket(struct niiet_usbd_regs *regs, uint8_t *buf) {
 	uint32_t data_size;
-    uint8_t *buf = NULL;
 
-	data_size = USB->CEP_OUT_XFRCNT;
+	data_size = regs->CEP_OUT_XFRCNT;
 
 	if (data_size > 0) {
-		USBDev_DMAOpStart((uint8_t *)buf,
+		USBDev_DMAOpStart(regs, (uint8_t *)buf,
 		    data_size, 0, DMA_CTRL_STS_OP_READ | DMA_CTRL_STS_DMAEN);
 	}
 
 	return 0;
 }
-
+#if 0
 static inline int USBDev_ReadPacket(uint8_t *dst, uint32_t len, uint8_t epnum)
 {
     if(len > 0) {
@@ -125,10 +119,14 @@ static inline int USBDev_WritePacket(uint8_t *src, uint32_t len, uint8_t epnum) 
 
     return 0;
 }
+#endif
 
 static inline int USBDev_PutNextCEPPacket(struct niiet_udc *u, uint8_t *pbuf, uint32_t len, uint8_t epnum) {
     uint32_t data_size = len;
+	struct niiet_usbd_regs *regs;
 	void *buf = pbuf;
+
+	regs = u->regs;
 
 	if (len > USB_MAX_EP0_SIZE) {
 		data_size = USB_MAX_EP0_SIZE;
@@ -138,20 +136,22 @@ static inline int USBDev_PutNextCEPPacket(struct niiet_udc *u, uint8_t *pbuf, ui
 	}
 
     if(data_size == 0) {
-    	USBDev_CEPSendResponse(CEP_CTRL_STAT_ZEROLEN);
+    	USBDev_CEPSendResponse(regs, CEP_CTRL_STAT_ZEROLEN);
 	} else {
-    	USBDev_DMAOpStart((uint8_t*)(buf),
+    	USBDev_DMAOpStart(regs, (uint8_t*)(buf),
     	                          data_size, epnum, DMA_CTRL_STS_OP_WRITE | DMA_CTRL_STS_DMAEN);
-    	USB->CEP_IN_XFRCNT = data_size;
+    	regs->CEP_IN_XFRCNT = data_size;
     }
 
     return 0;
 }
 
 static inline int USBDev_EPSendData(struct niiet_udc *u, uint8_t *pbuf, uint32_t len, uint8_t epnum) {
+	struct niiet_usbd_regs *regs;
+	regs = u->regs;
     if(epnum == 0) {
         if(len == 0) {
-            USBDev_CEPSendResponse(CEP_CTRL_STAT_ZEROLEN);
+            USBDev_CEPSendResponse(regs, CEP_CTRL_STAT_ZEROLEN);
             return 0;
         }
 
@@ -206,7 +206,7 @@ static void niiet_ep_ctrl_handler(struct niiet_udc *niiet_udc) {
     if(irq_stat & CEP_IRQ_SETUPPKT) {
 		regs->CEP_IRQ_STAT = CEP_IRQ_SETUPPKT;
 
-    	USBDev_ParseSetupPacket(&ctrl);
+    	USBDev_ParseSetupPacket(regs, &ctrl);
     	usb_control_header_show(&ctrl);
 		usb_gadget_setup(niiet_udc->udc.udc_composite, &ctrl, niiet_udc->buf);
 		//USBDev_CEPSendResponse(CEP_CTRL_STAT_STALL);
@@ -216,13 +216,13 @@ static void niiet_ep_ctrl_handler(struct niiet_udc *niiet_udc) {
     // DATA packet received
     if(irq_stat & CEP_IRQ_DATAPKTREC) {
         regs->CEP_IRQ_STAT = CEP_IRQ_DATAPKTREC;
-        //USBDev_GetNextCEPPacket();
+        USBDev_GetNextCEPPacket(regs, NULL);
 printk("irq_ep_ctrl CEP_IRQ_DATAPKTREC\n");
         if (0){
-			USBDev_CEPSendResponse(CEP_CTRL_STAT_ZEROLEN);
+			USBDev_CEPSendResponse(regs, CEP_CTRL_STAT_ZEROLEN);
 				//USBDev_SetSetupStage(USBDev_SetupStage_Status);
         } else {
-        	USBDev_CEPSendResponse(CEP_CTRL_STAT_STALL);
+        	USBDev_CEPSendResponse(regs, CEP_CTRL_STAT_STALL);
         	//USBDev_SetSetupStage(USBDev_SetupStage_Wait);
         }
     }
@@ -233,7 +233,7 @@ printk("irq_ep_ctrl CEP_IRQ_DATAPKTREC\n");
 		printk("irq_ep_ctrl CEP_IRQ_DATAPKTTR\n");
         if(1) {
         		//TODO: add callback TX data event
-        		USBDev_CEPSendResponse(CEP_CTRL_STAT_ACK);
+        		USBDev_CEPSendResponse(regs, CEP_CTRL_STAT_ACK);
         		//USBDev_SetSetupStage(USBDev_SetupStage_Status);
         } else {
         		//TODO:
@@ -307,9 +307,9 @@ static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
 		uint32_t usbirq_stat;
 
 		usbirq_stat = regs->INTSTAT1;
-		if (log_level_self() >= LOG_DEBUG) {
-			printk("niiet_usb: INTEN0_USBBUSINTEN INTSTAT1(%x)\n", usbirq_stat);
-	    }
+		// if (log_level_self() >= LOG_DEBUG) {
+		// 	printk("niiet_usb: INTEN0_USBBUSINTEN INTSTAT1(%x)\n", usbirq_stat);
+	    // }
 		usbirq_stat &= regs->INTEN1;
 
 		if (usbirq_stat & INTEN1_CLKUNSTBL) {
@@ -437,7 +437,8 @@ static int niiet_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_reques
 
 static int niiet_udc_ep_stall(struct usb_gadget_ep *ep,
     const struct usb_control_header *ctrl)  {
-	USBDev_CEPSendResponse(CEP_CTRL_STAT_STALL);
+	struct niiet_udc *u = (struct niiet_udc *)ep->udc;
+	USBDev_CEPSendResponse(u->regs, CEP_CTRL_STAT_STALL);
 	return 0;
 }
 
@@ -481,7 +482,7 @@ static int niiet_udc_init(void) {
 
 	niiet_udc.addr= 0;
 
-	niiet_udc.regs = USB;
+	niiet_udc.regs = USB_BASE;
 	niiet_udc.regs->INTEN0 = 0;
 	niiet_udc.regs->INTEN1 = 0;
 
