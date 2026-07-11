@@ -23,6 +23,7 @@ struct usb_udc_ops {
 	int  (*uuo_ep_queue)(struct usb_gadget_ep *, struct usb_gadget_request *);
 	int  (*uuo_ep_stall)(struct usb_gadget_ep *, const struct usb_control_header *);
 	void (*uuo_ep_enable)(struct usb_gadget_ep *);
+	int  (*uuo_set_addr)(struct usb_udc *, uint8_t);
 };
 
 struct usb_udc {
@@ -51,6 +52,9 @@ extern struct usb_udc *usb_gadget_find_udc(void);
 extern void usb_gadget_ep_enable(struct usb_gadget_ep *ep);
 
 extern int usb_gadget_udc_start(struct usb_udc *udc);
+
+extern int usb_gadget_set_address(struct usb_udc *udc,
+			const struct usb_control_header *req);
 
 extern void usb_gadget_udc_event(struct usb_udc *udc, int event);
 
