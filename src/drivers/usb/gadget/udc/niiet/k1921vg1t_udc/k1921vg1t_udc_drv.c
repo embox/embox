@@ -90,11 +90,20 @@ static void niiet_udc_ep_enable(struct usb_gadget_ep *ep) {
 
 }
 
+static int niiet_udc_set_addr(struct usb_udc *udc, uint8_t addr) {
+	//struct niiet_udc *niiet_udc = member_cast_out(udc, struct niiet_udc, udc);
+
+	log_debug("niiet_udc_set_addr: addr=%u", addr);
+
+	return 0;
+}
+
 static struct usb_udc_ops niiet_usb_udc_ops = {
 	.uuo_udc_start = niiet_udc_start,
 	.uuo_ep_queue = niiet_udc_ep_queue,
 	.uuo_ep_stall = niiet_udc_ep_stall,
 	.uuo_ep_enable = niiet_udc_ep_enable,
+	.uuo_set_addr = niiet_udc_set_addr,
 };
 
 struct niiet_udc niiet_udc = {
@@ -111,6 +120,8 @@ struct niiet_udc niiet_udc = {
         },
 };
 
+extern void usb_phy_utmi_bconf_init(void) ;
+
 static int niiet_udc_init(void) {
 	int ret;
 
@@ -119,6 +130,8 @@ static int niiet_udc_init(void) {
 		log_error("USB irq attach failed");
 		return ret;
 	}
+
+	usb_phy_utmi_bconf_init();
 
 	usb_gadget_udc_register(&niiet_udc.udc);
 
