@@ -1,0 +1,34 @@
+package third_party
+
+@AutoCmd
+@Cmd(name="canopen_blank",help="")
+@Build(script="$(EXTERNAL_MAKE)")
+module canopen_node {   
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/canopen_node/install/include/example")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/canopen_node/install/include")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "CANopen.c",
+		"301/CO_ODinterface.c",
+		"301/CO_NMT_Heartbeat.c",
+		"301/CO_HBconsumer.c",
+		"301/CO_Emergency.c",
+		"301/CO_SDOserver.c",
+		"301/CO_SDOclient.c",
+		"301/CO_TIME.c",
+		"301/CO_SYNC.c",
+		"301/CO_PDO.c",
+		"301/crc16-ccitt.c",
+		"301/CO_fifo.c",
+		"303/CO_LEDs.c",
+		"304/CO_GFC.c",
+		"304/CO_SRDO.c",
+		"305/CO_LSSslave.c",
+		"305/CO_LSSmaster.c",
+		"309/CO_gateway_ascii.c",
+		"storage/CO_storage.c",
+		"extra/CO_trace.c",
+		"example/CO_driver_blank.c",
+		"example/CO_storageBlank.c",
+		"example/main_blank.c",
+		"example/OD.c"
+}
