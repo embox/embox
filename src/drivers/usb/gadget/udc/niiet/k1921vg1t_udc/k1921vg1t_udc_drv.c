@@ -35,20 +35,25 @@
 
 EMBOX_UNIT_INIT(niiet_udc_init);
 
+
 #define USB_NUM           OPTION_GET(NUMBER, usb_num)
 
+#define CONF_PREF              MACRO_CONCAT(CONF_USB,USB_NUM)
 
-#define CONF_USB_IRQ          MACRO_CONCAT(MACRO_CONCAT(CONF_USB,USB_NUM),_IRQ)
-#define CONF_USB_REGION_BASE  MACRO_CONCAT(MACRO_CONCAT(CONF_USB,USB_NUM),_REGION_BASE)
-#define CONF_USB_CLK_DEF_USB  MACRO_CONCAT(MACRO_CONCAT(CONF_USB,USB_NUM),_CLK_DEF_USB)
-#define CONF_USB_MISC_EP_MAX_SIZE MACRO_CONCAT(MACRO_CONCAT(CONF_USB,USB_NUM),_MISC_EP_MAX_SIZE)
+#define CONF_USB_IRQ              MACRO_CONCAT(CONF_PREF,_IRQ)
+#define CONF_USB_REGION_BASE      MACRO_CONCAT(CONF_PREF,_REGION_USBDC_BASE)
+#define CONF_USBCTP_REGION_BASE   MACRO_CONCAT(CONF_PREF,_REGION_USBCTR_BASE)
+#define CONF_USB_CLK_DEF_USB      MACRO_CONCAT(CONF_PREF,_CLK_DEF_USB)
+#define CONF_USB_MISC_EP_MAX_SIZE MACRO_CONCAT(CONF_PREF,_MISC_EP_MAX_SIZE)
 
 #define USB_IRQ_NUM           CONF_USB_IRQ
+
+#define USBD_BASE      ((struct niiet_usbd_regs *)(uintptr_t)CONF_USB_REGION_BASE)
+#define USBCTP_BASE    ((struct niiet_usbphy_regs *)(uintptr_t)CONF_USBCTP_REGION_BASE)
 
 #define NIIET_UDC_IN_EP_MASK  ((1 << 1) | (1 << 2) | (1 << 3))
 #define NIIET_UDC_OUT_EP_MASK ((1 << 1) | (1 << 2) | (1 << 3))
 
-#define USB      ((struct niiet_usbd_regs *)(uintptr_t) CONF_USB_REGION_BASE)
 
 static inline void usb_control_header_show(struct usb_control_header *ctrl) {
 	if (log_level_self() >= LOG_DEBUG) {
@@ -63,16 +68,19 @@ static inline void usb_control_header_show(struct usb_control_header *ctrl) {
 }
 
 static irq_return_t niiet_usbd_irq_handler(unsigned int irq_nr, void *data) {
-
+		printk("usb_control_header:\n");
 
 	return IRQ_HANDLED;
 }
 
-
 static int niiet_udc_start(struct usb_udc *udc) {
-	clk_enable(CONF_USB_CLK_DEF_USB);
+	struct niiet_udc *niiet_udc = member_cast_out(udc, struct niiet_udc, udc);
+	struct niiet_usbd_regs *regs = niiet_udc->regs;
 
+	regs->GCTRL = GCTRL_SI | GCTRL_UI | GCTRL_VI | GCTRL_SP | GCTRL_FI;
+	regs->GCTRL |= GCTRL_EP;
 
+	printk("niiet_udc_start: regs->GSTAT (%x)\n", *(volatile uint32_t *) 0x41090204);
 	return 0;
 }
 
@@ -120,7 +128,6 @@ struct niiet_udc niiet_udc = {
         },
 };
 
-extern void usb_phy_utmi_bconf_init(void) ;
 
 static int niiet_udc_init(void) {
 	int ret;
@@ -131,7 +138,15 @@ static int niiet_udc_init(void) {
 		return ret;
 	}
 
-	usb_phy_utmi_bconf_init();
+	niiet_udc.addr= 0;
+
+	niiet_udc.regs = USBD_BASE;
+	niiet_udc.usbphy_regs = USBCTP_BASE;
+
+	clk_enable(CONF_USB_CLK_DEF_USB);
+	//sys_ctrl_set_pwr_mode("USBD1", 0x3);
+
+	usb_phy_utmi_bconf_init(&niiet_udc);
 
 	usb_gadget_udc_register(&niiet_udc.udc);
 
