@@ -1,0 +1,10 @@
+package embox.driver.usb.gadget.udc.niiet
+
+
+module k1921vg1t_udc {
+	option string log_level="LOG_DEBUG"
+	option number usb_num
+
+	source "k1921vg1t_udc_drv.c"
+	source "k1921vg1t_udc_utmi.c"
+}

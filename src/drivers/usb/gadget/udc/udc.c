@@ -84,6 +84,33 @@ void usb_gadget_ep_enable(struct usb_gadget_ep *ep) {
 	udc->udc_ops->uuo_ep_enable(ep);
 }
 
+
+int usb_gadget_set_address(struct usb_udc *udc,
+			const struct usb_control_header *req) {
+	uint8_t dev_addr;
+
+	if ((req->w_index == 0U) && (req->w_length == 0U) && (req->w_value < 128U)) {
+		dev_addr = (uint8_t)(req->w_value) & 0x7FU;
+		if (udc->udc_ops->uuo_set_addr) {
+			log_debug("addr=0x%x", dev_addr);
+			udc->udc_ops->uuo_set_addr(udc, dev_addr);
+		} else {
+			return -1; /*have not handled yet */
+		}
+
+		//TODO: create function(CtlSendStatus)
+		//HAL_PCD_EP_Transmit(hpcd, 0x00U, NULL, 0U);
+	}
+	else {
+		//HAL_PCD_EP_SetStall(hpcd, 0x80U); //equivalent to CtlError()
+		//usb_gadget_ep_stall()
+		//HAL_PCD_EP_SetStall(hpcd, 0U);
+		//usb_gadget_ep_stall()
+	}
+
+	return 0;
+}
+
 void usb_gadget_udc_event(struct usb_udc *udc, int event) {
 	struct usb_gadget *gadget = udc->udc_composite->config;
 	struct usb_gadget_function *func = NULL, *prev_func = NULL;
