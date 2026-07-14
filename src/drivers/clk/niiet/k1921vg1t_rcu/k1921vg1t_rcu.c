@@ -396,7 +396,7 @@ int clk_enable(char *clk_name) {
 	}
 
 	if (0 == strncmp(clk_name, CLK_NAME_USBD, sizeof(CLK_NAME_USBD) - 1)) {
-		num = 0;
+		num = clk_name[sizeof(CLK_NAME_USBD) - 1] - '0';
 		niiet_usbd_set_rcu(num);
 		return 0;
 	}
