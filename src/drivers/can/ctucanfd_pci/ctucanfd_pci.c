@@ -144,11 +144,12 @@ static void ctucanfd_receive(struct can_dev *can) {
 
 	rwcnt = FIELD_GET(fmt, CTUCANFD_TXB_FMT_RWCNT) - 3;
 
-	frame.len = FIELD_GET(fmt, CTUCANFD_TXB_FMT_DLC);
+	// frame.len = FIELD_GET(fmt, CTUCANFD_TXB_FMT_DLC);
+	frame.len = rwcnt * 4;
 
 	if (fmt & CTUCANFD_TXB_FMT_IDE) {
 		frame.can_id = FIELD_GET(id, CTUCANFD_TXB_ID_EXT);
-		frame.can_id = CAN_EFF_FLAG;
+		frame.can_id |= CAN_EFF_FLAG;
 	}
 	else {
 		frame.can_id = FIELD_GET(id, CTUCANFD_TXB_ID_STD);
