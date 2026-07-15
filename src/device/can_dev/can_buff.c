@@ -50,14 +50,6 @@ struct can_msg *can_msg_queue_pop(struct can_buff *buff) {
 	return msg;
 }
 
-void can_buff_init(struct can_buff *buff) {
-	struct can_msg *msg;
-
-	while ((msg = can_msg_queue_pop(buff))) {
-		can_msg_free(buff, msg);
-	}
-}
-
 int can_buff_empty(struct can_buff *buff) {
 	return (can_msg_queue_front(buff) == NULL);
 }
@@ -88,4 +80,12 @@ int can_buff_read(struct can_buff *buff, void *frame, size_t size) {
 	can_msg_free(buff, msg);
 
 	return 0;
+}
+
+void can_buff_clear(struct can_buff *buff) {
+	struct can_msg *msg;
+
+	while ((msg = can_msg_queue_pop(buff))) {
+		can_msg_free(buff, msg);
+	}
 }

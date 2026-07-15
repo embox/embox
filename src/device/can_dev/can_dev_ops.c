@@ -25,9 +25,9 @@ static int can_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	can = (struct can_dev *)cdev;
 
 	/* Clear old messages */
-	can_buff_init(can->buff);
+	can_buff_clear(can->buff);
 
-	err = can->ops->co_open(can);
+	err = can->ops->cdo_open(can);
 	if (err) {
 		return err;
 	}
@@ -40,7 +40,7 @@ static void can_dev_close(struct char_dev *cdev) {
 
 	can = (struct can_dev *)cdev;
 
-	can->ops->co_close(can);
+	can->ops->cdo_close(can);
 }
 
 static ssize_t can_dev_read(struct char_dev *cdev, void *buf, size_t nbyte,
@@ -84,7 +84,7 @@ static ssize_t can_dev_write(struct char_dev *cdev, const void *buf,
 		return -EINVAL;
 	}
 
-	err = can->ops->co_send(can, buf);
+	err = can->ops->cdo_send(can, buf);
 	if (err) {
 		return err;
 	}

@@ -143,6 +143,7 @@ static void mcp2515_set_opmod(uint8_t opmod) {
 static void mcp2515_reset(struct can_dev *can) {
 	uint8_t reg;
 
+	/* Send reset command to mcp2515 */
 	mcp2515_cmd(MCP2515_RESET);
 
 	/* Wait for mcp2515 to restart */
@@ -153,6 +154,7 @@ static void mcp2515_reset(struct can_dev *can) {
 		log_error("Invalid CANCTRL value");
 	}
 
+	/* Setup CNF registers */
 	reg = mcp2515_reg_load(MCP2515_CNF1);
 	reg = FIELD_SET(reg, MCP2515_CNF1_BRP, MCP2515_BRP - 1);
 	reg = FIELD_SET(reg, MCP2515_CNF1_SJW, MCP2515_SJW - 1);
@@ -169,6 +171,7 @@ static void mcp2515_reset(struct can_dev *can) {
 	reg |= MCP2515_CNF3_SOF;
 	mcp2515_reg_store(MCP2515_CNF3, reg);
 
+	/* Set filter to receive all CAN messages */
 	reg = mcp2515_reg_load(MCP2515_RXB0CTRL);
 	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_ALL);
 	reg |= MCP2515_RXB_CTRL_BUKT;
@@ -178,6 +181,7 @@ static void mcp2515_reset(struct can_dev *can) {
 	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_ALL);
 	mcp2515_reg_store(MCP2515_RXB1CTRL, reg);
 
+	/* Clear registers */
 	mcp2515_reg_store(MCP2515_RXM0SIDH, 0);
 	mcp2515_reg_store(MCP2515_RXM0SIDL, 0);
 	mcp2515_reg_store(MCP2515_RXM0EID8, 0);
@@ -188,8 +192,13 @@ static void mcp2515_reset(struct can_dev *can) {
 	mcp2515_reg_store(MCP2515_RXM1EID8, 0);
 	mcp2515_reg_store(MCP2515_RXM1EID0, 0);
 
-	/* Enable normal mode */
+#if SLEEP_MODE
+	/* Enable sleep mode */
+	mcp2515_set_opmod(MCP2515_CANSTAT_MOD_SLEEP);
+#else
+	/* Enable normal/loopback mode */
 	mcp2515_set_opmod(MCP2515_DEFAULT_MODE);
+#endif
 }
 
 #if 0
@@ -229,6 +238,7 @@ static int mcp2515_open(struct can_dev *can) {
 			while (mcp2515_reg_load(MCP2515_CANINTE) & MCP2515_CANINTF_WAK) {}
 		}
 
+		/* Enable normal/loopback mode */
 		mcp2515_set_opmod(MCP2515_DEFAULT_MODE);
 	}
 #endif
@@ -290,11 +300,11 @@ static int mcp2515_send(struct can_dev *can, const void *data) {
 	return 0;
 }
 
-static const struct can_ops mcp2515_can_ops = {
-    .co_reset = mcp2515_reset,
-    .co_open = mcp2515_open,
-    .co_close = mcp2515_close,
-    .co_send = mcp2515_send,
+static const struct can_dev_ops mcp2515_can_ops = {
+    .cdo_reset = mcp2515_reset,
+    .cdo_open = mcp2515_open,
+    .cdo_close = mcp2515_close,
+    .cdo_send = mcp2515_send,
 };
 
 CAN_DEVICE_DEF(mcp2515_can_dev, &mcp2515_can_ops, NULL, CAN_DEV_ID);
@@ -352,9 +362,7 @@ static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
 	can = (struct can_dev *)data;
 
 #if SLEEP_MODE
-	canintf = mcp2515_reg_load(MCP2515_CANINTF);
-
-	if (canintf & MCP2515_CANINTF_WAK) {
+	if (mcp2515_reg_load(MCP2515_CANINTE) & MCP2515_CANINTF_WAK) {
 		mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK, 0);
 		mcp2515_reg_modify(MCP2515_CANINTF, MCP2515_CANINTF_WAK, 0);
 		return 0;
@@ -381,16 +389,20 @@ static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
 EMBOX_UNIT_INIT(mcp2515_init);
 
 static int mcp2515_init(void) {
+	struct can_dev *can;
+
+	can = &mcp2515_can_dev;
+
 	spi_bus_dev = spi_dev_by_id(SPI_BUS);
 	spi_bus_dev->spid_flags |= SPI_CS_ACTIVE;
 	spi_bus_dev->spid_flags |= SPI_CS_INACTIVE;
 
 	spi_select(spi_bus_dev, SPI_CS);
 
-	mcp2515_reset(&mcp2515_can_dev);
+	mcp2515_reset(can);
 
 	gpio_setup_mode(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN, GPIO_MODE_INT_FALLING);
 
 	return gpio_irq_attach(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN,
-	    mcp2515_irq_handler, &mcp2515_can_dev);
+	    mcp2515_irq_handler, can);
 }

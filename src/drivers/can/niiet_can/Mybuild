@@ -1,0 +1,10 @@
+package embox.driver.can
+
+module niiet_can {
+	option number dev_id=0
+	option number base_addr=0x0
+
+	source "niiet_can.c"
+
+	@NoRuntime depends embox.device.can_dev
+}
