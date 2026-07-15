@@ -40,21 +40,21 @@
 	CANFD_BUFF_DEF(__CAN_BUFF_NAME(_name));           \
 	__CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id, CANFD_MTU)
 
-struct can_ops;
+struct can_dev_ops;
 
 struct can_dev {
 	struct char_dev cdev;
-	const struct can_ops *const ops;
+	const struct can_dev_ops *const ops;
 	struct can_buff *const buff;
 	void *const priv;
 	const size_t mtu;
 };
 
-struct can_ops {
-	void (*co_reset)(struct can_dev *can);
-	int (*co_open)(struct can_dev *can);
-	void (*co_close)(struct can_dev *can);
-	int (*co_send)(struct can_dev *can, const void *frame);
+struct can_dev_ops {
+	void (*cdo_reset)(struct can_dev *can);
+	int (*cdo_open)(struct can_dev *can);
+	void (*cdo_close)(struct can_dev *can);
+	int (*cdo_send)(struct can_dev *can, const void *frame);
 };
 
 extern const struct char_dev_ops __can_char_dev_ops;

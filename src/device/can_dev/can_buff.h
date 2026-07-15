@@ -50,9 +50,9 @@ struct can_buff {
 	struct pool *msg_pool;
 };
 
-extern void can_buff_init(struct can_buff *buff);
 extern int can_buff_empty(struct can_buff *buff);
 extern int can_buff_write(struct can_buff *buff, void *frame, size_t size);
 extern int can_buff_read(struct can_buff *buff, void *frame, size_t size);
+extern void can_buff_clear(struct can_buff *buff);
 
 #endif /* DEVICE_CAN_BUFF_H_ */
