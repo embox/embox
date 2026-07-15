@@ -116,6 +116,12 @@ struct rcu_reg {
 #define RCU_AHB_USBD_OFFSET    16
 #define RCU_CGCFGAHB_USBDEN(port)   (1 << (RCU_AHB_USBD_OFFSET + port * 2))
 
+#define RCU_AHB_CAN_OFFSET      9
+#define RCU_CGCFGAHB_CANEN(port)   (1 << (RCU_AHB_CAN_OFFSET + port))
+
+#define RCU_AHB_CANFD_OFFSET      8
+#define RCU_CGCFGAHB_CANFDEN(port)   (1 << (RCU_AHB_CAN_OFFSET + port))
+
 #define RCU_CGCFGAPB2_SPI_OFFSET     8
 #define RCU_CGCFGAPB2_SPI0EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 0))
 #define RCU_CGCFGAPB2_SPI1EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 1))
@@ -173,6 +179,9 @@ struct rcu_reg {
 #define RCU_RSTDISAHB_USBDEN(port)   (1 << (RCU_AHB_USBD_OFFSET + port * 2))
 #define RCU_RSTDISAHB_USBD0EN        (1 << (RCU_AHB_USBD_OFFSET + 0))
 #define RCU_RSTDISAHB_USBD1EN        (1 << (RCU_AHB_USBD_OFFSET + 1 * 2))
+
+#define RCU_RSTDISAHB_CANFDEN(port)   (1 << (RCU_AHB_CANFD_OFFSET + port))
+#define RCU_RSTDISAHB_CANEN(port)     (1 << (RCU_AHB_CAN_OFFSET + port))
 
 #define RCU_CLKSTAT_SRC_MASK        (0x3)
 #define  RCU_CLKSTAT_SRC_HSICLK      (0x0)
@@ -359,12 +368,16 @@ void niiet_usbd_set_rcu(int num) {
 	/* PLL0CLK by default */
 	RCU->RCU_USBCFG_reg[num] |= RCU_USBCLKCFG_CLKEN_MASK;
 }
-#if 0
-void niiet_can_set_rcu(int num) {
-	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_CAN_EN(num);
-	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_CAN_EN(num);
+
+void niiet_canfd_set_rcu(int num) {
+	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_CANFDEN(num);
+	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_CANFDEN(num);
 }
-#endif
+
+void niiet_can_set_rcu(int num) {
+	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_CANEN(num);
+	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_CANEN(num);
+}
 
 int clk_enable(char *clk_name) {
 	int num;
@@ -400,13 +413,19 @@ int clk_enable(char *clk_name) {
 		niiet_usbd_set_rcu(num);
 		return 0;
 	}
-#if 0
-    if (0 == strncmp(clk_name, CLK_NAME_CAN, sizeof(CLK_NAME_CAN) - 1)) {
-        num = 0;
-        niiet_can_set_rcu(num);
-        return 0;
-    }
-#endif
+
+	if (0 == strncmp(clk_name, CLK_NAME_CANFD, sizeof(CLK_NAME_CANFD) - 1)) {
+		num = 0;
+		niiet_canfd_set_rcu(num);
+		return 0;
+	}
+
+	if (0 == strncmp(clk_name, CLK_NAME_CAN, sizeof(CLK_NAME_CAN) - 1)) {
+		num = 0;
+		niiet_can_set_rcu(num);
+		return 0;
+	}
+
 	return -ENOSUPP;
 }
 
