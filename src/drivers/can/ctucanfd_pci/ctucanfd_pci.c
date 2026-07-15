@@ -42,6 +42,7 @@ static uintptr_t ctucanfd_base;
 static void ctucanfd_reset(struct can_dev *can) {
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, CTUCANFD_MODE_RST);
 
+	/* Clear registers */
 	CTUCANFD_REG_STORE(CTUCANFD_BTR, 0);
 	CTUCANFD_REG_STORE(CTUCANFD_BTRFD, 0);
 
@@ -53,7 +54,7 @@ static void ctucanfd_reset(struct can_dev *can) {
 }
 
 static int ctucanfd_open(struct can_dev *can) {
-	/* Enable CAN device */
+	/* Enable RX/TX */
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, CTUCANFD_MODE_ENA | CTUCANFD_MODE_RXBAM);
 
 	/* Enable RX interrupt */
@@ -66,7 +67,7 @@ static void ctucanfd_close(struct can_dev *can) {
 	/* Disable RX interrupt */
 	CTUCANFD_REG_STORE(CTUCANFD_IEC, CTUCANFD_ISR_RBNEI);
 
-	/* Disable CAN device */
+	/* Disable RX/TX */
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, 0);
 }
 
@@ -111,11 +112,11 @@ static int ctucanfd_send(struct can_dev *can, const void *data) {
 	return 0;
 }
 
-static const struct can_ops ctucanfd_ops = {
-    .co_reset = ctucanfd_reset,
-    .co_open = ctucanfd_open,
-    .co_close = ctucanfd_close,
-    .co_send = ctucanfd_send,
+static const struct can_dev_ops ctucanfd_ops = {
+    .cdo_reset = ctucanfd_reset,
+    .cdo_open = ctucanfd_open,
+    .cdo_close = ctucanfd_close,
+    .cdo_send = ctucanfd_send,
 };
 
 CANFD_DEVICE_DEF(ctucanfd_dev, &ctucanfd_ops, NULL, CAN_DEV_ID);
@@ -179,8 +180,9 @@ static irq_return_t ctucanfd_irq_handler(unsigned int irq_num, void *data) {
 }
 
 static int ctucanfd_init(struct pci_slot_dev *pci_dev) {
-	int err;
+	struct can_dev *can;
 
+	can = &ctucanfd_dev;
 	ctucanfd_base = pci_dev->bar[1];
 
 	if (mmap_device_memory((void *)ctucanfd_base, 0x10000,
@@ -189,15 +191,9 @@ static int ctucanfd_init(struct pci_slot_dev *pci_dev) {
 		return -1;
 	}
 
-	err = irq_attach(pci_dev->irq, ctucanfd_irq_handler, IF_SHARESUP,
-	    &ctucanfd_dev, NULL);
-	if (err) {
-		return err;
-	}
+	ctucanfd_reset(can);
 
-	ctucanfd_reset(&ctucanfd_dev);
-
-	return 0;
+	return irq_attach(pci_dev->irq, ctucanfd_irq_handler, IF_SHARESUP, can, NULL);
 }
 
 PCI_DRIVER("ctucanfd_pci", ctucanfd_init, CTUCANFD_VENDOR_ID, CTUCANFD_DEVICE_ID);

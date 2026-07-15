@@ -85,7 +85,6 @@ static int kvaser_open(struct can_dev *can) {
 
 	/* Enable RX interrupt */
 	sja_reg_orin(sja_base, SJA_IER, SJA_IER_RIE);
-	sja_reg_orin(sja_base, SJA_IR, 0);
 
 	return 0;
 }
@@ -145,11 +144,11 @@ static int kvaser_send(struct can_dev *can, const void *data) {
 	return 0;
 }
 
-static const struct can_ops kvaser_can_ops = {
-    .co_reset = kvaser_reset,
-    .co_open = kvaser_open,
-    .co_close = kvaser_close,
-    .co_send = kvaser_send,
+static const struct can_dev_ops kvaser_can_ops = {
+    .cdo_reset = kvaser_reset,
+    .cdo_open = kvaser_open,
+    .cdo_close = kvaser_close,
+    .cdo_send = kvaser_send,
 };
 
 CAN_DEVICE_DEF(kvaser_can_dev, &kvaser_can_ops, NULL, CAN_DEV_ID);
@@ -218,13 +217,15 @@ static irq_return_t kvaser_irq_handler(unsigned int irq_num, void *data) {
 }
 
 static int kvaser_pci_init(struct pci_slot_dev *pci_dev) {
+	struct can_dev *can;
+
+	can = &kvaser_can_dev;
 	s5920_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 	sja_base = pci_dev->bar[1] & PCI_BASE_ADDR_IO_MASK;
 
-	kvaser_reset(&kvaser_can_dev);
+	kvaser_reset(can);
 
-	return irq_attach(pci_dev->irq, kvaser_irq_handler, IF_SHARESUP,
-	    &kvaser_can_dev, NULL);
+	return irq_attach(pci_dev->irq, kvaser_irq_handler, IF_SHARESUP, can, NULL);
 }
 
 PCI_DRIVER("kvaser_pci", kvaser_pci_init, KVASER_VENDOR_ID, KVASER_DEVICE_ID);
