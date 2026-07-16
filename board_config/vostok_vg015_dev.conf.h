@@ -405,6 +405,7 @@ struct can_conf cans[] = {
 			.name = "CAN",
 			.regs = {
 				REGMAP("BASE", (CAN_BASE), 0x100),
+				REGMAP("MSG_BASE", (CANMSG_BASE), 0x100),
 			},
 			.irqs = {
 				VAL("NODE0", PLIC_CAN0_VECTNUM),
