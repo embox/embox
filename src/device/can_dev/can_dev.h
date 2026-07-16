@@ -10,6 +10,7 @@
 
 #include <linux/can.h>
 #include <linux/list.h>
+#include <stdbool.h>
 
 #include <drivers/can_buff.h>
 #include <drivers/char_dev.h>
@@ -30,6 +31,7 @@
 	    .cdev = CHAR_DEV_INIT(MACRO_STRING(MACRO_CONCAT(can, _dev_id)), \
 	        &__can_char_dev_ops),                                       \
 	    .buff = &__CAN_BUFF_NAME(_name),                                \
+	    .configured = false,                                            \
 	    .priv = _priv,                                                  \
 	    .ops = _ops,                                                    \
 	    .mtu = _mtu,                                                    \
@@ -47,16 +49,24 @@
 
 struct can_dev_ops;
 
+struct can_dev_conf {
+	struct can_filter filter;
+	unsigned long bitrate;
+	bool loopback;
+};
+
 struct can_dev {
 	struct char_dev cdev;
+	struct can_dev_conf conf;
 	const struct can_dev_ops *const ops;
 	struct can_buff *const buff;
 	void *const priv;
 	const size_t mtu;
+	bool configured;
 };
 
 struct can_dev_ops {
-	void (*cdo_reset)(struct can_dev *can);
+	void (*cdo_config)(struct can_dev *can);
 	int (*cdo_open)(struct can_dev *can);
 	void (*cdo_close)(struct can_dev *can);
 	int (*cdo_send)(struct can_dev *can, const void *frame);
