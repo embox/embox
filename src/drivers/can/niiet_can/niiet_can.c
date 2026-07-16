@@ -13,16 +13,24 @@
 #include <unistd.h>
 
 #include <drivers/can_dev.h>
+
+#include <embox/unit.h>
 #include <framework/mod/options.h>
+
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <util/field.h>
 
+#include <config/board_config.h>
+
 #include "niiet_can.h"
 
+
+EMBOX_UNIT_INIT(niiet_can_init);
+
 #define CAN_DEV_ID    OPTION_GET(NUMBER, dev_id)
-// #define CAN_BASE_ADDR OPTION_GET(NUMBER, base_addr)
-#define CAN_BASE_ADDR 0x1000
+// FIXME use from bconf
+#define CAN_BASE_ADDR OPTION_GET(NUMBER, base_addr)
 
 #define CAN_REG_STORE(reg, val)  REG32_STORE(CAN_BASE_ADDR + reg, val)
 #define CAN_REG_LOAD(reg)        REG32_LOAD(CAN_BASE_ADDR + reg)
@@ -63,7 +71,7 @@ static const struct can_dev_ops niiet_can_ops = {
 
 CAN_DEVICE_DEF(niiet_can_dev, &niiet_can_ops, NULL, CAN_DEV_ID);
 
-static void niiet_can_receive(struct can_dev *can) {
+static inline void niiet_can_receive(struct can_dev *can) {
 	struct can_frame frame;
 
 	can_dev_receive(can, &frame);
@@ -87,10 +95,27 @@ static irq_return_t niiet_can_irq_handler(unsigned int irq_num, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int niiet_can_init(struct pci_slot_dev *pci_dev) {
+static int niiet_can_init(void) {
 	struct can_dev *can;
+	int res;
 
 	can = &niiet_can_dev;
+
+#if defined (CONF_CAN_IRQ_NODE0)
+	res = irq_attach(CONF_CAN_IRQ_NODE0, niiet_can_irq_handler, 0,
+						(void *)&niiet_can_dev, "can_node0");
+	if (res < 0) {
+		return res;
+	}
+#endif /* defined (CONF_CAN_IRQ_NODE0) */
+
+#if defined (CONF_CAN_IRQ_NODE1)
+	res = irq_attach(CONF_CAN_IRQ_NODE1, niiet_can_irq_handler, 0,
+						(void *)&niiet_can_dev, "can_node0");
+	if (res < 0) {
+		return res;
+	}
+#endif /* defined (CONF_CAN_IRQ_NODE0) */
 
 	niiet_can_reset(can);
 

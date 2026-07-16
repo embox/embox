@@ -8,6 +8,8 @@
 #ifndef DRIVERS_CAN_NIIET_CAN_H_
 #define DRIVERS_CAN_NIIET_CAN_H_
 
+#include <config/board_config.h>
+
 /* Global Module Registers */
 #define CAN_CLC     0x00  /* Clock Control Register */
 #define CAN_ID      0x08  /* Module Identification Register */
