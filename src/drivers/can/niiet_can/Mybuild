@@ -5,6 +5,7 @@ module niiet_can {
 	option number base_addr=0x0
 
 	source "niiet_can.c"
+	source "niiet_can_hw_init.c"
 
 	@NoRuntime depends embox.device.can_dev
 }

@@ -95,6 +95,8 @@ static irq_return_t niiet_can_irq_handler(unsigned int irq_num, void *data) {
 	return IRQ_HANDLED;
 }
 
+extern void niiet_can_bconf_init(void);
+
 static int niiet_can_init(void) {
 	struct can_dev *can;
 	int res;
