@@ -1,0 +1,9 @@
+package embox.cmd.hw.can_utils
+
+@AutoCmd
+@Cmd(name="canconfig",help="configure CAN device")
+module canconfig {
+	source "canconfig.c"
+
+	@NoRuntime depends embox.device.can_dev
+}
