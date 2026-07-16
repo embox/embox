@@ -397,6 +397,36 @@ struct pwm_conf pwms[] = {
 	},
 };
 
+struct can_conf cans[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "CAN",
+		.dev = {
+			.name = "CAN",
+			.regs = {
+				REGMAP("BASE", (CAN_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("NODE0", PLIC_CAN0_VECTNUM),
+				VAL("NODE1", PLIC_CAN1_VECTNUM),
+			},
+			.pins = {
+				PIN("NODE0_RX", GPIO_PORT_B,  8, GPIO_MODE_ALT, 1),
+				PIN("NODE0_TX", GPIO_PORT_B,  9, GPIO_MODE_ALT, 1),
+				PIN("NODE1_RX", GPIO_PORT_D, 10, GPIO_MODE_ALT, 1),
+				PIN("NODE1_TX", GPIO_PORT_D, 11, GPIO_MODE_ALT, 1),
+			},
+			.clocks = {
+				VAL("", "CLK_CAN"),
+			},
+			.misc = {
+				VAL("NODE_QUANTITY",  2),
+			},
+		},
+	},
+
+};
+
 struct usb_conf usbs[] = {
 	[0] = {
 		.status = ENABLED,
@@ -423,4 +453,5 @@ struct usb_conf usbs[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), SPI(spis), I2C(i2cs), PWM(pwms), USB(usbs))
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), SPI(spis), I2C(i2cs), 
+					PWM(pwms), CAN(cans), USB(usbs))
