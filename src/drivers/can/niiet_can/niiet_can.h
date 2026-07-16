@@ -8,12 +8,14 @@
 #ifndef DRIVERS_CAN_NIIET_CAN_H_
 #define DRIVERS_CAN_NIIET_CAN_H_
 
+#include <stdint.h>
+
 #include <config/board_config.h>
 
 /* Global Module Registers */
-#define CAN_CLC     0x00  /* Clock Control Register */
-#define CAN_ID      0x08  /* Module Identification Register */
-#define CAN_FDR     0x0c  /* Frequency Divider Register */
+#define CAN_CLC     0x000 /* Clock Control Register */
+#define CAN_ID      0x008 /* Module Identification Register */
+#define CAN_FDR     0x00c /* Frequency Divider Register */
 #define CAN_LIST    0x100 /* List Register 0 */
 #define CAN_MSPND   0x140 /* Message Pending Register 0 */
 #define CAN_MSID    0x180 /* Message Index Register 0 */
@@ -21,6 +23,9 @@
 #define CAN_PANCTR  0x1c4 /* Panel Control Register */
 #define CAN_MCR     0x1c8 /* Module Control Register */
 #define CAN_MITR    0x1cc /* Module Interrupt Trigger Register */
+
+#define CAN_NODE0_BASE   0x200
+#define CAN_NODE1_BASE   0x300
 
 /* CAN Node Registers */
 #define CAN_NCR   0x00 /* Node Control Register */
@@ -61,5 +66,56 @@
 #define CAN_PANCTR_PANCMD       /* Panel Command */
 #define CAN_PANCTR_PANCMD_MASK  0xff
 #define CAN_PANCTR_PANCMD_SHIFT 14
+
+struct niiet_can_node_regs {
+	volatile uint32_t NCR;
+	volatile uint32_t NSR;
+	volatile uint32_t NIPR;
+	volatile uint32_t NPCR;
+	volatile uint32_t NBTR;
+	volatile uint32_t NECNT;
+	volatile uint32_t NFCR;
+	volatile uint32_t Reserved0[57];
+};
+
+struct niiet_can_regs {
+	volatile uint32_t CLC;
+	volatile uint32_t Reserved0;
+	volatile uint32_t ID;
+	volatile uint32_t FDR;
+	volatile uint32_t Reserved1[60];
+	volatile uint32_t LIST[8];
+	volatile uint32_t Reserved2[8];
+	volatile uint32_t MSPND[8];
+	volatile uint32_t Reserved3[8];
+	volatile uint32_t MSID[8];
+	volatile uint32_t Reserved4[8];
+	volatile uint32_t MSIMASK;
+	volatile uint32_t PANCTR;
+	volatile uint32_t MCR;
+	volatile uint32_t MITR;
+	volatile uint32_t Reserved5[12];
+	struct niiet_can_node_regs Node[2];
+};
+
+struct niiet_canmsg_regs {
+	volatile uint32_t MOFCR;
+	volatile uint32_t MOFGPR;
+	volatile uint32_t MOIPR;
+	volatile uint32_t MOAMR;
+	volatile uint32_t MODATAL;
+	volatile uint32_t MODATAH;
+	volatile uint32_t MOAR;
+	volatile uint32_t MOCTR; /* MOSTAT*/
+};
+
+struct niiet_can_dev_priv {
+    struct can_dev *can_dev;
+    struct niiet_can_regs *regs;
+    struct niiet_canmsg_regs *canmsg_regs;
+    int can_node_max;
+};
+
+extern void niiet_can_bconf_init(struct niiet_can_dev_priv *niiet_can);
 
 #endif /* DRIVERS_CAN_NIIET_CAN_H_ */

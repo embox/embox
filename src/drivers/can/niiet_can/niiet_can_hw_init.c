@@ -8,6 +8,7 @@
 
 #include <util/log.h>
 
+#include <stdint.h>
 #include <assert.h>
 
 #include <drivers/gpio.h>
@@ -18,6 +19,8 @@
 
 #include <drivers/clk/niiet_rcu.h>
 
+#include "niiet_can.h"
+
 #define CONF_PIN_PREF        CONF_CAN_PIN_
 
 #define USB_PORT(name) \
@@ -27,7 +30,7 @@
 #define USB_AF(name)  \
 			MACRO_CONCAT(MACRO_CONCAT(CONF_PIN_PREF, name), _AF)
 
-void niiet_can_bconf_init(void) {
+void niiet_can_bconf_init(struct niiet_can_dev_priv *priv) {
 
 #if defined(CONF_CAN_PIN_NODE0_RX_PORT) && defined(CONF_CAN_PIN_NODE0_TX_PORT) 
 	gpio_setup_mode(USB_PORT(NODE0_RX), (1 << USB_PIN(NODE0_RX)),
@@ -47,5 +50,7 @@ void niiet_can_bconf_init(void) {
 
 #endif /* defined(CONF_CAN_PIN_NODE1_RX_PORT) && defined(CONF_CAN_PIN_NODE1_TX_PORT)  */
 
-	clk_enable(CONF_USB_CLK_DEF_USB);
+	priv->canmsg_regs = (struct niiet_canmsg_regs *)(uintptr_t)CONF_CAN_REGION_MSG_BASE;
+
+	clk_enable(CONF_CAN_CLK_DEF);
 }

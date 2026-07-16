@@ -69,7 +69,8 @@ static const struct can_dev_ops niiet_can_ops = {
     .cdo_send = niiet_can_send,
 };
 
-CAN_DEVICE_DEF(niiet_can_dev, &niiet_can_ops, NULL, CAN_DEV_ID);
+struct niiet_can_dev_priv niiet_can_dev_priv;
+CAN_DEVICE_DEF(niiet_can_dev, &niiet_can_ops, &niiet_can_dev_priv, CAN_DEV_ID);
 
 static inline void niiet_can_receive(struct can_dev *can) {
 	struct can_frame frame;
@@ -95,11 +96,12 @@ static irq_return_t niiet_can_irq_handler(unsigned int irq_num, void *data) {
 	return IRQ_HANDLED;
 }
 
-extern void niiet_can_bconf_init(void);
-
 static int niiet_can_init(void) {
 	struct can_dev *can;
 	int res;
+
+	niiet_can_dev_priv.can_dev = &niiet_can_dev;
+	niiet_can_dev_priv.regs = (struct niiet_can_regs *)(uintptr_t)CAN_BASE_ADDR;
 
 	can = &niiet_can_dev;
 
@@ -118,6 +120,8 @@ static int niiet_can_init(void) {
 		return res;
 	}
 #endif /* defined (CONF_CAN_IRQ_NODE0) */
+
+	niiet_can_bconf_init(&niiet_can_dev_priv);
 
 	niiet_can_reset(can);
 
