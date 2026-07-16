@@ -21,6 +21,10 @@
 
 #define __CAN_BUFF_NAME(_name) MACRO_CONCAT(_name, _buff)
 
+#define __CAN_DEVICE_REGISTER(_can_dev)                                     \
+	ARRAY_SPREAD_DECLARE(struct can_dev *const, __can_dev_static_registry); \
+	ARRAY_SPREAD_ADD(__can_dev_static_registry, _can_dev)
+
 #define __CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id, _mtu)             \
 	static struct can_dev _name = {                                     \
 	    .cdev = CHAR_DEV_INIT(MACRO_STRING(MACRO_CONCAT(can, _dev_id)), \
@@ -30,7 +34,8 @@
 	    .ops = _ops,                                                    \
 	    .mtu = _mtu,                                                    \
 	};                                                                  \
-	CHAR_DEV_REGISTER((struct char_dev *)&_name)
+	CHAR_DEV_REGISTER((struct char_dev *)&_name);                       \
+	__CAN_DEVICE_REGISTER(&_name)
 
 #define CAN_DEVICE_DEF(_name, _ops, _priv, _dev_id) \
 	CAN_BUFF_DEF(__CAN_BUFF_NAME(_name));           \
@@ -59,6 +64,7 @@ struct can_dev_ops {
 
 extern const struct char_dev_ops __can_char_dev_ops;
 
+extern struct can_dev *can_dev_find(const char *name);
 extern int can_dev_receive(struct can_dev *can, void *frame);
 extern int can_dev_wait(struct can_dev *can);
 extern void can_dev_notify(struct can_dev *can);
