@@ -26,9 +26,6 @@
 
 #define CAN_DEV_ID OPTION_GET(NUMBER, dev_id)
 
-#define SLEEP_MODE    OPTION_GET(BOOLEAN, sleep_mode)
-#define LOOPBACK_MODE OPTION_GET(BOOLEAN, loopback_mode)
-
 #define SPI_BUS OPTION_GET(NUMBER, spi_bus)
 #define SPI_CS  OPTION_GET(NUMBER, spi_cs)
 
@@ -53,13 +50,10 @@
 /* CANCTRL register value after reset */
 #define MCP2515_CANCTRL_DEFAULT 0x87
 
-#if LOOPBACK_MODE
-#define MCP2515_DEFAULT_MODE MCP2515_CANSTAT_MOD_LOOP
-#else
-#define MCP2515_DEFAULT_MODE MCP2515_CANSTAT_MOD_NORM
-#endif
-
 static struct spi_device *spi_bus_dev;
+
+static const uint8_t rxbuf_addr[2] = {MCP2515_RXB0CTRL, MCP2515_RXB1CTRL};
+static const uint8_t rxbuf_intf[2] = {MCP2515_CANINTF_RX0, MCP2515_CANINTF_RX1};
 
 static void mcp2515_cmd(uint8_t cmd) {
 	uint8_t ibuf[4];
@@ -130,17 +124,26 @@ static inline void mcp2515_reg_clear(unsigned int reg, uint8_t mask) {
 	return mcp2515_reg_store(reg, mcp2515_reg_load(reg) & ~mask);
 }
 
-static void mcp2515_set_opmod(uint8_t opmod) {
+#if 0
+static void mcp2515_rfilter(struct can_dev *can, canid_t id, canid_t mask) {
 	uint8_t reg;
 
-	reg = mcp2515_reg_load(MCP2515_CANCTRL);
-	reg = FIELD_SET(reg, MCP2515_CANSTAT_MOD, opmod);
-	mcp2515_reg_store(MCP2515_CANCTRL, reg);
+	reg = mcp2515_reg_load(MCP2515_RXB0CTRL);
+	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
+	mcp2515_reg_store(MCP2515_RXB0CTRL, reg);
 
-	usleep(1000);
+	reg = mcp2515_reg_load(MCP2515_RXB1CTRL);
+	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
+	mcp2515_reg_store(MCP2515_RXB1CTRL, reg);
+
+	reg = (id & mask & CAN_EFF_FLAG) ? MCP2515_RXF_SIDL_EXIDE : 0;
+	mcp2515_reg_modify(MCP2515_RXF0SIDL, MCP2515_RXF_SIDL_EXIDE, reg);
+	mcp2515_reg_modify(MCP2515_RXF1SIDL, MCP2515_RXF_SIDL_EXIDE, reg);
 }
+#endif
 
-static void mcp2515_reset(struct can_dev *can) {
+static void mcp2515_config(struct can_dev *can) {
+	uint8_t mode;
 	uint8_t reg;
 
 	/* Send reset command to mcp2515 */
@@ -192,56 +195,38 @@ static void mcp2515_reset(struct can_dev *can) {
 	mcp2515_reg_store(MCP2515_RXM1EID8, 0);
 	mcp2515_reg_store(MCP2515_RXM1EID0, 0);
 
-#if SLEEP_MODE
-	/* Enable sleep mode */
-	mcp2515_set_opmod(MCP2515_CANSTAT_MOD_SLEEP);
-#else
-	/* Enable normal/loopback mode */
-	mcp2515_set_opmod(MCP2515_DEFAULT_MODE);
-#endif
+	/* Enable operating mode */
+	if (can->conf.loopback) {
+		mode = MCP2515_CANSTAT_MOD_LOOP;
+	}
+	else {
+		mode = MCP2515_CANSTAT_MOD_NORM;
+	}
+
+	reg = mcp2515_reg_load(MCP2515_CANCTRL);
+	reg = FIELD_SET(reg, MCP2515_CANSTAT_MOD, mode);
+	mcp2515_reg_store(MCP2515_CANCTRL, reg);
+
+	usleep(1000);
 }
-
-#if 0
-static void mcp2515_rfilter(struct can_dev *can, canid_t id, canid_t mask) {
-	uint8_t reg;
-
-	reg = mcp2515_reg_load(MCP2515_RXB0CTRL);
-	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
-	mcp2515_reg_store(MCP2515_RXB0CTRL, reg);
-
-	reg = mcp2515_reg_load(MCP2515_RXB1CTRL);
-	reg = FIELD_SET(reg, MCP2515_RXB_CTRL_RXM, MCP2515_RXB_CTRL_RXM_VALID);
-	mcp2515_reg_store(MCP2515_RXB1CTRL, reg);
-
-	reg = (id & mask & CAN_EFF_FLAG) ? MCP2515_RXF_SIDL_EXIDE : 0;
-	mcp2515_reg_modify(MCP2515_RXF0SIDL, MCP2515_RXF_SIDL_EXIDE, reg);
-	mcp2515_reg_modify(MCP2515_RXF1SIDL, MCP2515_RXF_SIDL_EXIDE, reg);
-}
-#endif
 
 static int mcp2515_open(struct can_dev *can) {
-#if SLEEP_MODE
-	uint8_t mode;
-	uint8_t reg;
+	uint8_t canintf;
+	bool rx_done;
+	int i;
 
-	reg = mcp2515_reg_load(MCP2515_CANSTAT);
-	mode = FIELD_GET(reg, MCP2515_CANSTAT_MOD);
+	/* Flush RX buffers */
+	do {
+		rx_done = false;
+		canintf = mcp2515_reg_load(MCP2515_CANINTF);
 
-	if (mode != MCP2515_DEFAULT_MODE) {
-		if (mode == MCP2515_CANSTAT_MOD_SLEEP) {
-			/* Generate wake-up interrupt */
-			mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK,
-			    MCP2515_CANINTF_WAK);
-			mcp2515_reg_modify(MCP2515_CANINTF, MCP2515_CANINTF_WAK,
-			    MCP2515_CANINTF_WAK);
-
-			while (mcp2515_reg_load(MCP2515_CANINTE) & MCP2515_CANINTF_WAK) {}
+		for (i = 0; i < 2; i++) {
+			if (canintf & rxbuf_intf[i]) {
+				rx_done = true;
+				mcp2515_reg_modify(MCP2515_CANINTF, rxbuf_intf[i], 0);
+			}
 		}
-
-		/* Enable normal/loopback mode */
-		mcp2515_set_opmod(MCP2515_DEFAULT_MODE);
-	}
-#endif
+	} while (rx_done);
 
 	/* Enable RX interrupt */
 	mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1,
@@ -254,11 +239,6 @@ static void mcp2515_close(struct can_dev *can) {
 	/* Disable RX interrupt */
 	mcp2515_reg_modify(MCP2515_CANINTE,
 	    MCP2515_CANINTF_RX0 | MCP2515_CANINTF_RX1, 0);
-
-#if SLEEP_MODE
-	/* Enable sleep mode */
-	mcp2515_set_opmod(MCP2515_CANSTAT_MOD_SLEEP);
-#endif
 }
 
 static int mcp2515_send(struct can_dev *can, const void *data) {
@@ -301,16 +281,13 @@ static int mcp2515_send(struct can_dev *can, const void *data) {
 }
 
 static const struct can_dev_ops mcp2515_can_ops = {
-    .cdo_reset = mcp2515_reset,
+    .cdo_config = mcp2515_config,
     .cdo_open = mcp2515_open,
     .cdo_close = mcp2515_close,
     .cdo_send = mcp2515_send,
 };
 
 CAN_DEVICE_DEF(mcp2515_can_dev, &mcp2515_can_ops, NULL, CAN_DEV_ID);
-
-static const uint8_t rxbuf_addr[2] = {MCP2515_RXB0CTRL, MCP2515_RXB1CTRL};
-static const uint8_t rxbuf_intf[2] = {MCP2515_CANINTF_RX0, MCP2515_CANINTF_RX1};
 
 static void mcp2515_receive(struct can_dev *can, size_t rxbuf_num) {
 	struct can_frame frame;
@@ -361,14 +338,6 @@ static int mcp2515_irq_handler(unsigned int irq_num, void *data) {
 
 	can = (struct can_dev *)data;
 
-#if SLEEP_MODE
-	if (mcp2515_reg_load(MCP2515_CANINTE) & MCP2515_CANINTF_WAK) {
-		mcp2515_reg_modify(MCP2515_CANINTE, MCP2515_CANINTF_WAK, 0);
-		mcp2515_reg_modify(MCP2515_CANINTF, MCP2515_CANINTF_WAK, 0);
-		return 0;
-	}
-#endif
-
 	do {
 		rx_done = false;
 		canintf = mcp2515_reg_load(MCP2515_CANINTF);
@@ -398,8 +367,6 @@ static int mcp2515_init(void) {
 	spi_bus_dev->spid_flags |= SPI_CS_INACTIVE;
 
 	spi_select(spi_bus_dev, SPI_CS);
-
-	mcp2515_reset(can);
 
 	gpio_setup_mode(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN, GPIO_MODE_INT_FALLING);
 
