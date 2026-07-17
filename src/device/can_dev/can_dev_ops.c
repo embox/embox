@@ -27,6 +27,10 @@ static int can_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	/* Clear old messages */
 	can_buff_clear(can->buff);
 
+	if (!can->configured) {
+		can->ops->cdo_config(can);
+	}
+
 	err = can->ops->cdo_open(can);
 	if (err) {
 		return err;

@@ -73,6 +73,10 @@ extern int char_dev_open(const char *name, int oflag);
 extern int char_dev_wait(struct char_dev *cdev, int mask);
 extern void char_dev_notify(struct char_dev *cdev);
 
+static inline int char_dev_usage_count(struct char_dev *cdev) {
+	return cdev->usage_count;
+}
+
 #define char_dev_foreach(cdev_ptr) \
 	dlist_foreach_entry(cdev_ptr, __char_dev_registry, list_item)
 
