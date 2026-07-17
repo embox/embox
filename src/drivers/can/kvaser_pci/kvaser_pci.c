@@ -45,7 +45,7 @@ static void kvaser_set_filter(uint32_t code, uint32_t mask) {
 	}
 }
 
-static void kvaser_reset(struct can_dev *can) {
+static void kvaser_config(struct can_dev *can) {
 	/* Enable card interrupts */
 	out32(in32(s5920_base + S5920_INTCSR) | S5920_INTCSR_AIE,
 	    s5920_base + S5920_INTCSR);
@@ -145,7 +145,7 @@ static int kvaser_send(struct can_dev *can, const void *data) {
 }
 
 static const struct can_dev_ops kvaser_can_ops = {
-    .cdo_reset = kvaser_reset,
+    .cdo_config = kvaser_config,
     .cdo_open = kvaser_open,
     .cdo_close = kvaser_close,
     .cdo_send = kvaser_send,
@@ -222,8 +222,6 @@ static int kvaser_pci_init(struct pci_slot_dev *pci_dev) {
 	can = &kvaser_can_dev;
 	s5920_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 	sja_base = pci_dev->bar[1] & PCI_BASE_ADDR_IO_MASK;
-
-	kvaser_reset(can);
 
 	return irq_attach(pci_dev->irq, kvaser_irq_handler, IF_SHARESUP, can, NULL);
 }

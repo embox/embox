@@ -39,7 +39,7 @@
 
 static uintptr_t ctucanfd_base;
 
-static void ctucanfd_reset(struct can_dev *can) {
+static void ctucanfd_config(struct can_dev *can) {
 	CTUCANFD_REG_STORE(CTUCANFD_MODE, CTUCANFD_MODE_RST);
 
 	/* Clear registers */
@@ -113,7 +113,7 @@ static int ctucanfd_send(struct can_dev *can, const void *data) {
 }
 
 static const struct can_dev_ops ctucanfd_ops = {
-    .cdo_reset = ctucanfd_reset,
+    .cdo_config = ctucanfd_config,
     .cdo_open = ctucanfd_open,
     .cdo_close = ctucanfd_close,
     .cdo_send = ctucanfd_send,
@@ -191,8 +191,6 @@ static int ctucanfd_init(struct pci_slot_dev *pci_dev) {
 	    != (void *)ctucanfd_base) {
 		return -1;
 	}
-
-	ctucanfd_reset(can);
 
 	return irq_attach(pci_dev->irq, ctucanfd_irq_handler, IF_SHARESUP, can, NULL);
 }
