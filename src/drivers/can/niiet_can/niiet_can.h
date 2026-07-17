@@ -78,6 +78,39 @@ struct niiet_can_node_regs {
 	volatile uint32_t Reserved0[57];
 };
 
+/* NCR */
+#define CAN_NODE_NCR_INIT_Pos   0
+#define CAN_NODE_NCR_TRIE_Pos   1
+#define CAN_NODE_NCR_LECIE_Pos  2
+#define CAN_NODE_NCR_ALIE_Pos   3
+#define CAN_NODE_NCR_CANDIS_Pos 4
+#define CAN_NODE_NCR_CCE_Pos    6
+#define CAN_NODE_NCR_CALM_Pos   7
+
+#define CAN_NODE_NCR_INIT       (1 << CAN_NODE_NCR_INIT_Pos)
+#define CAN_NODE_NCR_TRIE       (1 << CAN_NODE_NCR_TRIE_Pos)
+#define CAN_NODE_NCR_LECIE      (1 << CAN_NODE_NCR_LECIE_Pos)
+#define CAN_NODE_NCR_ALIE       (1 << CAN_NODE_NCR_ALIE_Pos)
+#define CAN_NODE_NCR_CANDIS     (1 << CAN_NODE_NCR_CANDIS_Pos)
+#define CAN_NODE_NCR_CCE        (1 << CAN_NODE_NCR_CCE_Pos)
+#define CAN_NODE_NCR_CALM       (1 << CAN_NODE_NCR_CALM_Pos)
+
+/* NBTR  */
+#define CAN_NODE_NBTR_BRP_Pos   0  /*!< Prescaler rate */
+#define CAN_NODE_NBTR_SJW_Pos   6  /*!< Transition width resynchronization */
+#define CAN_NODE_NBTR_TSEG1_Pos 8  /*!< Parameter 1 */
+#define CAN_NODE_NBTR_TSEG2_Pos 12 /*!< Parameter 2 */
+#define CAN_NODE_NBTR_DIV8_Pos  15 /*!< Frequency divider by 8 */
+
+/* NIPR */
+#define CAN_NODE_NIPR_ALINP_Pos  0
+#define CAN_NODE_NIPR_LECINP_Pos 4
+#define CAN_NODE_NIPR_TRINP_Pos  8
+#define CAN_NODE_NIPR_CFCINP_Pos 12
+
+/* Bit field positions: */
+#define CAN_NODE_NPCR_LBM_Pos    8
+
 struct niiet_can_regs {
 	volatile uint32_t CLC;
 	volatile uint32_t Reserved0;

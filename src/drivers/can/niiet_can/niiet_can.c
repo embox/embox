@@ -51,7 +51,38 @@ static void niiet_can_reset(struct can_dev *can) {
 	CAN_REG_STORE(CAN_FDR, reg);
 }
 
+static inline int niiet_can_node_init(struct can_dev *can, int node_num) {
+	struct niiet_can_dev_priv *priv;
+	struct niiet_can_regs *regs;
+	struct niiet_can_node_regs *node;
+
+	priv = can->priv;
+	regs = priv->regs;
+	node = &regs->Node[node_num];
+
+	node->NCR = CAN_NODE_NCR_CCE | CAN_NODE_NCR_INIT;
+	/* write regs NBTRx & NPCRx */
+	node->NBTR = 2305;/* Tbit = 1 / (1 Мбит/с) */
+
+
+
+	node->NIPR = (1 << CAN_NODE_NIPR_TRINP_Pos);
+
+	//for loopback mode
+	//node->NPCR = (1 << CAN_NODE_NPCR_LBM_Pos);
+
+	/* lock writing & IRQ EN*/
+	node->NCR = CAN_NODE_NCR_TRIE;
+
+	return 0;
+}
+
 static int niiet_can_open(struct can_dev *can) {
+	int node_num;
+
+	node_num = 0;
+	niiet_can_node_init(can, node_num);
+
 	return 0;
 }
 
