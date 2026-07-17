@@ -38,7 +38,7 @@ EMBOX_UNIT_INIT(niiet_can_init);
 #define CAN_REG_ANDIN(reg, mask) REG32_ANDIN(CAN_BASE_ADDR + reg, mask)
 #define CAN_REG_CLEAR(reg, mask) REG32_CLEAR(CAN_BASE_ADDR + reg, mask)
 
-static void niiet_can_reset(struct can_dev *can) {
+static void niiet_can_config(struct can_dev *can) {
 	uint32_t reg;
 
 	CAN_REG_STORE(CAN_CLC, 0);
@@ -94,7 +94,7 @@ static int niiet_can_send(struct can_dev *can, const void *data) {
 }
 
 static const struct can_dev_ops niiet_can_ops = {
-    .cdo_reset = niiet_can_reset,
+    .cdo_config = niiet_can_config,
     .cdo_open = niiet_can_open,
     .cdo_close = niiet_can_close,
     .cdo_send = niiet_can_send,
@@ -128,13 +128,10 @@ static irq_return_t niiet_can_irq_handler(unsigned int irq_num, void *data) {
 }
 
 static int niiet_can_init(void) {
-	struct can_dev *can;
 	int res;
 
 	niiet_can_dev_priv.can_dev = &niiet_can_dev;
 	niiet_can_dev_priv.regs = (struct niiet_can_regs *)(uintptr_t)CAN_BASE_ADDR;
-
-	can = &niiet_can_dev;
 
 #if defined (CONF_CAN_IRQ_NODE0)
 	res = irq_attach(CONF_CAN_IRQ_NODE0, niiet_can_irq_handler, 0,
@@ -153,8 +150,6 @@ static int niiet_can_init(void) {
 #endif /* defined (CONF_CAN_IRQ_NODE0) */
 
 	niiet_can_bconf_init(&niiet_can_dev_priv);
-
-	niiet_can_reset(can);
 
 	return 0;
 }
