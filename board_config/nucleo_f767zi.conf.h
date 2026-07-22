@@ -119,6 +119,52 @@ struct spi_conf spis[] = {
 	},
 };
 
+struct i2c_conf i2cs[] = {
+	[1] = {
+		.status = ENABLED,
+		.name = "I2C1",
+		.dev = {
+			.name = "I2C1",
+			.regs = {
+				REGMAP("BASE", (I2C1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("EVENT", 31),
+				VAL("ERROR", 32),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, 8, GPIO_MODE_ALT, AF4),
+				PIN("SDA", GPIO_PORT_B, 9, GPIO_MODE_ALT, AF4),
+			},
+			.clocks = {
+				VAL("I2C", CLK_I2C1),
+			}
+		},
+	},
+	[2] = {
+		.status = DISABLED,
+		.name = "I2C2",
+		.dev = {
+			.name = "I2C2",
+			.regs = {
+				REGMAP("BASE", (I2C2_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("EVENT", 33),
+				VAL("ERROR", 34),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, 10, GPIO_MODE_ALT, AF4),
+				PIN("SDA", GPIO_PORT_B, 11, GPIO_MODE_ALT, AF4),
+			},
+			.clocks = {
+				VAL("I2C", CLK_I2C2),
+			}
+		},
+	},
+
+};
+
 struct led_conf leds[] = {
 	[0] = {
 		.status = ENABLED,
@@ -174,4 +220,4 @@ struct usb_conf usbs[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), LED(leds), USB(usbs))
+EXPORT_CONFIG(UART(uarts), SPI(spis), LED(leds), USB(usbs), I2C(i2cs))

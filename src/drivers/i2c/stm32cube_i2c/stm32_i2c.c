@@ -152,7 +152,7 @@ static int stm32_i2c_init(const struct i2c_bus *bus) {
 #if defined(STM32F4_CUBE) || defined(STM32F2_CUBE) || defined(STM32L1_CUBE)
 	i2c_handle->Init.ClockSpeed = 400000;
 	i2c_handle->Init.DutyCycle = I2C_DUTYCYCLE_16_9;
-#elif defined(STM32L4_CUBE)
+#elif defined(STM32L4_CUBE) || defined(STM32F7_CUBE)
 	i2c_handle->Init.Timing = DISCOVERY_I2Cx_TIMING;
 	i2c_handle->Init.OwnAddress2Masks = I2C_OA2_NOMASK;
 #else
