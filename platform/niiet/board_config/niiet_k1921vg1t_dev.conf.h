@@ -195,6 +195,90 @@ struct uart_conf uarts[] = {
 		},
 		.baudrate = 115200,
 	},
+	[1] = {
+		.status = ENABLED,
+		.name = "UART1",
+		.dev = {
+			.name = "UART1",
+			.regs = {
+				REGMAP("BASE_ADDR", (UART1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_UART1),
+			},
+			.pins = {
+				PIN("TX", GPIO_PORT_B, 5, GPIO_MODE_ALT, 3),
+				PIN("RX", GPIO_PORT_B, 4, GPIO_MODE_ALT, 3),
+			},
+			.clocks = {
+				VAL("", "CLK_UART1"),
+			}
+		},
+		.baudrate = 115200,
+	},
+	[2] = {
+		.status = ENABLED,
+		.name = "UART2",
+		.dev = {
+			.name = "UART2",
+			.regs = {
+				REGMAP("BASE_ADDR", (UART2_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_UART2),
+			},
+			.pins = {
+				PIN("TX", GPIO_PORT_B, 9, GPIO_MODE_ALT, 3),
+				PIN("RX", GPIO_PORT_B, 8, GPIO_MODE_ALT, 3),
+			},
+			.clocks = {
+				VAL("", "CLK_UART2"),
+			}
+		},
+		.baudrate = 115200,
+	},
+	[3] = {
+		.status = ENABLED,
+		.name = "UART3",
+		.dev = {
+			.name = "UART3",
+			.regs = {
+				REGMAP("BASE_ADDR", (UART3_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_UART3),
+			},
+			.pins = {
+				PIN("TX", GPIO_PORT_B, 13, GPIO_MODE_ALT, 3),
+				PIN("RX", GPIO_PORT_B, 12, GPIO_MODE_ALT, 3),
+			},
+			.clocks = {
+				VAL("", "CLK_UART3"),
+			}
+		},
+		.baudrate = 115200,
+	},
+	[4] = {
+		.status = ENABLED,
+		.name = "UART4",
+		.dev = {
+			.name = "UART4",
+			.regs = {
+				REGMAP("BASE_ADDR", (UART4_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_UART4),
+			},
+			.pins = {
+				PIN("TX", GPIO_PORT_E, 1, GPIO_MODE_ALT, 1),
+				PIN("RX", GPIO_PORT_E, 0, GPIO_MODE_ALT, 1),
+			},
+			.clocks = {
+				VAL("", "CLK_UART3"),
+			}
+		},
+		.baudrate = 115200,
+	},
 
 };
 
