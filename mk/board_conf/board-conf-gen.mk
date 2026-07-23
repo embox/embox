@@ -18,7 +18,7 @@ GEN_EXE        := $(BUILD_BASE_DIR)/gen_board_conf
 
 BOARD_CONF_INCLUDE := -I $(CONF_DIR) -I $(BOARD_CONF_DIR) -I $(BOARD_CONF_GEN_DIR)
 
-ifneq ($(wildcard $(BOARD_CONF_EXT_DIR)),)
+ifneq ($(BOARD_CONF_EXT_DIR),)
 BOARD_CONF_INCLUDE += -I $(BOARD_CONF_EXT_DIR)
 endif
 
