@@ -35,6 +35,15 @@ module niiet_pwm2 {
 	depends niiet_pwm_drv
 }
 
+module niiet_pwm3 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm3.c"
+
+	depends niiet_pwm_drv
+}
+
 module niiet_pwm32 {
 	option number base_addr = 0
 	option number clk_div = 1
