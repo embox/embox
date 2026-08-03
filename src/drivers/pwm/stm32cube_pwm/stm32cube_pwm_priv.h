@@ -20,6 +20,8 @@
 
 #define STM_PWM_CHAN_MAX    (4)
 
+#define STM32CUBE_PWM_WRONG_CHAN  (0xFFFFFFF)
+
 struct stm32cube_pwm_priv {
 	const struct pin_description *pin_desc;
 	const uintptr_t               base_addr;
