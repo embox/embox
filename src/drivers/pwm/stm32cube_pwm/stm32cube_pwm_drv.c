@@ -102,8 +102,6 @@ static int stm32cube_pwm_set_period(struct pwm_device *dev, int period) {
     return 0;
 }
 
-#define STM32CUBE_PWM_WRONG_CHAN  (0xFFFFFFF)
-
 static inline uint32_t stm32cube_pwm_chan_num_to_cube(int chan_num) {
     switch(chan_num) {
         case 1:
@@ -113,7 +111,7 @@ static inline uint32_t stm32cube_pwm_chan_num_to_cube(int chan_num) {
         case 3:
             return TIM_CHANNEL_3;
         case 4:
-            return TIM_CHANNEL_3;
+            return TIM_CHANNEL_4;
         default:
             return STM32CUBE_PWM_WRONG_CHAN;
     }
