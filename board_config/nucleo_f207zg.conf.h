@@ -324,7 +324,7 @@ struct pwm_conf pwms[] = {
 				VAL("",  "CLK_TMR4"),
 			},
 			.misc = {
-				VAL("COMP_MASK",  0x0000FFFF),
+				VAL("COMP_MASK",  0xFFFFFFFF),
 			},
 		},
 	},
