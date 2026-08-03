@@ -317,5 +317,49 @@ struct usb_conf usbs[] = {
 	},
 };
 
+struct pwm_conf pwms[] = {
 
-EXPORT_CONFIG(CLK(clks), UART(uarts), SPI(spis), I2C(i2cs), LED(leds), ETH(eths), USB(usbs))
+	[3] = {
+		.name = "PWM3",
+		.dev = {
+			.name = "PWM3",
+			.regs = {
+				REGMAP("BASE_ADDR", (TIM3_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT1",  GPIO_PORT_B, 1, GPIO_MODE_ALT | GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP, 2),
+
+			},
+			.clocks = {
+				VAL("TIM",  CLK_TIM3),
+				VAL("",  "CLK_TMR3"),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+			},
+		},
+	},
+	[4] = {
+		.name = "PWM4",
+		.dev = {
+			.name = "PWM4",
+			.regs = {
+				REGMAP("BASE_ADDR", (TIM4_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT3",  GPIO_PORT_B, 8, GPIO_MODE_ALT | GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP, 2),
+			},
+			.clocks = {
+				VAL("TIM",  CLK_TIM4),
+				VAL("",  "CLK_TMR4"),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+			},
+		},
+	},
+};
+
+
+EXPORT_CONFIG(CLK(clks), UART(uarts), SPI(spis), I2C(i2cs), LED(leds),
+				PWM(pwms), ETH(eths), USB(usbs))
