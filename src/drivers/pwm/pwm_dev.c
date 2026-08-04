@@ -89,6 +89,18 @@ static inline int pwm_ns_to_dev(struct pwm_device *pwm, int ns) {
 	return (uint64_t)pwm->pwmd_base_freq * ns / NSEC_PER_SEC ;
 }
 
+int pwm_dma_config(struct pwm_device *pwm, int chan_num,
+						uint32_t buf[], int data_len) {
+	if (pwm == NULL) {
+		return -EINVAL;
+	}
+
+	pwm->pwmd_dma_buf[chan_num] = buf;
+	pwm->pwmd_dma_size = data_len;
+
+	return 0;
+}
+
 int pwm_set_frequency(struct pwm_device *pwm, int hz) {
 	int err;
 
