@@ -17,7 +17,7 @@
 
 #include "skeleton_pwm_priv.h"
 
-#define PWM_DEV_ID                0
+#define PWM_DEV_ID                1
 #define PWM_DEV_PRIV_STRUCT_NAME  MACRO_CONCAT(pwm_dev_priv, PWM_DEV_ID)
 
 #define CONF_PWM                  MACRO_CONCAT(CONF_PWM,PWM_DEV_ID)
