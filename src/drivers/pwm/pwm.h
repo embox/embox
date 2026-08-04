@@ -33,7 +33,7 @@ struct pwm_desc {
 	const struct pin_description *pwmd_pin; /* per chan */
 	uintptr_t                     pwmd_base_addr;
 	uint32_t                      pwmd_avail_chan_mask;
-	uint32_t                      pwmd_dma;
+	uint32_t                     *pwmd_dma;
 
 };
 
@@ -42,7 +42,7 @@ struct pwm_device {
 	int                           pwmd_id;
 	const struct pwm_ops         *pwmd_ops;
 	void                         *pwmd_priv;
-	uint32_t                      pwmd_dma;
+	uint32_t                     *pwmd_dma;
 
 	int                           pwmd_base_freq;
 	uint64_t                      pwmd_max_period;
@@ -51,7 +51,6 @@ struct pwm_device {
 	int                          *pwmd_duty; /* per chan */
 	uint32_t                    **pwmd_dma_buf;
 	uint32_t                      pwmd_dma_size;
-
 };
 
 __BEGIN_DECLS
@@ -81,10 +80,16 @@ __END_DECLS
 #define PWM_DEV_GLOBAL_PTR(id) \
 					MACRO_CONCAT(ptr_pwm_dev_, id)
 
-#define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr, avail_mask, max_chan) \
+#define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr, avail_mask, max_chan, dmas) \
 	static const struct pwm_desc MACRO_CONCAT(pwm_desc_, id) = \
-						{ id, ops, priv, out_pin, base_addr, \
-							(max_chan << 16) | avail_mask }; \
+						{ .pwmd_id = id, \
+							.pwmd_ops = ops, \
+							.pwmd_priv = priv, \
+							.pwmd_pin = out_pin,\
+							.pwmd_base_addr = base_addr, \
+							.pwmd_avail_chan_mask = (max_chan << 16) | avail_mask, \
+							.pwmd_dma = dmas, \
+						}; \
 	ARRAY_SPREAD_DECLARE(const struct pwm_desc, __pwm_desc_registry); \
 	ARRAY_SPREAD_ADD(__pwm_desc_registry,  MACRO_CONCAT(pwm_desc_, id)); \
 	const struct pwm_desc *PWM_DESC_GLOBAL_PTR(id) = &MACRO_CONCAT(pwm_desc_, id); \
@@ -95,6 +100,7 @@ __END_DECLS
 							.pwmd_desc = &MACRO_CONCAT(pwm_desc_, id),  \
 							.pwmd_duty = &MACRO_CONCAT(_pwm_chan_duty_buf_,id)[0], \
 							.pwmd_dma_buf = &MACRO_CONCAT(_pwm_chan_dma_buf_,id)[0], \
+							.pwmd_dma = dmas, \
 						} ; \
 	ARRAY_SPREAD_DECLARE(const struct pwm_device *, __pwm_device_registry); \
 	ARRAY_SPREAD_ADD(__pwm_device_registry,  &MACRO_CONCAT(pwm_dev_, id)); \

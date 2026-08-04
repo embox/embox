@@ -90,6 +90,8 @@
                 PWM_CHAN3_MASK_AVAIL \
             )
 
+#define PWM_DMAS    (NULL)
+
 static const struct pin_description pwm_pin_desc[NIIET_PWM_CHAN_MAX] = {
     {
         .pd_port = PWM_CHAN0_PORT,
@@ -126,4 +128,5 @@ static struct niiet_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
 
 PWM_DEV_DEF(PWM_DEV_ID, &niiet_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
                         &pwm_pin_desc[0], PWM_BASE_ADDR,
-                        PWM_AVAIL_MASK, NIIET_PWM_CHAN_MAX);
+                        PWM_AVAIL_MASK, NIIET_PWM_CHAN_MAX,
+                    PWM_DMAS);

@@ -51,6 +51,9 @@ static const struct pin_description pwm_pin_desc = {
 #define PWM_CLK_NAME()    MACRO_STRING(MACRO_CONCAT(MACRO_CONCAT(PWM,PWM_DEV_ID),_CLK))
 #define PWM_CHANNEL_NR()  0
 #define PTR_PIN_DESC      (NULL)
+
+#define PWM_DMAS    (NULL)
+
 #endif
 
 
@@ -66,4 +69,5 @@ static struct skeleton_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
 PWM_DEV_DEF(PWM_DEV_ID, &skeleton_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
                         PTR_PIN_DESC, PWM_BASE_ADDR,
                         1 << 0 /* 0 chan avail */,
-                        1 /* max chan */);
+                        1 /* max chan */,
+                    PWM_DMAS);
