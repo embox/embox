@@ -14,3 +14,11 @@ module skeleton_pwm0 {
 	depends skeleton_pwm_drv
 }
 
+module skeleton_pwm1 {
+	option boolean use_bconf=false
+
+	source "skeleton_pwm1.c"
+
+	depends skeleton_pwm_drv
+}
+

@@ -90,8 +90,6 @@
                 PWM_CHAN3_MASK_AVAIL \
             )
 
-extern struct pwm_ops stm32cube_pwm_ops;
-
 static const struct pin_description pwm_pin_desc[STM_PWM_CHAN_MAX] = {
     {
         .pd_port = PWM_CHAN0_PORT,
@@ -114,6 +112,8 @@ static const struct pin_description pwm_pin_desc[STM_PWM_CHAN_MAX] = {
         .pd_func = PWM_CHAN3_FUNC,
     },
 };
+
+extern struct pwm_ops stm32cube_pwm_ops;
 
 static struct stm32cube_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
     .pin_desc  = &pwm_pin_desc[0],
