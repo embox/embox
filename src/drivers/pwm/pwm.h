@@ -33,6 +33,7 @@ struct pwm_desc {
 	const struct pin_description *pwmd_pin; /* per chan */
 	uintptr_t                     pwmd_base_addr;
 	uint32_t                      pwmd_avail_chan_mask;
+	uint32_t                      pwmd_dma;
 
 };
 
@@ -41,12 +42,16 @@ struct pwm_device {
 	int                           pwmd_id;
 	const struct pwm_ops         *pwmd_ops;
 	void                         *pwmd_priv;
+	uint32_t                      pwmd_dma;
 
 	int                           pwmd_base_freq;
 	uint64_t                      pwmd_max_period;
 	int                           pwmd_period;
 	int                           pwmd_mask;
 	int                          *pwmd_duty; /* per chan */
+	uint32_t                    **pwmd_dma_buf;
+	uint32_t                      pwmd_dma_size;
+
 };
 
 __BEGIN_DECLS
@@ -60,6 +65,9 @@ extern void pwm_disable(struct pwm_device *pwm, uint32_t chan_mask);
 extern struct pwm_device *pwm_dev_by_id(int id);
 extern struct pwm_device *pwm_dev_by_idx(int idx);
 extern int pwm_dev_num();
+
+extern int pwm_dma_config(struct pwm_device *pwm, int chan_num,
+						uint32_t buf[], int data_len);
 
 static inline int pwm_dev_max_chan(struct pwm_device *pwm) {
 	return (int)(pwm->pwmd_desc->pwmd_avail_chan_mask >> 16);
@@ -80,11 +88,13 @@ __END_DECLS
 	ARRAY_SPREAD_DECLARE(const struct pwm_desc, __pwm_desc_registry); \
 	ARRAY_SPREAD_ADD(__pwm_desc_registry,  MACRO_CONCAT(pwm_desc_, id)); \
 	const struct pwm_desc *PWM_DESC_GLOBAL_PTR(id) = &MACRO_CONCAT(pwm_desc_, id); \
+	static uint32_t *MACRO_CONCAT(_pwm_chan_dma_buf_,id)[max_chan] = {NULL}; \
 	static int MACRO_CONCAT(_pwm_chan_duty_buf_,id)[max_chan] = {0}; \
 	static struct pwm_device MACRO_CONCAT(pwm_dev_, id) = \
 						{ \
 							.pwmd_desc = &MACRO_CONCAT(pwm_desc_, id),  \
 							.pwmd_duty = &MACRO_CONCAT(_pwm_chan_duty_buf_,id)[0], \
+							.pwmd_dma_buf = &MACRO_CONCAT(_pwm_chan_dma_buf_,id)[0], \
 						} ; \
 	ARRAY_SPREAD_DECLARE(const struct pwm_device *, __pwm_device_registry); \
 	ARRAY_SPREAD_ADD(__pwm_device_registry,  &MACRO_CONCAT(pwm_dev_, id)); \
