@@ -14,6 +14,7 @@
 
 #include <drivers/pwm.h>
 
+#include "skeleton_pwm_priv.h"
 
 static int skeleton_pwm_init(struct pwm_device *dev) {
     return 0;
