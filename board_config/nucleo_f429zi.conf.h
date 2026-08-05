@@ -349,6 +349,11 @@ struct pwm_conf pwms[] = {
 			.pins = {
 				PIN("OUT3",  GPIO_PORT_B, 8, GPIO_MODE_ALT | GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP, 2),
 			},
+			.dmas = {
+				VAL("OUT3_NUM", 2),
+				VAL("OUT3_CHAN", 4),
+				VAL("OUT3_STREAM", 6),
+			},
 			.clocks = {
 				VAL("TIM",  CLK_TIM4),
 				VAL("",  "CLK_TMR4"),
