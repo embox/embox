@@ -80,7 +80,71 @@
 #define PWM_CHAN3_MASK_AVAIL (0 << 3)
 #endif
 
+#if defined(CONF_PWM3_DMA_OUT0_NUM)
+#define DMA0_EN     1
+#define DMA0_NUM    MACRO_CONCAT(CONF_PWM, _DMA_OUT0_NUM)
+#define DMA0_CHAN   MACRO_CONCAT(CONF_PWM, _DMA_OUT0_CHAN)
+#define DMA0_STREAM MACRO_CONCAT(CONF_PWM, _DMA_OUT0_STREAM)
+#else
+#define DMA0_EN     0
+#define DMA0_NUM    0
+#define DMA0_CHAN   0
+#define DMA0_STREAM 0
 #endif
+
+#if defined(CONF_PWM3_DMA_OUT1_NUM)
+#define DMA1_EN     1
+#define DMA1_NUM    MACRO_CONCAT(CONF_PWM, _DMA_OUT1_NUM)
+#define DMA1_CHAN   MACRO_CONCAT(CONF_PWM, _DMA_OUT1_CHAN)
+#define DMA1_STREAM MACRO_CONCAT(CONF_PWM, _DMA_OUT1_STREAM)
+#else
+#define DMA1_EN     0
+#define DMA1_NUM    0
+#define DMA1_CHAN   0
+#define DMA1_STREAM 0
+#endif
+
+#if defined(CONF_PWM3_DMA_OUT2_NUM)
+#define DMA2_EN     1
+#define DMA2_NUM    MACRO_CONCAT(CONF_PWM, _DMA_OUT2_NUM)
+#define DMA2_CHAN   MACRO_CONCAT(CONF_PWM, _DMA_OUT2_CHAN)
+#define DMA2_STREAM MACRO_CONCAT(CONF_PWM, _DMA_OUT2_STREAM)
+#else
+#define DMA2_EN     0
+#define DMA2_NUM    0
+#define DMA2_CHAN   0
+#define DMA2_STREAM 0
+#endif
+
+#if defined(CONF_PWM3_DMA_OUT3_NUM)
+#define DMA3_EN     1
+#define DMA3_NUM    MACRO_CONCAT(CONF_PWM, _DMA_OUT3_NUM)
+#define DMA3_CHAN   MACRO_CONCAT(CONF_PWM, _DMA_OUT3_CHAN)
+#define DMA3_STREAM MACRO_CONCAT(CONF_PWM, _DMA_OUT3_STREAM)
+#else
+#define DMA3_EN     0
+#define DMA3_NUM    0
+#define DMA3_CHAN   0
+#define DMA3_STREAM 0
+#endif
+
+#endif /* defined CONF_PWM3_ENABLED */
+
+#if DMA0_EN || DMA1_EN || DMA2_EN || DMA3_EN
+
+static uint32_t pwm_dmas[STM_PWM_CHAN_MAX] = {
+    (DMA0_EN << 31) | (DMA0_NUM << 0) | (DMA0_CHAN << 8) | (DMA0_STREAM << 16),
+    (DMA1_EN << 31) | (DMA1_NUM << 0) | (DMA1_CHAN << 8) | (DMA1_STREAM << 16),
+    (DMA2_EN << 31) | (DMA2_NUM << 0) | (DMA2_CHAN << 8) | (DMA2_STREAM << 16),
+    (DMA3_EN << 31) | (DMA3_NUM << 0) | (DMA3_CHAN << 8) | (DMA3_STREAM << 16),
+};
+#define PWM_DMAS (&pwm_dmas[0])
+
+#else
+
+#define PWM_DMAS (NULL)
+
+#endif /* DMA0_EN || DMA1_EN || DMA2_EN || DMA3_EN */
 
 #define PWM_AVAIL_MASK   \
             ( \
@@ -89,8 +153,6 @@
                 PWM_CHAN2_MASK_AVAIL | \
                 PWM_CHAN3_MASK_AVAIL \
             )
-
-#define PWM_DMAS    (NULL)
 
 static const struct pin_description pwm_pin_desc[STM_PWM_CHAN_MAX] = {
     {
