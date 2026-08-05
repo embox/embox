@@ -13,7 +13,7 @@
 
 #include <drivers/pwm.h> /* only for struct pin_description  */
 
-#define SKELETON_PWM_CHAN_MAX    (4)
+#define SKELETON_PWM_CHAN_MAX    (1)
 
 struct skeleton_pwm_priv {
 	const struct pin_description *pin_desc;

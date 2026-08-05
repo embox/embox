@@ -8,6 +8,7 @@ module skeleton_pwm_drv {
 
 module skeleton_pwm0 {
 	option boolean use_bconf=false
+	option boolean use_dma=false
 
 	source "skeleton_pwm0.c"
 
@@ -16,6 +17,7 @@ module skeleton_pwm0 {
 
 module skeleton_pwm1 {
 	option boolean use_bconf=false
+	option boolean use_dma=false
 
 	source "skeleton_pwm1.c"
 
