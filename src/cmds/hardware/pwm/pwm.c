@@ -43,10 +43,20 @@ static void print_pwm_list(void) {
 			pwm_dev->pwmd_max_period, pwm_dev->pwmd_period);
 		for (i = 0; i < pwm_dev_max_chan(pwm_dev); i++) {
 			if (pwmd_desc->pwmd_avail_chan_mask & (1 << i)) {
-				printf("\t\tchan(%d): duty(%d) out_pin(PORT%d.%d)\n",
-						i, pwm_dev->pwmd_duty[i],
+				printf("\t\tchan(%d): ", i);
+				if (pwm_dev->pwmd_dma) {
+					printf(" dma(%x)", pwm_dev->pwmd_dma[i]);
+				} else {
+					printf(" dma(--)");
+				}
+				printf(" duty(%d) ", pwm_dev->pwmd_duty[i]);
+				if (pwmd_desc->pwmd_pin) {
+					printf("out_pin(PORT%d.%d)\n",
 						pwmd_desc->pwmd_pin[i].pd_port,
 						pwmd_desc->pwmd_pin[i].pd_pin);
+				} else {
+					printf("out_pin(not spec)\n");
+				}
 			}
 
 		}
