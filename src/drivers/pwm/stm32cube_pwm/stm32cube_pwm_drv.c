@@ -29,6 +29,10 @@
 
 extern int clk_enable(char *clk_name);
 
+irq_return_t stm32cube_pwm_dma_irq_handler(unsigned int irq_num, void *priv) {
+    return 0;
+}
+
 static int stm32cube_pwm_cube_init(struct stm32cube_pwm_priv *priv) {
     //CONF_PWM0_CLK_ENABLE_TIM();
     clk_enable((char *)priv->clk_name);

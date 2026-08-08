@@ -10,6 +10,8 @@
 
 #include <util/macro.h>
 
+#include <kernel/irq.h>
+
 #include <config/board_config.h>
 #include <drivers/gpio.h>
 
@@ -85,6 +87,7 @@
 #define DMA0_NUM    MACRO_CONCAT(CONF_PWM, _DMA_OUT0_NUM)
 #define DMA0_CHAN   MACRO_CONCAT(CONF_PWM, _DMA_OUT0_CHAN)
 #define DMA0_STREAM MACRO_CONCAT(CONF_PWM, _DMA_OUT0_STREAM)
+#define DMA0_IRQ    MACRO_CONCAT(CONF_PWM, _IRQ_DMA_OUT0)
 #else
 #define DMA0_EN     0
 #define DMA0_NUM    0
@@ -97,6 +100,7 @@
 #define DMA1_NUM    MACRO_CONCAT(CONF_PWM, _DMA_OUT1_NUM)
 #define DMA1_CHAN   MACRO_CONCAT(CONF_PWM, _DMA_OUT1_CHAN)
 #define DMA1_STREAM MACRO_CONCAT(CONF_PWM, _DMA_OUT1_STREAM)
+#define DMA1_IRQ    MACRO_CONCAT(CONF_PWM, _IRQ_DMA_OUT1)
 #else
 #define DMA1_EN     0
 #define DMA1_NUM    0
@@ -109,6 +113,7 @@
 #define DMA2_NUM    MACRO_CONCAT(CONF_PWM, _DMA_OUT2_NUM)
 #define DMA2_CHAN   MACRO_CONCAT(CONF_PWM, _DMA_OUT2_CHAN)
 #define DMA2_STREAM MACRO_CONCAT(CONF_PWM, _DMA_OUT2_STREAM)
+#define DMA2_IRQ    MACRO_CONCAT(CONF_PWM, _IRQ_DMA_OUT2)
 #else
 #define DMA2_EN     0
 #define DMA2_NUM    0
@@ -121,6 +126,7 @@
 #define DMA3_NUM    MACRO_CONCAT(CONF_PWM, _DMA_OUT3_NUM)
 #define DMA3_CHAN   MACRO_CONCAT(CONF_PWM, _DMA_OUT3_CHAN)
 #define DMA3_STREAM MACRO_CONCAT(CONF_PWM, _DMA_OUT3_STREAM)
+#define DMA3_IRQ    MACRO_CONCAT(CONF_PWM, _IRQ_DMA_OUT3)
 #else
 #define DMA3_EN     0
 #define DMA3_NUM    0
@@ -177,6 +183,7 @@ static const struct pin_description pwm_pin_desc[STM_PWM_CHAN_MAX] = {
     },
 };
 
+extern irq_return_t stm32cube_pwm_dma_irq_handler(unsigned int irq_num, void *priv);
 extern struct pwm_ops stm32cube_pwm_ops;
 
 static struct stm32cube_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
@@ -187,6 +194,22 @@ static struct stm32cube_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
     .idx       = PWM_DEV_ID,
     .comp_mask = PWM_COMP_MASK,
 };
+
+#if DMA0_EN
+STATIC_IRQ_ATTACH(DMA0_IRQ, stm32cube_pwm_dma_irq_handler, &PWM_DEV_PRIV_STRUCT_NAME);
+#endif /* DMA0_EN */
+
+#if DMA1_EN
+STATIC_IRQ_ATTACH(DMA1_IRQ, stm32cube_pwm_dma_irq_handler, &PWM_DEV_PRIV_STRUCT_NAME);
+#endif /* DMA1_EN */
+
+#if DMA2_EN
+STATIC_IRQ_ATTACH(DMA2_IRQ, stm32cube_pwm_dma_irq_handler, &PWM_DEV_PRIV_STRUCT_NAME);
+#endif /* DMA20_EN */
+
+#if DMA3_EN
+STATIC_IRQ_ATTACH(DMA3_IRQ, stm32cube_pwm_dma_irq_handler, &PWM_DEV_PRIV_STRUCT_NAME);
+#endif /* DMA3_EN */
 
 PWM_DEV_DEF(PWM_DEV_ID, &stm32cube_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
                         &pwm_pin_desc[0], PWM_BASE_ADDR,
