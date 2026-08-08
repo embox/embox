@@ -1,0 +1,18 @@
+package embox.cmd.hw
+
+@AutoCmd
+@Cmd(name = "dshot",
+	help = "control through DSHOT",
+	man = '''
+		NAME
+			dshot - 
+		SYNOPSIS
+			dshot TODO
+		DESCRIPTION
+			Detailed description.
+		AUTHORS
+			Anton Bondarev
+	''')
+module dshot {
+	source "dshot.c"
+}
