@@ -351,12 +351,16 @@ struct pwm_conf pwms[] = {
 			},
 			.dmas = {
 				VAL("OUT3_NUM", 2),
+				VAL("OUT3_STREAM", 5),
 				VAL("OUT3_CHAN", 4),
-				VAL("OUT3_STREAM", 6),
+			},
+			.irqs = {
+				VAL("DMA_OUT3", 65), /* DMA2_Stream5_IRQn */
 			},
 			.clocks = {
 				VAL("TIM",  CLK_TIM4),
 				VAL("",  "CLK_TMR4"),
+				VAL("DMA", STM32_CLK_ENABLE(MA2_Stream5)),	
 			},
 			.misc = {
 				VAL("COMP_MASK",  0xFFFFFFFF),
