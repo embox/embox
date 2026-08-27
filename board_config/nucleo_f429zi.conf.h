@@ -360,7 +360,7 @@ struct pwm_conf pwms[] = {
 			.clocks = {
 				VAL("TIM",  CLK_TIM4),
 				VAL("",  "CLK_TMR4"),
-				VAL("DMA", STM32_CLK_ENABLE(MA2_Stream5)),	
+				VAL("DMA", STM32_CLK_ENABLE(DMA2)),
 			},
 			.misc = {
 				VAL("COMP_MASK",  0xFFFFFFFF),
