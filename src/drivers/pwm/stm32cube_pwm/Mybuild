@@ -7,6 +7,7 @@ module stm32cube_pwm_drv {
 	source "stm32cube_pwm_drv.c"
 
 	depends embox.driver.pwm.pwm_dev
+	@NoRuntime depends embox.driver.clk.core
 	@NoRuntime depends embox.driver.clk.stm32cube_rcc
 	@NoRuntime depends third_party.bsp.st_bsp_api
 }

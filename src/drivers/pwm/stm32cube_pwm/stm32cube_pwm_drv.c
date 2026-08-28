@@ -20,6 +20,7 @@
 #include <drivers/pwm.h>
 #include <drivers/pin_description.h>
 #include <drivers/gpio.h>
+#include <drivers/clk.h>
 
 #include <bsp/stm32cube_hal.h>
 
@@ -59,6 +60,140 @@ static int stm32cube_pwm_cube_init(struct stm32cube_pwm_priv *priv) {
    
 }
 
+static inline void *stm32cube_dma_get_inst(int dma, int stream) {
+	switch (dma) {
+	case 1:
+		switch (stream) {
+		case 0:
+			return (void *)(uintptr_t)DMA1_Stream0_BASE;
+		case 1:
+			return (void *)(uintptr_t)DMA1_Stream1_BASE;
+		case 2:
+			return (void *)(uintptr_t)DMA1_Stream2_BASE;
+		case 3:
+			return (void *)(uintptr_t)DMA1_Stream3_BASE;
+		case 4:
+			return (void *)(uintptr_t)DMA1_Stream4_BASE;
+		case 5:
+			return (void *)(uintptr_t)DMA1_Stream5_BASE;
+		case 6:
+			return (void *)(uintptr_t)DMA1_Stream6_BASE;
+		case 7:
+			return (void *)(uintptr_t)DMA1_Stream7_BASE;
+		default:
+			return NULL;
+		}
+	case 2:
+		switch (stream) {
+		case 0:
+			return (void *)(uintptr_t)DMA2_Stream0_BASE;
+		case 1:
+			return (void *)(uintptr_t)DMA2_Stream1_BASE;
+		case 2:
+			return (void *)(uintptr_t)DMA2_Stream2_BASE;
+		case 3:
+			return (void *)(uintptr_t)DMA2_Stream3_BASE;
+		case 4:
+			return (void *)(uintptr_t)DMA2_Stream4_BASE;
+		case 5:
+			return (void *)(uintptr_t)DMA2_Stream5_BASE;
+		case 6:
+			return (void *)(uintptr_t)DMA2_Stream6_BASE;
+		case 7:
+			return (void *)(uintptr_t)DMA2_Stream7_BASE;
+		default:
+			return NULL;
+		}
+	default:
+		return NULL;
+	}
+	return NULL;
+}
+
+static inline int stm32cube_dma_get_channel(int chan) {
+	switch (chan) {
+	case 0:
+		return DMA_CHANNEL_0;
+	case 1:
+		return DMA_CHANNEL_1;
+	case 2:
+		return DMA_CHANNEL_2;
+	case 3:
+		return DMA_CHANNEL_3;
+	case 4:
+		return DMA_CHANNEL_4;
+	case 5:
+		return DMA_CHANNEL_5;
+	case 6:
+		return DMA_CHANNEL_6;
+	case 7:
+		return DMA_CHANNEL_7;
+
+	default:
+		return -1;
+	}
+	return -1;
+}
+
+static inline int stm32cube_dma_clock_en(int dma) {
+	switch (dma) {
+	case 1:
+        clk_enable("CLK_DMA1");
+        return 0;
+    case 2:
+        clk_enable("CLK_DMA2");
+    return 0;
+        
+    default:
+        return -1;
+    }
+    return -1;
+}
+
+static int stm32cube_pwm_dma_init(struct pwm_device *dev, int i) {
+    struct stm32cube_pwm_priv *priv;
+    void *instance;
+    uint32_t chan;
+
+    priv = dev->pwmd_priv;
+
+    stm32cube_dma_clock_en(STM32CUBE_PWM_DMA_NUM(dev->pwmd_dma[i]));
+
+    instance = stm32cube_dma_get_inst(STM32CUBE_PWM_DMA_NUM(dev->pwmd_dma[i]),
+                    STM32CUBE_PWM_DMA_STREAM(dev->pwmd_dma[i]));
+    if (instance == NULL) {
+        return 0;
+    }
+
+    chan = stm32cube_dma_get_channel(STM32CUBE_PWM_DMA_CHAN(dev->pwmd_dma[i]));
+    if (chan == -1) {
+        return 0;
+    }
+
+    log_debug("En DMA%d_Stream%d Chan%d\n\tinst(0x%x) chan(0x%x)",
+                        STM32CUBE_PWM_DMA_NUM(dev->pwmd_dma[i]), 
+                        STM32CUBE_PWM_DMA_STREAM(dev->pwmd_dma[i]),
+                        STM32CUBE_PWM_DMA_CHAN(dev->pwmd_dma[i]),
+                        instance, chan );
+
+    priv->dma_handle[i].Instance = instance;
+    priv->dma_handle[i].Init.Channel = chan;
+    priv->dma_handle[i].Init.Direction = DMA_MEMORY_TO_PERIPH;
+    priv->dma_handle[i].Init.PeriphInc = DMA_PINC_DISABLE;
+    priv->dma_handle[i].Init.MemInc = DMA_MINC_ENABLE;
+    priv->dma_handle[i].Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    priv->dma_handle[i].Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+    priv->dma_handle[i].Init.Mode = DMA_NORMAL;
+    priv->dma_handle[i].Init.Priority = DMA_PRIORITY_HIGH;
+    priv->dma_handle[i].Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+    priv->dma_handle[i].Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
+    priv->dma_handle[i].Init.MemBurst = DMA_MBURST_SINGLE;
+    priv->dma_handle[i].Init.PeriphBurst = DMA_PBURST_SINGLE;
+
+    pwm_dma_config(dev, chan, priv->dma_buffer[i], STM32CUBE_PWM_DMA_BUF_SIZE);
+
+    return 0;
+}
 
 static int stm32cube_pwm_init(struct pwm_device *dev) {
     struct stm32cube_pwm_priv *priv;
@@ -77,6 +212,9 @@ static int stm32cube_pwm_init(struct pwm_device *dev) {
                              GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP |
                              GPIO_MODE_ALT_SET(pin->pd_func));
 
+        }
+        if (dev->pwmd_dma && STM32CUBE_PWM_DMA_EN(dev->pwmd_dma[i])) {
+            stm32cube_pwm_dma_init(dev, i);
         }
     }
 
@@ -101,6 +239,21 @@ static int stm32cube_pwm_set_period(struct pwm_device *dev, int period) {
     if (HAL_TIM_PWM_Init(&priv->TimHandle) != HAL_OK) {
         //log_error("Failed to init TIM PWM\n");
         return 0;
+    }
+    if (dev->pwmd_dma) {
+        int i;
+        struct stm32cube_pwm_priv *priv;
+
+        priv = dev->pwmd_priv;
+
+        for (i = 0; i < STM_PWM_CHAN_MAX; i ++ ) {
+            if (dev->pwmd_dma[i] & (1 << 31)) {
+                if (HAL_DMA_Init(&priv->dma_handle[i]) != HAL_OK) {
+                    //return 0;
+                }
+                //__HAL_LINKDMA
+            }
+        }
     }
 
     return 0;
@@ -147,10 +300,16 @@ static int stm32cube_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty
     return 0;
 }
 
+static int stm32cube_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
+	    int duty_ns[], int size) {
+    return 0;
+}
+
 struct pwm_ops stm32cube_pwm_ops = {
     .pwmo_init   = stm32cube_pwm_init,
     .pwmo_set_period = stm32cube_pwm_set_period,
     .pwmo_set_duty = stm32cube_pwm_set_duty,
+    .pwmo_set_duty_array = stm32cube_pwm_set_duty_array,
     .pwmo_enable = stm32cube_pwm_enable,
     .pwmo_disable = stm32cube_pwm_disable
 };
