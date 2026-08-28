@@ -19,10 +19,12 @@
 struct pwm_device;
 
 struct pwm_ops {
-	int  (*pwmo_init)(struct pwm_device *dev);
-	int  (*pwmo_set_period)(struct pwm_device *dev, int period_ns);
-	int  (*pwmo_set_duty)(struct pwm_device *dev,  int chan_num, int duty_ns);
-	int  (*pwmo_enable)(struct pwm_device *dev, uint32_t chan_mask);
+	int (*pwmo_init)(struct pwm_device *dev);
+	int (*pwmo_set_period)(struct pwm_device *dev, int period_ns);
+	int (*pwmo_set_duty)(struct pwm_device *dev, int chan_num, int duty_ns);
+	int (*pwmo_set_duty_array)(struct pwm_device *dev, int chan_num,
+	    int duty_ns[], int size);
+	int (*pwmo_enable)(struct pwm_device *dev, uint32_t chan_mask);
 	void (*pwmo_disable)(struct pwm_device *dev, uint32_t chan_mask);
 };
 
