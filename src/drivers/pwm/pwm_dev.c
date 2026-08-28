@@ -95,8 +95,8 @@ int pwm_dma_config(struct pwm_device *pwm, int chan_num,
 		return -EINVAL;
 	}
 
-	pwm->pwmd_dma_buf[chan_num] = buf;
-	pwm->pwmd_dma_size = data_len;
+	pwm->pwmd_dma_buf[chan_num].db_virt_addr = buf;
+	pwm->pwmd_dma_buf[chan_num].db_size = data_len;
 
 	return 0;
 }
@@ -117,7 +117,6 @@ int pwm_set_frequency(struct pwm_device *pwm, int hz) {
 	}
 
     err = pwm->pwmd_ops->pwmo_set_period(pwm, pwm_hz_to_dev(pwm, hz));
-	//err = pwm->pwmd_ops->pwmo_set_period(pwm, period_ns);
 	if (err) {
 		return err;
 	}
@@ -143,7 +142,6 @@ int pwm_set_period(struct pwm_device *pwm, int period_ns) {
 	}
 
     err = pwm->pwmd_ops->pwmo_set_period(pwm, pwm_ns_to_dev(pwm, period_ns));
-	//err = pwm->pwmd_ops->pwmo_set_period(pwm, period_ns);
 	if (err) {
 		return err;
 	}
@@ -153,7 +151,7 @@ int pwm_set_period(struct pwm_device *pwm, int period_ns) {
 	return 0;
 }
 
-int pwm_set_duty(struct pwm_device *pwm, int chan_num, int duty_ns)  {
+int pwm_set_duty(struct pwm_device *pwm, int chan_num, int duty_ns) {
 	int err;
 
 	if (pwm == NULL) {
@@ -171,13 +169,42 @@ int pwm_set_duty(struct pwm_device *pwm, int chan_num, int duty_ns)  {
 		return -EINVAL;
 	}
 
-    err = pwm->pwmd_ops->pwmo_set_duty(pwm, chan_num, pwm_ns_to_dev(pwm, duty_ns));
-	//err = pwm->pwmd_ops->pwmo_set_duty(pwm, chan_num, duty_ns);
+	err = pwm->pwmd_ops->pwmo_set_duty(pwm, chan_num, pwm_ns_to_dev(pwm, duty_ns));
 	if (err) {
 		return err;
 	}
 
 	pwm->pwmd_duty[chan_num] = duty_ns;
+
+	return 0;
+}
+
+int pwm_set_duty_array(struct pwm_device *pwm, int chan_num, int duty_ns[],
+    int size) {
+	int err;
+
+	if (pwm == NULL) {
+		return -EINVAL;
+	}
+
+	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_set_duty == NULL) {
+		return -ENOSUPP;
+	}
+
+	if (pwm_dev_max_chan(pwm) < chan_num) {
+		return -EINVAL;
+	}
+
+	for (int i = 0; i < size; i++) {
+		duty_ns[i] = pwm_ns_to_dev(pwm, duty_ns[i]);
+	}
+
+	err = pwm->pwmd_ops->pwmo_set_duty_array(pwm, chan_num, duty_ns, size);
+	if (err) {
+		return err;
+	}
+
+	//pwm->pwmd_duty[chan_num] = duty_ns;
 
 	return 0;
 }
