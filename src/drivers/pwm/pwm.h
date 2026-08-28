@@ -39,6 +39,14 @@ struct pwm_desc {
 
 };
 
+struct dma_buffer {
+	void    *db_phy_addr;
+	void    *db_virt_addr;
+	int      db_size;
+	int      db_act_len;
+	uint32_t bd_flags;
+};
+
 struct pwm_device {
 	const struct pwm_desc        *pwmd_desc;
 	int                           pwmd_id;
@@ -51,8 +59,7 @@ struct pwm_device {
 	int                           pwmd_period;
 	int                           pwmd_mask;
 	int                          *pwmd_duty; /* per chan */
-	uint32_t                    **pwmd_dma_buf;
-	uint32_t                      pwmd_dma_size;
+	struct dma_buffer            *pwmd_dma_buf;
 };
 
 __BEGIN_DECLS
@@ -60,6 +67,8 @@ __BEGIN_DECLS
 extern int pwm_set_period(struct pwm_device *pwm, int period_ns);
 extern int pwm_set_frequency(struct pwm_device *pwm, int hz);
 extern int pwm_set_duty(struct pwm_device *dev,  int chan_num, int duty_ns);
+extern int pwm_set_duty_array(struct pwm_device *pwm, int chan_num,
+				int duty_ns[], int size);
 extern int pwm_enable(struct pwm_device *pwm, uint32_t chan_mask);
 extern void pwm_disable(struct pwm_device *pwm, uint32_t chan_mask);
 
@@ -95,7 +104,7 @@ __END_DECLS
 	ARRAY_SPREAD_DECLARE(const struct pwm_desc, __pwm_desc_registry); \
 	ARRAY_SPREAD_ADD(__pwm_desc_registry,  MACRO_CONCAT(pwm_desc_, id)); \
 	const struct pwm_desc *PWM_DESC_GLOBAL_PTR(id) = &MACRO_CONCAT(pwm_desc_, id); \
-	static uint32_t *MACRO_CONCAT(_pwm_chan_dma_buf_,id)[max_chan] = {NULL}; \
+	static struct dma_buffer MACRO_CONCAT(_pwm_chan_dma_buf_,id)[max_chan] = {NULL}; \
 	static int MACRO_CONCAT(_pwm_chan_duty_buf_,id)[max_chan] = {0}; \
 	static struct pwm_device MACRO_CONCAT(pwm_dev_, id) = \
 						{ \
