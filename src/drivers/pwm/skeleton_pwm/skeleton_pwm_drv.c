@@ -35,10 +35,16 @@ static int skeleton_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty)
     return 0;
 }
 
+static int skeleton_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
+	    int duty_ns[], int size) {
+    return 0;
+}
+
 struct pwm_ops skeleton_pwm_ops = {
     .pwmo_init   = skeleton_pwm_init,
     .pwmo_set_period = skeleton_pwm_set_period,
     .pwmo_set_duty = skeleton_pwm_set_duty,
+    .pwmo_set_duty_array = skeleton_pwm_set_duty_array,
     .pwmo_enable = skeleton_pwm_enable,
     .pwmo_disable = skeleton_pwm_disable
 };
