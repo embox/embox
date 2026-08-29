@@ -8,3 +8,5 @@
 "partition",
 "mkdir -s /mnt",
 //"mount -t vfat /dev/sda1 /mnt"
+
+"tish",
