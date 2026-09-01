@@ -1,0 +1,11 @@
+package embox.driver.motor
+
+module motor_dev {
+	source "motor_dev.c"
+	source "motor_repo.c"
+
+	@IncludeExport(path="drivers")
+	source "motor.h"
+
+	depends embox.driver.pwm.pwm_dev
+}
