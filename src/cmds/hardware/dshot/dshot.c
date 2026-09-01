@@ -10,76 +10,71 @@
 
 #include <stdlib.h>
 #include <inttypes.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 
 #include <drivers/pwm.h>
+#include <drivers/motor.h>
 
-ARRAY_SPREAD_DECLARE(struct pwm_device *, __pwm_device_registry);
+#include "dshot.h"
+
+ARRAY_SPREAD_DECLARE(struct motor_dev *, __motor_device_registry);
+
+static uint16_t dshot_prepare_packet(uint16_t value, int telemetry) {
+	uint16_t frame;
+	uint16_t crc;
+
+	frame = (value << 1) | (telemetry ? 1 : 0);
+
+	crc = (frame ^ (frame >> 4) ^ (frame >> 8)) & 0x0F;
+	frame = (frame << 4) | crc;
+
+	return frame;
+}
 
 static void print_usage(void) {
 	printf("Usage:\n");
 	printf("\tdshot [-h] - print usage\n");
-	printf("\tdshot -i - Print info of PWM devices\n");
-	printf("\tdshot -p <pwm_id> <period> - setup period\n");
-	printf("\tdshot -f <pwm_id> <freq> - setup frequency (1/period)\n");
-	printf("\tdshot -d <pwm_id> <data (11 + 1 bits)>- data\n");
+	printf("\tdshot -i - Print info of dshot devices\n");
+	printf("\tdshot <command> <data (11 + 1 bits)> -m motor_id\n");	
+}
+
+static int dshot_beep1_send(struct motor_dev *motor_dev) {
+	uint16_t frame;
+	struct motor_msg msg = {0};
+
+	frame = dshot_prepare_packet(DSHOT_CMD_BEEP1, 0);
+	msg.mm_buf = &frame;
+	msg.mm_len = 2;
+
+	motor_send_msg(motor_dev, &msg);
+
+	return 0;
 }
 
 static void print_pwm_list(void) {
-	struct pwm_device *pwm_dev;
+	struct motor_dev *dev;
 
-	printf("PWM's list:\n");
-	array_spread_foreach(pwm_dev, __pwm_device_registry) {
-		int i;
-		const struct pwm_desc *pwmd_desc;
-	
-		pwmd_desc = pwm_dev->pwmd_desc;
-	
-		if (pwm_dev->pwmd_dma) {
-			printf("\tid(%d): addr(0x%" PRIxPTR ") freq(%d) "
-				"period(%" PRIu64 ": %d)\n",
-				pwm_dev->pwmd_id, pwmd_desc->pwmd_base_addr, pwm_dev->pwmd_base_freq,
-				pwm_dev->pwmd_max_period, pwm_dev->pwmd_period);
-			for (i = 0; i < pwm_dev_max_chan(pwm_dev); i++) {
-				if (pwmd_desc->pwmd_avail_chan_mask & (1 << i)) {
-					printf("\t\tchan(%d): ", i);
-					if (pwm_dev->pwmd_dma) {
-						printf(" dma(%x)", pwm_dev->pwmd_dma[i]);
-					} else {
-						printf(" dma(--)");
-					}
-					printf(" duty(%d) ", pwm_dev->pwmd_duty[i]);
-					if (pwmd_desc->pwmd_pin) {
-						printf("out_pin(PORT%d.%d)\n",
-							pwmd_desc->pwmd_pin[i].pd_port,
-							pwmd_desc->pwmd_pin[i].pd_pin);
-					} else {
-						printf("out_pin(not spec)\n");
-					}
-				}
-
-			}
-		}
+	printf("motor's list:\n");
+	array_spread_foreach(dev, __motor_device_registry) {
+		printf("motor(%d): pwm(%d) chan(%d) period(%d nS)\n", dev->md_id,
+						dev->md_pwm_id, dev->md_pwm_chan, dev->md_period);
 	}
 }
 
+
 int main(int argc, char **argv) {
 	int opt;
-	struct pwm_device *pwm_dev;
-	int id;
-	int stop = 0;
-	int err;
-	int period = 0;
-	int duty = 0;
-	int freq = 0;
+	struct motor_dev *motor_dev;
+	int id = -1;
 
 	if (argc == 1) {
 		print_usage();
 		return 0;
 	}
 
-	while (-1 != (opt = getopt(argc, argv, "hipdf"))) {
+	while (-1 != (opt = getopt(argc, argv, "him:"))) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
@@ -90,17 +85,8 @@ int main(int argc, char **argv) {
 		case 'i':
 			print_pwm_list();
 			return 0;
-		case 'D':
-			stop = 1;
-			break;
-		case 'p':
-			period = 1;
-			break;
-		case 'f':
-			freq = 1;
-			break;
-		case 'd':
-			duty = 1;
+		case 'm':
+			id = atoi(optarg);
 			break;
 		default:
 			print_usage();
@@ -108,71 +94,26 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	id = atoi(argv[2]);
-	pwm_dev = pwm_dev_by_id(id);
-	if (pwm_dev == NULL) {
+	if (id == -1) {
+		printf("Setup motor (PWM ID)\n");
+		print_usage();
+		return 0;
+	}
+
+	motor_dev = motor_dev_by_id(id);
+	if (motor_dev == NULL) {
 		printf("Invalid PWM ID %d\n", id);
 		print_pwm_list();
 		return -EINVAL;
 	}
 
-	if (stop) {
-		if (argc == 3) {
-			pwm_disable(pwm_dev, 0xFF);
-			printf("Diasbled PWM ID %d\n", id);
-		} else {
-			int chan;
-			chan = atoi(argv[3]);
-			pwm_disable(pwm_dev, chan);
-		}
-
+	if (!motor_dev->md_pwm_dev->pwmd_period) {
+		printf("Setup PWM period for %d\n", motor_dev->md_pwm_id);
 		return 0;
 	}
 
-	if (period) {
-		period = atoi(argv[3]);
-
-
-		err = pwm_set_period(pwm_dev, period);
-		if (err) {
-			return err;
-		}
-
-		printf("Set period PWM ID %d period(%d)\n", id, period);
-
-		return 0;
-	}
-
-	if (freq) {
-		freq = atoi(argv[3]);
-
-
-		err = pwm_set_frequency(pwm_dev, freq);
-		if (err) {
-			return err;
-		}
-
-		printf("Set period PWM ID %d freq(%d)\n", id, freq);
-
-		return 0;
-	}
-
-	if (duty) {
-		int chan =  atoi(argv[3]);
-
-		duty = atoi(argv[4]);
-
-
-		//pwm_disable(pwm_dev, 0xFF);
-	
-		err = pwm_set_duty(pwm_dev, chan, duty);
-		if (err) {
-			return err;
-		}
-
-		pwm_enable(pwm_dev, chan);
-
-		printf("Enabled PWM ID %d chan(%d) duty(%d)\n", id, chan, duty);
+	if (strcmp(argv[2], "beep1")) {
+		dshot_beep1_send(motor_dev);
 	}
 
 	return 0;
