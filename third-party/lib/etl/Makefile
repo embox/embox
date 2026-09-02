@@ -1,0 +1,35 @@
+PKG_NAME := etl
+PKG_VER  := 20.38.1
+
+PKG_SOURCES := https://github.com/ETLCPP/etl/archive/refs/tags/$(PKG_VER).tar.gz
+PKG_MD5 := skip  # ETL tarballs don’t usually provide md5sums; you can omit or compute one
+
+ETL_BUILD_DIR := $(MOD_BUILD_DIR)/build
+
+ETL_CMAKE_FLAGS = \
+	-DCMAKE_INSTALL_PREFIX=$(PKG_INSTALL_DIR) \
+	-DBUILD_SHARED_LIBS=OFF \
+	-DCMAKE_C_COMPILER_FORCED=on \
+	-DCMAKE_CXX_COMPILER_FORCED=on \
+	-DCMAKE_C_COMPILER_WORKS=true \
+	-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+	-DCMAKE_SYSTEM_PROCESSOR:STRING=$(AUTOCONF_TARGET_TRIPLET) \
+	-DCMAKE_C_COMPILER:PATH=$(EMBOX_GCC) \
+	-DCMAKE_CXX_COMPILER:PATH=$(EMBOX_GXX) \
+	-DCMAKE_AR:STRING=$(EMBOX_CROSS_COMPILE)ar \
+	-DCMAKE_SYSTEM_NAME:STRING=Generic \
+	-DCMAKE_BUILD_TYPE:STRING=None \
+	-DCMAKE_VERBOSE_MAKEFILE:BOOL=on
+
+# ETL is header-only, so build & install just copy headers
+$(CONFIGURE):
+	$(MKDIR) $(ETL_BUILD_DIR)
+	touch $@
+
+$(BUILD):
+	touch $@
+
+$(INSTALL):
+	$(MKDIR) $(PKG_INSTALL_DIR)/include
+	cp -r $(PKG_SOURCE_DIR)/include/etl $(PKG_INSTALL_DIR)/include/
+	touch $@
