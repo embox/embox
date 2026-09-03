@@ -40,11 +40,12 @@ struct pwm_desc {
 };
 
 struct dma_buffer {
-	void    *db_phy_addr;
-	void    *db_virt_addr;
-	int      db_size;
-	int      db_act_len;
-	uint32_t bd_flags;
+	void         *db_phy_addr;
+	void         *db_virt_addr;
+	void         *db_dest;
+	int           db_size;
+	volatile int  db_act_len;
+	uint32_t      bd_flags;
 };
 
 struct pwm_device {
