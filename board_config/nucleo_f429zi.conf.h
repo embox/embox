@@ -355,7 +355,7 @@ struct pwm_conf pwms[] = {
 				VAL("OUT3_CHAN", 4),
 			},
 			.irqs = {
-				VAL("DMA_OUT3", 65), /* DMA2_Stream5_IRQn */
+				VAL("DMA_OUT3", DMA2_Stream5_IRQn),
 			},
 			.clocks = {
 				VAL("TIM",  CLK_TIM4),
