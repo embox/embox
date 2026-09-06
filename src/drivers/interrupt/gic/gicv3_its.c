@@ -35,6 +35,11 @@
 #include <hal/cache.h>
 #include <hal/mem_barriers.h>
 #include <hal/reg.h>
+#include <kernel/task/kernel_task.h>
+#include <kernel/task/resource/mmap.h>
+#include <mem/mmap.h>
+#include <mem/vmem.h>
+#include <sys/mman.h>
 #include <util/log.h>
 
 #include "gic_base.h"
@@ -43,8 +48,6 @@
 #include "gicv3_its.h"
 
 #define ITS_BASE       OPTION_GET(NUMBER, its_base)
-#define ITS_LPI_TABLE_BASE OPTION_GET(NUMBER, lpi_table_base)
-#define ITS_GICD_TYPER (GICD_BASE + 0x0008)
 
 EMBOX_UNIT_INIT(its_init);
 
@@ -75,24 +78,31 @@ static struct {
 	} lpi_map[GIC_LPI_QUANTITY];
 } its;
 
-/* Driver-owned tables. The pending table is the only one with a
+/* Driver-owned ITS tables. The pending table is the only one with a
  * hardware alignment requirement: GICR_PENDBASER stores its address
- * shifted by 16 bits, so it must live 64K aligned. The ITS fetches
- * them over a non-coherent port and the redistributor updates the
- * pending table in place, so they live in an uncached identity
- * mapping instead of cached memory like the command queue. */
+ * shifted by 16 bits, so it must live 64K aligned.
+ *
+ * The LPI property and pending tables are placed at fixed physical
+ * addresses in a spare slice of DDR (prop 0xc0010000, pend 0xc0020000)
+ * and mapped identity as cacheable Normal memory, exactly like the
+ * reference bare-metal setup that was verified against this board. The
+ * ITS and redistributor fetch them over non-coherent ports, so every
+ * CPU-side write is flushed before the hardware may observe it and the
+ * pending table -- which the redistributor updates in place -- is
+ * invalidated before the CPU reads it. */
+#define ITS_LPI_PROP_BASE 0xc0010000UL
+#define ITS_LPI_PEND_BASE 0xc0020000UL
+
 static uint64_t its_cmdq[ITS_CMDQ_ENTRIES * 4] __attribute__((aligned(4096)));
 static uint64_t its_dev_table[ITS_DEV_TABLE_ENTRIES]
-    __attribute__((aligned(4096)));
+    __attribute__((aligned(16384)));
 static uint64_t its_coll_table[ITS_COLL_TABLE_ENTRIES]
     __attribute__((aligned(4096)));
 
-#define its_lpi_prop ((uint8_t *)ITS_LPI_TABLE_BASE)
-#define its_lpi_pend ((uint8_t *)ITS_LPI_TABLE_BASE + ITS_PROP_SIZE)
+static uint8_t *const its_lpi_prop = (uint8_t *)ITS_LPI_PROP_BASE;
+static uint8_t *const its_lpi_pend = (uint8_t *)ITS_LPI_PEND_BASE;
 
 PERIPH_MEMORY_DEFINE(its_regs, ITS_BASE, 0x20000);
-PERIPH_MEMORY_DEFINE(its_lpi_tables, ITS_LPI_TABLE_BASE,
-    ITS_PROP_SIZE + ITS_PEND_SIZE);
 
 static int its_wait_reg32(uintptr_t reg, uint32_t mask, uint32_t expect,
     unsigned int tries) {
@@ -123,7 +133,7 @@ static int its_quiescent(void) {
 
 static int its_cmd_post(const uint64_t cmd[4]) {
 	uint64_t *entry = &its_cmdq[its.cmd_tail * 4];
-	uint32_t offset = its.cmd_tail * 32;
+	uint32_t next_offset;
 	int ret;
 
 	memcpy(entry, cmd, 4 * sizeof(uint64_t));
@@ -132,13 +142,16 @@ static int its_cmd_post(const uint64_t cmd[4]) {
 	dcache_flush(entry, 4 * sizeof(uint64_t));
 	dsb(st);
 
+	/* CWRITER points at the next free slot, i.e. one past the entry
+	 * just written; that is what makes the entry consumable. Waiting
+	 * for CREADR to catch this offset means the command has drained. */
 	its.cmd_tail = (its.cmd_tail + 1) % ITS_CMDQ_ENTRIES;
-	REG32_STORE(ITS_BASE + GITS_CWRITER, offset);
+	next_offset = its.cmd_tail * 32;
+	REG32_STORE(ITS_BASE + GITS_CWRITER, next_offset);
 	dsb(st);
 
-	/* The queue drains strictly in order: CREADR catching up with the
-	 * offset just written means the command has been consumed. */
-	ret = its_wait_reg32(ITS_BASE + GITS_CREADR, 0xffffffff, offset, ITS_CMD_TRIES);
+	ret = its_wait_reg32(ITS_BASE + GITS_CREADR, 0xffffffff, next_offset,
+	    ITS_CMD_TRIES);
 	if (ret != 0) {
 		log_error("its: command %#llx timed out", (unsigned long long)cmd[0]);
 	}
@@ -157,7 +170,10 @@ static int its_cmd_sync(void) {
 }
 
 static int its_cmd_mapd(struct its_dev *dev) {
-	/* Size encodes log2 of the ITT entry count minus one. */
+	/* Size encodes log2 of the ITT entry count minus one. The ITT
+	 * address lives in the [47:8] field of word2; because the ITT is
+	 * 256-byte aligned its low byte is zero, so the raw 64-bit value
+	 * already places the address at the bit the ITS reads. */
 	const uint64_t cmd[4] = {ITS_CMD_MAPD
 	                             | ((uint64_t)dev->devid << ITS_CMD_DEVID_SHIFT),
 	    ITS_ITT_ENTRIES == 64 ? 5 : 0,
@@ -180,8 +196,16 @@ static int its_cmd_mapc(void) {
 	/* word2: collection id (0), redistributor reference, Valid. */
 	const uint64_t cmd[4] = {ITS_CMD_MAPC, 0,
 	    (its.rd_target << ITS_CMD_RDBASE_SHIFT) | ITS_CMD_VALID, 0};
+	int ret;
 
-	return its_cmd_post(cmd);
+	ret = its_cmd_post(cmd);
+	if (ret == 0) {
+		/* The collection mapping must be observable by later commands
+		 * on the target redistributor before MAPTI can use it. */
+		ret = its_cmd_sync();
+	}
+
+	return ret;
 }
 
 static int its_cmd_mapti(uint32_t devid, uint32_t eventid, unsigned int lpi_slot) {
@@ -231,17 +255,21 @@ static int its_lpi_tables_setup(void) {
 		return ret;
 	}
 
-	/* The tables live in the uncached identity mapping: stores
-	 * already reach memory the ITS and redistributor observe. */
+	/* The tables are cached normal memory: stores must be flushed to
+	 * memory before the ITS and redistributor observe them. */
 	memset(its_lpi_prop, 0, ITS_PROP_SIZE);
 	memset(its_lpi_pend, 0, ITS_PEND_SIZE);
+	dcache_flush(its_lpi_prop, ITS_PROP_SIZE);
+	dcache_flush(its_lpi_pend, ITS_PEND_SIZE);
 	dsb(st);
 
 	/* PROPBASER.IDbits carries (number of LPI INTID bits - 1). The
 	 * redistributor sizes its view of the property and pending
 	 * tables from this field: this board reports a useless value in
 	 * GICD_TYPER.IDbits, so like the reference firmware setup, program
-	 * the field for the 64K LPIs the tables are sized for. */
+	 * the field for the 64K LPIs the tables are sized for.
+	 * The tables are cached normal memory with write-back attrs, so the
+	 * cacheability fields keep the write-back the CPU uses. */
 	id_bits = ITS_LPI_IDBITS_MAX - 1;
 	log_info("its: PROPBASER.IDbits %u", id_bits);
 
@@ -268,10 +296,20 @@ static int its_lpi_tables_setup(void) {
 	return its_wait_rwp();
 }
 
-static uint64_t its_baser_reg(const void *table, size_t size, unsigned int type) {
-	uint64_t pages = (size + 0xfff) / 0x1000;
+static uint64_t its_baser_reg(const void *table, size_t size, unsigned int type,
+    uint64_t page_size) {
+	/* The device table must cover the full 16-bit DeviceID space the
+	 * ITS reports, so it spans 512KB and wants 16K pages (the largest
+	 * this GIC-600 accepts for it), exactly like the reference
+	 * bare-metal setup that was verified against it. The collection
+	 * table is small and stays on 4K pages. */
+	uint64_t pgsz;
+	uint64_t pages = (size + page_size - 1) / page_size;
+
+	pgsz = (page_size == 0x4000) ? 1ULL : 0ULL; /* 1 = 16K pages, 0 = 4K */
 
 	return (pages - 1) << ITS_BASER_SIZE_SHIFT
+	       | pgsz << ITS_BASER_PGSZ_SHIFT
 	       | (uint64_t)ITS_CACHE_RAWAWB << ITS_BASER_INNER_SHIFT
 	       | (uint64_t)type << ITS_BASER_TYPE_SHIFT
 	       | (uint64_t)ITS_CACHE_RAWAWB << ITS_BASER_OUTER_SHIFT
@@ -287,7 +325,7 @@ static int its_baser_setup(void) {
 	dsb(st);
 
 	reg = its_baser_reg(its_dev_table, sizeof(its_dev_table),
-	    ITS_BASER_TYPE_DEVICE);
+	    ITS_BASER_TYPE_DEVICE, 0x4000);
 	REG64_STORE(ITS_BASE + GITS_BASER(0), reg);
 	log_info("its: BASER0 devices %016llx -> %016llx", (unsigned long long)reg,
 	    (unsigned long long)REG64_LOAD(ITS_BASE + GITS_BASER(0)));
@@ -296,7 +334,7 @@ static int its_baser_setup(void) {
 	 * the collection type there and programming any other slot is
 	 * silently dropped, which wedges the command queue. */
 	reg = its_baser_reg(its_coll_table, sizeof(its_coll_table),
-	    ITS_BASER_TYPE_COLLECTION);
+	    ITS_BASER_TYPE_COLLECTION, 0x1000);
 	REG64_STORE(ITS_BASE + GITS_BASER(1), reg);
 	log_info("its: BASER1 collections %016llx -> %016llx", (unsigned long long)reg,
 	    (unsigned long long)REG64_LOAD(ITS_BASE + GITS_BASER(1)));
@@ -448,6 +486,10 @@ void gic_lpi_set_state(unsigned int irq, int enable) {
 	}
 
 	*prop = enable ? (ITS_LPI_PROP_ENABLE | ITS_LPI_PROP_PRIO) : 0;
+	/* The property table is cached Normal memory and the ITS fetches it
+	 * over a non-coherent port: the store must reach memory before the
+	 * ITS can observe the new enable bit. */
+	dcache_flush(prop, 1);
 	dsb(st);
 
 	/* The ITS caches property entries: an INV is required before a
@@ -458,6 +500,24 @@ void gic_lpi_set_state(unsigned int irq, int enable) {
 static int its_init(void) {
 	uint64_t typer;
 	int ret;
+
+	/* Map the LPI property and pending tables (a spare slice of DDR at
+	 * a fixed physical address) identity as cacheable Normal memory, so
+	 * the ITS fetches them over its non-coherent port with the same
+	 * write-back attributes the reference firmware setup programs into
+	 * PROPBASER/PENDBASER. Without PROT_NOCACHE the aarch64 MMU maps
+	 * it as Normal inner-shareable, matching the passing baseline. */
+	if (mmap_place(task_resource_mmap(task_kernel_task()), ITS_LPI_PROP_BASE,
+	    ITS_PROP_SIZE + ITS_PEND_SIZE, PROT_READ | PROT_WRITE)) {
+		log_error("its: mmap_place for LPI tables failed");
+		return 0;
+	}
+	if (vmem_map_region(vmem_current_context(), ITS_LPI_PROP_BASE,
+	    ITS_LPI_PROP_BASE, ITS_PROP_SIZE + ITS_PEND_SIZE,
+	    PROT_READ | PROT_WRITE)) {
+		log_error("its: vmem_map_region for LPI tables failed");
+		return 0;
+	}
 
 	typer = REG64_LOAD(ITS_BASE + GITS_TYPER);
 	its.pta = (unsigned int)((typer & GITS_TYPER_PTA) != 0);

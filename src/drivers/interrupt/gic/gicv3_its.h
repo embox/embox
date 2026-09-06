@@ -94,7 +94,8 @@
 #define ITS_CMD_MAPC    0x09
 #define ITS_CMD_MAPTI   0x0a
 #define ITS_CMD_INV     0x0c
-#define ITS_CMD_CLEAR   0x0d
+#define ITS_CMD_INVALL  0x0d
+#define ITS_CMD_CLEAR   0x04
 #define ITS_CMD_DISCARD 0x0f
 
 #define ITS_CMD_DEVID_SHIFT  32
@@ -105,9 +106,12 @@
 
 /* Sizing of the driver-owned memory. The tables must cover the whole
  * LPI INTID space the redistributor is programmed for, regardless of
- * how few interrupts are actually allocated. */
+ * how few interrupts are actually allocated. The ITS reports a 16-bit
+ * DeviceID (GITS_TYPER.DEVBITS=15), so the device table must span
+ * 65536 entries; a shorter table makes the ITS reject every MAPD and
+ * the device come back invalid. */
 #define ITS_CMDQ_ENTRIES       512  /* 16 KiB of 32-byte commands */
-#define ITS_DEV_TABLE_ENTRIES  2048 /* covers the PCIe requester id space */
+#define ITS_DEV_TABLE_ENTRIES  65536 /* full 16-bit DeviceID space */
 #define ITS_COLL_TABLE_ENTRIES 512  /* one 4K page of 8-byte entries */
 #define ITS_ITT_ENTRIES        64   /* per device, log2 - 1 goes to MAPD */
 #define ITS_ITT_POOL_SIZE      4096
