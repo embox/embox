@@ -29,3 +29,23 @@ module gicv3 extends embox.driver.interrupt.irqctrl_api {
 
 	depends embox.driver.periph_memory
 }
+
+	module gicv3_its {
+	option string log_level="LOG_INFO"
+
+	option number its_base /* ITS frame base address */
+	option number gicd_base /* GIC distributor base address */
+	option number gicr_base /* GIC redistributor frame of this CPU */
+	option number lpi_table_base /* uncached home of the LPI prop/pend tables */
+
+	@IncludeExport(path="drivers/interrupt/gic")
+	source "gic_lpi.h"
+
+	@IncludeExport(path="drivers/interrupt/gic")
+	source "gicv3_its.h"
+
+	source "gicv3_its.c"
+
+	@NoRuntime depends embox.driver.interrupt.gicv3
+	@NoRuntime depends embox.driver.periph_memory
+}
