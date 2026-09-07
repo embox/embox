@@ -1,0 +1,46 @@
+package embox.driver.net
+
+module dwc_eqos {
+	option string log_level="LOG_INFO"
+
+	option number rx_desc_quantity = 64
+	option number tx_desc_quantity = 64
+	option number rx_buf_size = 1600
+	option number pclk_hz = 100000000
+	option number txpbl = 32
+	option number rxpbl = 8
+
+	source "dwc_eqos.c"
+
+	depends embox.net.skbuff
+	depends embox.compat.libc.all
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.driver.net.phy
+	depends embox.net.entry_api
+	@NoRuntime depends embox.driver.periph_memory
+	@NoRuntime depends embox.driver.periph_memory_alloc
+	@NoRuntime depends embox.arch.mem_barriers
+}
+
+/* Rockchip RK3568 glue for dwc_eqos: CRU clocks, GRF interface
+ * mode / RGMII delays, pin iomux and PHY reset GPIOs. */
+module dwc_eqos_rk3568 {
+	option number cru_base = 0xFDD20000
+	option number grf_base = 0xFDC60000
+
+	source "dwc_eqos_rk3568.c"
+
+	@NoRuntime depends embox.driver.periph_memory
+}
+
+module rk3568_gmac {
+	option string log_level="LOG_ERR"
+
+	source "rk3568_gmac.c"
+
+	@NoRuntime depends dwc_eqos
+	@NoRuntime depends dwc_eqos_rk3568
+	depends embox.net.dev
+}

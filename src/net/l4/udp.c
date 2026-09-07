@@ -91,6 +91,7 @@ static int udp_rcv(struct sk_buff *skb) {
 		old_check = skb->h.uh->check;
 		udp_set_check_field(skb->h.uh, skb->nh.raw);
 		if (old_check != skb->h.uh->check) {
+			skb_free(skb);
 			return 0; /* error: bad checksum */
 		}
 	}
