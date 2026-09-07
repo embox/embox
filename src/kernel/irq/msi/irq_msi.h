@@ -82,7 +82,7 @@ struct msi_desc {
 
 extern struct msi_desc *msi_entry_alloc(void *dev, int nvec);
 
-extern void msi_entry_entry(struct msi_desc *entry);
+extern void msi_entry_free(struct msi_desc *entry);
 
 
 #endif /* SRC_KERNEL_IRQ_MSI_IRQ_MSI_H_ */

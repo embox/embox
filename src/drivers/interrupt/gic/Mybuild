@@ -44,8 +44,10 @@ module gicv3 extends embox.driver.interrupt.irqctrl_api {
 	source "gicv3_its.h"
 
 	source "gicv3_its.c"
+	source "gicv3_its_msi.c"
 
 	@NoRuntime depends embox.driver.interrupt.gicv3
+	@NoRuntime depends embox.driver.pci_msi
 	@NoRuntime depends embox.driver.periph_memory
 	@NoRuntime depends embox.mem.vmem_header
 	@NoRuntime depends embox.mem.mmap_header

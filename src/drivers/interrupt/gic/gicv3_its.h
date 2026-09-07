@@ -125,7 +125,9 @@
  * INTID bits - 1) -- must stay below it. */
 #define ITS_LPI_IDBITS_MAX     16
 
-#define ITS_MAX_DEVICES 4
+/* Simultaneously mapped functions: PCIe endpoints (one device id
+ * each) plus the synthetic devices of the its_test command. */
+#define ITS_MAX_DEVICES 8
 
 /* ITS API for message-based interrupt allocation */
 

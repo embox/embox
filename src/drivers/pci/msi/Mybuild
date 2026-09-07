@@ -9,5 +9,6 @@ module pci_msi {
 	source "pci_msi.h"
 
 	@NoRuntime depends embox.kernel.msi.irq_msi
+	@NoRuntime depends embox.arch.mem_barriers
 
 }
