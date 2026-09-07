@@ -18,6 +18,7 @@
 #include <drivers/pwm.h>
 #include <drivers/pin_description.h>
 #include <drivers/gpio.h>
+#include <drivers/niiet_dma.h>
 
 #include "niiet_pwm_priv.h"
 #include "niiet_pwm_regs.h"
@@ -141,6 +142,10 @@ static int niiet_pwm_init(struct pwm_device *dev) {
 
             niiet_pwm_outen((void *)dev->pwmd_desc->pwmd_base_addr, i);
         }
+        if (dev->pwmd_dma && NIIET_PWM_DMA_EN(dev->pwmd_dma[i])) {
+            niiet_dma_init(NIIET_PWM_DMA_NUM(dev->pwmd_dma[i]));
+            pwm_dma_config(dev, i, priv->dma_buffer[i], NIIET_PWM_DMA_BUF_SIZE);
+        }
     }
 
     dev->pwmd_base_freq = (SYS_CLOCK / niiet_pwm_check_clk_div(priv));
@@ -213,10 +218,16 @@ static int niiet_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty) {
     return 0;
 }
 
+static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
+	    int duty_ns[], int size) {
+    return 0;
+}
+
 struct pwm_ops niiet_pwm_ops = {
     .pwmo_init   = niiet_pwm_init,
     .pwmo_set_period = niiet_pwm_set_period,
     .pwmo_set_duty = niiet_pwm_set_duty,
+    .pwmo_set_duty_array = niiet_pwm_set_duty_array,
     .pwmo_enable = niiet_pwm_enable,
     .pwmo_disable = niiet_pwm_disable
 };
