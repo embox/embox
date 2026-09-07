@@ -1,0 +1,22 @@
+package embox.cmd.fs
+
+@AutoCmd
+@Cmd(name = "blkdump",
+	help = "Dump blocks of a block device in hex",
+	man = '''
+		NAME
+			blkdump - dump blocks of a block device in hex
+		SYNOPSIS
+			blkdump [-s lba] [-n count] dev
+		DESCRIPTION
+			Reads count 512-byte blocks of dev starting at lba and
+			prints a hex dump with a per block word checksum.
+	''')
+module blkdump {
+	source "blkdump.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.index_descriptor
+	@NoRuntime depends embox.compat.posix.file_system
+}

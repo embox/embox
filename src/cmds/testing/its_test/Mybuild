@@ -1,0 +1,30 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "its_test",
+     help = "GICv3 ITS command queue and LPI delivery self test",
+     man  = '''
+		NAME
+			its_test - exercise the ITS command queue and LPI delivery
+		SYNOPSIS
+			its_test
+		DESCRIPTION
+			Maps a dev_cnt x evt_cnt grid of synthetic devices and
+			events onto LPIs through the ITS, then injects INT
+			commands and checks that every LPI reaches its own
+			handler, that disabled LPIs stay silent and that
+			re-enabled LPIs fire again.
+			Requires an interrupt controller with an ITS (e.g. a
+			GIC-600) and the embox.driver.interrupt.gicv3_its
+			driver.
+	''')
+module its_test {
+	option number dev_cnt = 4
+	option number evt_cnt = 8
+
+	source "its_test.c"
+
+	depends embox.driver.interrupt.gicv3_its
+	depends embox.kernel.irq
+	depends embox.compat.libc.stdio.printf
+}

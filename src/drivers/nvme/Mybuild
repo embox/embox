@@ -1,0 +1,16 @@
+package embox.driver
+
+module nvme {
+	option string log_level="LOG_INFO"
+	option number ctrl_quantity = 2
+	option boolean msi_mode = false
+
+	source "nvme.c"
+
+	depends embox.driver.pci
+	depends embox.driver.block_dev
+
+	@NoRuntime depends embox.driver.pci_msi
+	@NoRuntime depends embox.driver.periph_memory
+	@NoRuntime depends embox.arch.mem_barriers
+}

@@ -37,3 +37,39 @@ module gpex extends pci_chip {
 	@IncludeExport(path="drivers/pci/pci_chip")
 	source "pci_utils.h"
 }
+
+module pcie_dw extends pci_chip {
+	option string log_level="LOG_INFO"
+
+	/* Generic DesignWare host backend. Two controllers; each link is
+	 * trained by the firmware (board U-Boot preboot runs 'pci enum'
+	 * before the kernel is loaded), so an instance is optional and can
+	 * be disabled by leaving its bases at zero. The default values are
+	 * the RK3568 pcie2x1 (controller 0) and pcie3x2 (controller 1). */
+	option number apb0_base = 0xFE260000
+	option number dbi0_base = 0x3C0000000
+	option number cfg0_base = 0xF4000000
+	option number mem0_base = 0xF4200000
+	option number mem0_size = 0x1E00000
+	option number bus0_base = 0
+	option number intx0_irq = 104
+
+	option number apb1_base = 0xFE280000
+	option number dbi1_base = 0x3C0800000
+	option number cfg1_base = 0xF0000000
+	option number mem1_base = 0xF0200000
+	option number mem1_size = 0x1E00000
+	option number bus1_base = 2
+	option number intx1_irq = 194
+
+	/* MSI/MSI-X doorbell (GITS_TRANSLATER) routed inbound. */
+	option number doorbell_base = 0xFD450000
+	option number doorbell_size = 0x1000
+
+	source "pcie_dw.c"
+
+	@IncludeExport(path="drivers/pci/pci_chip")
+	source "pci_utils.h"
+
+	@NoRuntime depends embox.driver.periph_memory
+}
