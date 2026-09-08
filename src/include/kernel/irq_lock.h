@@ -11,7 +11,13 @@
 
 #include <hal/ipl.h>
 #include <kernel/critical.h>
+#include <kernel/cpu/cpudata.h>
 #include <util/lang.h>
+
+/* The interrupt state irq_lock() saves is the saving core's own. It used to
+ * be one global, so two cores in irq_lock() at once handed each other their
+ * DAIF. */
+extern ipl_t __irq_lock_ipl __cpudata__;
 
 /**
  * Locks hardware interrupt.
@@ -22,10 +28,19 @@
  * Each lock must be balanced with the corresponding unlock.
  */
 static inline void irq_lock(void) {
-	extern ipl_t __irq_lock_ipl;
+	/* Mask first. Both questions below are per-CPU -- am I already inside an
+	 * irq_lock, and where do I stash the caller's interrupt state -- and this
+	 * is the one place where they are asked with interrupts still on. On the
+	 * nested path the save is redundant (already masked) and its value is
+	 * dropped.
+	 *
+	 * irq_unlock() needs no such change: it is entered with the count
+	 * non-zero and interrupts masked, and does not unmask until after its last
+	 * cpudata read. */
+	ipl_t ipl = ipl_save();
 
 	if (!critical_inside(CRITICAL_IRQ_LOCK)) {
-		__irq_lock_ipl = ipl_save();
+		cpudata_var(__irq_lock_ipl) = ipl;
 	}
 
 	critical_enter(CRITICAL_IRQ_LOCK);
@@ -38,12 +53,10 @@ static inline void irq_lock(void) {
  * @see irq_lock()
  */
 static inline void irq_unlock(void) {
-	extern ipl_t __irq_lock_ipl;
-
 	critical_leave(CRITICAL_IRQ_LOCK);
 
 	if (!critical_inside(CRITICAL_IRQ_LOCK)) {
-		ipl_restore(__irq_lock_ipl);
+		ipl_restore(cpudata_var(__irq_lock_ipl));
 		/* We know there is no level more critical than the IRQ lock. */
 		critical_dispatch_pending();
 	}

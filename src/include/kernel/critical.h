@@ -135,6 +135,7 @@
 #ifndef __ASSEMBLER__
 
 #include <linux/compiler.h>
+#include <hal/ipl.h>
 #include <kernel/cpu/bkl.h>
 #include <kernel/cpu/cpudata.h>
 
@@ -167,25 +168,82 @@ static inline void __critical_count_sub(unsigned long count) {
 	critical_count() -= count;
 }
 
+/* The count is per-CPU and the caller may be preemptible -- a zero count is
+ * exactly what these two are asked to confirm. Unmasked, cpudata_var() can
+ * land on the core the thread just left. */
 static inline int critical_allows(unsigned int level) {
-	return !(critical_count() & (level | __CRITICAL_HARDER(level)));
+	unsigned int cur;
+	ipl_t ipl;
+
+	ipl = ipl_save();
+	cur = critical_count();
+	ipl_restore(ipl);
+
+	return !(cur & (level | __CRITICAL_HARDER(level)));
 }
 
 static inline int critical_inside(unsigned int level) {
-	return critical_count() & level;
+	unsigned int cur;
+	ipl_t ipl;
+
+	ipl = ipl_save();
+	cur = critical_count();
+	ipl_restore(ipl);
+
+	return cur & level;
 }
 
+/* Raising the count and taking the lock must look like one step to this CPU's
+ * own interrupts, or a handler that lands between them reads a count that
+ * promises a lock nobody holds. Only the outermost entry pays for the mask,
+ * and only across the acquisition -- the wait runs at the caller's interrupt
+ * level, with the count still zero, which a handler reads correctly. */
 static inline void critical_enter(unsigned int level) {
-	__critical_count_add(__CRITICAL_COUNT(level));
-	if (critical_count() == __CRITICAL_COUNT(level)) {
-		bkl_lock();
+	unsigned int count = __CRITICAL_COUNT(level);
+	unsigned int cur;
+	ipl_t ipl;
+
+	/* cpudata_var() is `ask which CPU, then address that CPU's copy`; a
+	 * zero-count thread can be preempted between the two, onto another CPU.
+	 * Masking interrupts is the fix: the handler is the only way into the
+	 * scheduler from here. */
+	ipl = ipl_save();
+	cur = critical_count();
+
+	if (cur & __CRITICAL_BKL_MASK) {
+		/* Nested, so this CPU holds the lock and cannot be preempted out of
+		 * it. The mask above makes the read that said so this CPU's own; the
+		 * count needs no protection once non-zero. */
+		bkl_assert_owned(cur, count, __builtin_return_address(0));
+		__critical_count_add(count);
+		ipl_restore(ipl);
+		return;
 	}
+
+	while (!bkl_trylock()) {
+		ipl_restore(ipl);
+		bkl_wait();
+		ipl = ipl_save();
+	}
+	__critical_count_add(count);
+	ipl_restore(ipl);
 }
 
 static inline void critical_leave(unsigned int level) {
-	if (critical_count() == __CRITICAL_COUNT(level))
-		bkl_unlock();
-	__critical_count_sub(__CRITICAL_COUNT(level));
+	unsigned int count = __CRITICAL_COUNT(level);
+	unsigned int cur = critical_count();
+	ipl_t ipl;
+
+	if ((cur & __CRITICAL_BKL_MASK) != count) {
+		bkl_assert_owned(cur, count, __builtin_return_address(0));
+		__critical_count_sub(count);
+		return;
+	}
+
+	ipl = ipl_save();
+	__critical_count_sub(count);
+	bkl_unlock();
+	ipl_restore(ipl);
 }
 
 static inline int critical_pending(struct critical_dispatcher *d) {

@@ -7,4 +7,4 @@
 
 #include <kernel/irq_lock.h>
 
-ipl_t __irq_lock_ipl;
+ipl_t __irq_lock_ipl __cpudata__;
