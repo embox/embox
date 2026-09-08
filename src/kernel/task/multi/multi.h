@@ -25,6 +25,10 @@ struct thread;
 
 struct task {
 	int status;
+	/* `status' is what the parent's waitpid() looks at, so it cannot double as
+	 * "somebody is already exiting this task" -- see task_do_exit(). This is
+	 * that latch, and only that. */
+	int tsk_exiting;
 	int tsk_id;
 
 	struct task *parent;

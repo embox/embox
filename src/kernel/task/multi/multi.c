@@ -22,11 +22,14 @@
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource.h>
+#include <kernel/task/resource/waitpid.h>
+#include <kernel/sched/waitq.h>
 #include <kernel/task/resource/errno.h>
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
 #include <util/binalign.h>
 #include <util/err.h>
+#include <util/atomic_rmw.h>
 
 #if OPTION_GET(NUMBER, task_quantity)
 extern struct thread *main_thread_create(unsigned int flags, size_t stack_sz,
@@ -298,6 +301,7 @@ void task_init(struct task *tsk, int id, struct task *parent, const char *name,
 
 	tsk->tsk_id = id;
 	tsk->status = 0;
+	tsk->tsk_exiting = 0;
 
 	dlist_init(&tsk->child_list);
 	dlist_head_init(&tsk->child_lnk);
@@ -345,10 +349,49 @@ void task_do_exit(struct task *task, int status) {
 
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
+	/* The first exit decides; the rest only find out.
+	 *
+	 * thread_terminate() below cannot stop a thread that is running on another
+	 * core. It takes the schedee out of the run queue and marks it, and the
+	 * thread carries on until it next schedules -- there is no interrupting a
+	 * core from here. So while one thread tears the task down, another can
+	 * still reach the end of its own function, and task_trampoline() ends by
+	 * calling task_exit() again, with the return value of a thread whose task
+	 * is already gone.
+	 *
+	 * POSIX says the same thing about exit(): whichever thread calls it decides
+	 * the status, and a later return from another thread does not change it. */
+	if (atomic_rmw_exchange(&task->tsk_exiting, 1, __ATOMIC_ACQ_REL)) {
+		/* Nothing left to tear down and nothing to say about the status. Stop
+		 * this thread anyway: the caller goes on to task_finish_exit(), whose
+		 * schedule() must not come back. */
+		thread_terminate(thread_self());
+		return;
+	}
+
+	/* Only past the latch: by the time a second thread gets here the first has
+	 * already unregistered the main thread, which sets tsk_main to NULL. */
 	main_thr = task->tsk_main;
 	assert(main_thr);
 
-	task->status = status;
+	/* Stop the threads BEFORE taking the resources away from them.
+	 *
+	 * Upstream deinitialises the resources first -- files, the task heap, the
+	 * lot -- and terminates the threads afterwards. On one core that order is
+	 * invisible, because no other thread of the task can be running while this
+	 * one is inside task_do_exit(). On four it is exactly backwards: the other
+	 * threads are running, and what is being pulled out from under them is the
+	 * heap their next free() looks in.
+	 *
+	 * thread_terminate() still cannot stop a thread that is running on another
+	 * core this instant -- it takes the schedee out of the run queue and marks
+	 * it, and the thread carries on until it next schedules. So this narrows
+	 * the window rather than closing it; what closes it for a given thread is
+	 * joining it, which is what its creator is for. */
+	dlist_foreach_entry(thr, &main_thr->thread_link, thread_link) {
+		thread_terminate(thr);
+		thread_delete(thr);
+	}
 
 	/* Deinitialize all resources */
 	task_resource_deinit(task);
@@ -357,18 +400,31 @@ void task_do_exit(struct task *task, int status) {
 	 * It is made by simply setting up the parent task of each child to kernel_task. */
 	task_make_children_daemons(task);
 
-	/*
-	 * Terminate all threads except main thread. If we terminate current
-	 * thread then until we in sched_lock() we continue processing
-	 * and our thread structure is not freed.
-	 */
-	dlist_foreach_entry(thr, &main_thr->thread_link, thread_link) {
-		thread_terminate(thr);
-		thread_delete(thr);
-	}
-
 	/* At the end terminate main thread */
 	thread_terminate(main_thr);
+
+	/* Only now may the parent collect this task.
+	 *
+	 * `struct task' is not allocated on its own -- task_create() carves it out
+	 * of the main thread's stack, so freeing the main thread frees the task
+	 * with it. task_collect() reaps any child whose status carries
+	 * TASKST_EXITED_MASK and calls task_delete(), which does exactly that free.
+	 *
+	 * Upstream sets the status first and wakes the parent from the middle of
+	 * task_resource_deinit() (the waitpid resource's deinit op), both long
+	 * before the threads are torn down. On one core that is harmless, because
+	 * the parent cannot run until the exiting thread blocks. On four it is a
+	 * use-after-free of the task and of the main thread.
+	 *
+	 * So the status is published here, after every thread of the task has been
+	 * terminated, and the parent is woken here rather than from a resource
+	 * deinit that runs in the middle of the teardown. Whoever is still standing
+	 * on a stack is parked by thread_delete() as before. */
+	atomic_rmw_store(&task->status, status, __ATOMIC_RELEASE);
+
+	if (task->parent) {
+		waitq_wakeup_all(task_resource_waitpid(task->parent));
+	}
 }
 
 void task_start_exit(void) {

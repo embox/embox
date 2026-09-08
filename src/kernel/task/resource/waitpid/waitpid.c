@@ -28,17 +28,14 @@ static void task_waitpid_init(const struct task *task,
 }
 
 static void task_waitpid_deinit(const struct task *task) {
-	struct waitq *waitq;
-	struct task *parent;
-
+	/* This used to wake the parent here.
+	 *
+	 * Resource deinit runs in the middle of task_do_exit(), before a single
+	 * thread of the task has been stopped, and the first thing the woken
+	 * parent does is task_collect() -> task_delete(), which frees the main
+	 * thread and, with it, the `struct task' that lives on its stack. The
+	 * wakeup now happens at the end of task_do_exit(), where it is true. */
 	assert(task);
-	parent = task_get_parent(task);
-	assert(parent);
-
-	waitq = task_resource_waitpid(parent);
-	assert(waitq != NULL);
-
-	waitq_wakeup_all(waitq);
 }
 
 static size_t task_waitpid_offset;
