@@ -1,0 +1,32 @@
+package project.dronecan.examples
+
+@AutoCmd
+@Cmd(name="SimpleNode",help="")
+@BuildDepends(project.dronecan.libcanard)
+@BuildDepends(project.dronecan.drivers.canard_embox)
+module SimpleNode {
+    @IncludeExport(path="")
+    source "uavcan.protocol.NodeStatus.h"
+
+    @IncludeExport(path="")
+    source "uavcan.protocol.GetNodeInfo.h"
+
+    @IncludeExport(path="")
+    source "uavcan.protocol.GetNodeInfo_req.h"
+
+    @IncludeExport(path="")
+    source "uavcan.protocol.GetNodeInfo_res.h"
+
+    @IncludeExport(path="")
+    source "uavcan.protocol.HardwareVersion.h"
+
+    @IncludeExport(path="")
+    source "uavcan.protocol.SoftwareVersion.h"
+
+    source "simple_node.c"
+    source "uavcan.protocol.NodeStatus.c"
+    source "uavcan.protocol.GetNodeInfo_res.c"
+
+	@NoRuntime depends project.dronecan.libcanard
+    @NoRuntime depends project.dronecan.drivers.canard_embox
+}
