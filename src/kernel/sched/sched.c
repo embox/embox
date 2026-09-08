@@ -364,7 +364,15 @@ static inline void __sched_wakeup_smp_inactive(struct schedee *s) {
 
 /** Called with IRQs off and thread lock held. */
 int __sched_wakeup(struct schedee *s) {
-	int was_waiting = (s->waiting && s->waiting != TW_SMP_WAKING);
+	int was_waiting;
+
+	/* Refuse before touching `waiting`. Clearing it on the fast path below is
+	 * enough on its own to get an exited thread enqueued by __schedule(). */
+	if (atomic_rmw_load(&s->finished, __ATOMIC_ACQUIRE)) {
+		return 0;
+	}
+
+	was_waiting = (s->waiting && s->waiting != TW_SMP_WAKING);
 
 #ifdef SMP /* XXX */
 	if(s->type == SCHEDEE_THREAD){
@@ -399,8 +407,19 @@ int sched_wakeup(struct schedee *s) {
 	return SPIN_IPL_PROTECTED_DO(&s->lock, __sched_wakeup(s));
 }
 
+/* Stored under sched_lock(), read under s->lock, so
+ * the release is what carries the thread's own state to the reader. */
+void sched_finished(struct schedee *s) {
+	assert(s);
+	atomic_rmw_store(&s->finished, 1, __ATOMIC_RELEASE);
+}
+
 /** Locks: IPL. */
 static void __sched_activate(struct schedee *s) {
+	/* In use again, so not releasable. Set before `active`, so that the two
+	 * are never both "finished" at once. */
+	s->released = false;
+	smp_stmembar();
 	s->active = true;
 }
 
@@ -410,9 +429,20 @@ static void __sched_deactivate(struct schedee *s) {
 	s->active = false;
 	smp_membar();  /* __sched_wakeup_smp_inactive: ST waiting / LD active */
 #ifdef SMP
-	spin_protected_if (&s->lock, (s->waiting == TW_SMP_WAKING))
+	/* A wakeup deferred to here is the last chance to put a schedee back on
+	 * the runqueue -- for one whose owner has exited it is the wrong one: what
+	 * comes back carries a critical count from a thread_exit() that is never
+	 * unwound. */
+	spin_protected_if (&s->lock,
+	    (s->waiting == TW_SMP_WAKING)
+	        && !atomic_rmw_load(&s->finished, __ATOMIC_ACQUIRE))
 		__sched_wakeup_waiting(s);
 #endif /* SMP */
+
+	/* The last touch of `s` on this CPU. Only now may somebody else free the
+	 * memory it lives in. Release, so that everything above is visible to
+	 * whoever sees this. */
+	atomic_rmw_store(&s->released, 1, __ATOMIC_RELEASE);
 }
 
 void sched_finish_switch(struct schedee *prev) {
