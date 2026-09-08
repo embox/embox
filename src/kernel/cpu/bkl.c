@@ -56,6 +56,20 @@ void bkl_wait(void) {
 	}
 }
 
+/* What the interrupt entry saw, per image rather than per CPU:
+ *
+ *   irq_total    interrupts served
+ *   irq_zero     ... of them, arriving on a zero critical count
+ *   irq_nested   ... of them, arriving on a count that promises this lock
+ *   irq_unowned  ... of those, without this CPU holding it, which is a defect
+ *
+ * Plain counters, on a path that already reads the owner: only whether they
+ * are zero says anything. */
+unsigned long bkl_irq_nested;
+unsigned long bkl_irq_unowned;
+unsigned long bkl_irq_total;
+unsigned long bkl_irq_zero;
+
 int bkl_owned(void) {
 	return bkl_owner == cpu_get_id();
 }

@@ -12,6 +12,8 @@
 #include <util/field.h>
 #include <util/log.h>
 
+#include <hal/cpu.h>
+
 #include "exception.h"
 
 static void print_abort_syndrome(uint32_t syndrome) {
@@ -96,6 +98,12 @@ void _NORETURN aarch64_sync_handler(struct excpt_context *ctx) {
 	class = FIELD_GET(esr, ESR_ELn_EC);
 	syndrome = FIELD_GET(esr, ESR_ELn_ISS);
 
+#ifdef SMP
+	/* Before the first character of the dump: the other cores are running
+	 * over the console it uses and over the state that explains the fault */
+	smp_stop_others();
+#endif
+
 	switch (class) {
 	case ESR_ELn_EC_INST_ABT:
 		log_raw(LOG_EMERG, "\nInstruction abort exception!\n");
@@ -118,5 +126,10 @@ void _NORETURN aarch64_sync_handler(struct excpt_context *ctx) {
 	}
 
 	aarch64_print_excpt_context(ctx);
+
+#ifdef SMP
+	smp_print_stopped();
+#endif
+
 	while (1) {};
 }
