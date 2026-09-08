@@ -24,7 +24,9 @@ int mmc_try_sd(struct mmc_host *host) {
 	}
 	uint32_t resp[4];
 	uint64_t size;
-	int retry = 5;
+	/* 5 x 10 ms is 50 ms; the SD spec allows a card a
+	 * full second to leave idle. */
+	int retry = 100;
 
 	mmc_send_cmd(host, SD_CMD_SEND_IF_COND, 0x1AA, MMC_RSP_R7, resp);
 
