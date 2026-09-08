@@ -415,37 +415,104 @@ void sched_start_switch(struct schedee *next) {
 	__sched_activate(next);
 }
 
+#ifdef SMP
+/**
+ * Reads of the run queue made by a CPU that did not hold rq.lock.
+ *
+ * The defect this counts is not that the crash is likely -- it is that the
+ * read is unprotected at all, and that is a property, not a race to wait for.
+ * It is exactly the number of unprotected reads: zero or it is not.
+ */
+unsigned long runq_unlocked_reads;
+
+static inline void runq_note_unlocked_read(void) {
+	if (rq.lock.owner != cpu_get_id()) {
+		atomic_rmw_add_fetch(&runq_unlocked_reads, 1, __ATOMIC_RELAXED);
+	}
+}
+#endif /* SMP */
+
 static void sched_ticker_update(void) {
 	struct schedee *cur, *next;
+#ifdef SMP
+	unsigned int wake_mask = 0;
+	int add_ticker;
+	ipl_t ipl;
+#else
 	int cur_prio, next_prio;
+#endif
 
 	cur = schedee_get_current();
 
+#ifdef SMP
+	/* Everything this function reads out of the run queue is read under the
+	 * queue's lock, and everything it then does about it happens after the
+	 * lock is dropped.
+	 *
+	 * It used to read all of it with no lock at all, on the grounds that
+	 * __schedule() runs under the BKL. That is true and not enough: a runq
+	 * mutation only needs rq.lock, and the paths that take rq.lock through
+	 * spin_lock_ipl() raise CRITICAL_PREEMPT_LOCK, the one critical level that
+	 * deliberately does not take the BKL (priority inheritance is the common
+	 * one). So "under the BKL" never meant "alone with the queue".
+	 *
+	 * The lock goes here and not around the whole function because
+	 * sched_ticker_add/del() walk the timer list, and the timer list is
+	 * reached from paths that then take rq.lock -- holding rq.lock across them
+	 * would invert that. So: read, decide, unlock, act. `add_ticker` and
+	 * `wake_mask` are what the decision needs to survive the unlock; `next`
+	 * itself must not, which is why nothing below dereferences it. */
+	ipl = spin_lock_ipl(&rq.lock);
+	runq_note_unlocked_read();
+
+	/* An empty queue is the common case -- "this core has nothing else to
+	 * run" -- and it makes both walks below return NULL and the NCPU loop find
+	 * nothing. rq_nr_ready answers it in one load.
+	 *
+	 * Measured: this is a quarter of everything the BKL is held for. */
+	if (rq_nr_ready == 0) {
+		spin_unlock_ipl(&rq.lock, ipl);
+		sched_ticker_del();
+		return;
+	}
+
 	next = runq_get_next(&rq.queue);
-	
-#ifdef SMP /* XXX */
+
 	/**
 	 * If runq_get_next() returns NULL which means the current cpu can't
 	 * get any threads to run. But it doesn't mean other cpu can not get
 	 * threads to run in SMP situation. So at least for current cpu, it's
 	 * no need for thread switching, just delete the sched_tick in current
 	 */
-	if(next == NULL) {
+	if (next == NULL) {
 		next = runq_get_next_ignore_affinity(&rq.queue);
-		extern void smp_send_resched(int cpu_id);
-		if(next != NULL) {
-			unsigned int affinity_mask = sched_affinity_get(&next->affinity);
-			for(int cpuid = 0, mask = affinity_mask; mask != 0; mask = mask >> 1, cpuid++) {
-				if((mask & 0x1) && \
+		if (next != NULL) {
+			wake_mask = (unsigned int)sched_affinity_get(&next->affinity);
+		}
+		spin_unlock_ipl(&rq.lock, ipl);
+
+		if (wake_mask != 0) {
+			extern void smp_send_resched(int cpu_id);
+			unsigned int mask;
+			int cpuid;
+
+			/* Bounded by NCPU, not by the mask: an unbound schedee carries
+			 * SCHEDEE_AFFINITY_NONE = ~0, and cpu_get_idle() past NCPU
+			 * indexes past the cpudata section. */
+			for (cpuid = 0, mask = wake_mask; mask != 0 && cpuid < NCPU;
+			     mask = mask >> 1, cpuid++) {
+				if ((mask & 0x1) &&
 				/**
 				 * In situation for example, threads all have affinity to cpu A
 				 * but first actual scheduling happens on cpu B. CPU A will never
 				 * get a chance to add it's own sched_tick_timer, which means
 				 * CPU A will never wake up clock_hander'bottom half never scheduling
 				 */
-				0 == (((struct sys_timer*)sched_ticker_get_timer())->timer_sharing->shared_cpu & affinity_mask) && \
+				0 == (((struct sys_timer*)sched_ticker_get_timer())->timer_sharing->shared_cpu & wake_mask) && \
+				/* A CPU that has not run cpu_init() has no idle thread */
+				cpu_get_idle(cpuid) != NULL && \
 				/* check target cpu is on idle thread for safety */
-				cpu_get_idle(cpuid)->schedee.active == 0x1){
+				cpu_get_idle(cpuid)->schedee.active == 0x1) {
 				   smp_send_resched(cpuid);
 				}
 			}
@@ -453,7 +520,19 @@ static void sched_ticker_update(void) {
 		sched_ticker_del();
 		return;
 	}
-#endif
+
+	/* We only need re-schedule by ticker only if there is
+	 * an active schedee with the same priority in runq. */
+	add_ticker = (cur != next)
+	             && (schedee_priority_get(cur) == schedee_priority_get(next));
+
+	spin_unlock_ipl(&rq.lock, ipl);
+
+	if (add_ticker) {
+		sched_ticker_add();
+	}
+#else /* !SMP */
+	next = runq_get_next(&rq.queue);
 
 	cur_prio = schedee_priority_get(cur);
 	next_prio = schedee_priority_get(next);
@@ -462,9 +541,21 @@ static void sched_ticker_update(void) {
 	 * an active schedee with the same priority in runq. */
 	if (cur != next && cur_prio == next_prio) {
 		sched_ticker_add();
-	} else {
-		sched_ticker_del();
 	}
+#endif /* SMP */
+	/* And otherwise it is left alone.
+	 *
+	 * Deleting it here is what the shape of the decision suggests, but the
+	 * decision flips with the queue -- three workers of equal priority make it
+	 * true, the last one finishing makes it false -- so on a fork/join workload
+	 * it was one timer-list insertion and one removal per context switch, each
+	 * a walk of the list with the BKL held. A tick that is not needed costs one
+	 * interrupt per tick_interval and nothing else; the churn cost a measurable
+	 * share of the lock.
+	 *
+	 * The tick is still removed when this core has nothing to run at all -- the
+	 * fast path at the top -- which is the case that matters, because that is
+	 * when the core is about to sit in WFI. */
 }
 
 /** locks: sched */
