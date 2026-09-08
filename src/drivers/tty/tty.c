@@ -37,8 +37,15 @@ static inline void tty_out_wake(struct tty *t) {
 
 /* called from mutex locked context */
 static int tty_output(struct tty *t, char ch) {
-	// TODO locks? context? -- Eldar
-	int len = termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+	int len;
+	ipl_t ipl;
+
+	/* Filled here from a thread, drained by tty_out_getc() from the transmit
+	 * interrupt on another core. */
+	ipl = tty_ring_lock(t);
+	len = termios_putc(&t->termios, ch, &t->o_ring, t->o_buff,
+	    TTY_IO_BUFF_SZ);
+	tty_ring_unlock(t, ipl);
 
 	if (len > 0) {
 		MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
@@ -56,8 +63,16 @@ static void tty_rx_do(struct tty *t) {
 	    TTY_IO_BUFF_SZ);
 
 	while ((ich = tty_rx_dequeue(t)) != -1) {
-		int result = termios_input(&t->termios, (char)ich, &b, &t->o_ring,
+		int result;
+		ipl_t ipl;
+
+		/* i_ring, i_canon_ring and o_ring at once. Outside the section,
+		 * because both of the calls below can reach the scheduler: one unlocks
+		 * the mutex, the other wakes a poller. */
+		ipl = tty_ring_lock(t);
+		result = termios_input(&t->termios, (char)ich, &b, &t->o_ring,
 		    t->o_buff, TTY_IO_BUFF_SZ);
+		tty_ring_unlock(t, ipl);
 
 		if (result & TERMIOS_RES_GOT_ECHO) {
 			MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
@@ -98,7 +113,11 @@ size_t tty_read(struct tty *t, char *buff, size_t size, int flags) {
 		termios_i_buff_init(&b, &t->i_ring, t->i_buff, &t->i_canon_ring,
 		    TTY_IO_BUFF_SZ);
 
-		next = termios_read(&t->termios, &b, curr, end);
+		{
+			ipl_t ipl = tty_ring_lock(t);
+			next = termios_read(&t->termios, &b, curr, end);
+			tty_ring_unlock(t, ipl);
+		}
 
 		count = next - curr;
 		curr = next;
@@ -119,7 +138,15 @@ size_t tty_read(struct tty *t, char *buff, size_t size, int flags) {
 			 * tty_rx_locked can be called already. */
 			ipl = ipl_save();
 			{
-				if (ring_empty(&t->rx_ring)) {
+				int empty;
+
+				/* The check is inside, the wait is
+				 * not -- sched_wait_timeout() blocks. */
+				__spin_lock(&t->ring_lock);
+				empty = ring_empty(&t->rx_ring);
+				__spin_unlock(&t->ring_lock);
+
+				if (empty) {
 					rc = sched_wait_timeout(timeout, NULL);
 				}
 			}
@@ -193,6 +220,7 @@ size_t tty_write(struct tty *t, const char *buff, size_t size, int flags) {
 
 int tty_ioctl(struct tty *t, int request, void *data) {
 	int ret = 0;
+	ipl_t ipl;
 
 	assert(t);
 
@@ -213,13 +241,17 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 	case TCSETSW:
 	case TCSETSF:
 		memcpy(&t->termios, data, sizeof(struct termios));
+		ipl = tty_ring_lock(t);
 		termios_update_ring(&t->termios, &t->i_ring, &t->i_canon_ring);
+		tty_ring_unlock(t, ipl);
 		break;
 	case TCSETS2:
 	case TCSETSW2:
 	case TCSETSF2:
 		memcpy(&t->termios, data, sizeof(struct termios2));
+		ipl = tty_ring_lock(t);
 		termios_update_ring(&t->termios, &t->i_ring, &t->i_canon_ring);
+		tty_ring_unlock(t, ipl);
 		if (t->ops->setup_term) {
 			t->ops->setup_term(t);
 		}
@@ -241,6 +273,7 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 
 size_t tty_status(struct tty *t, int status_nr) {
 	int res = 0;
+	ipl_t ipl;
 
 	assert(t);
 
@@ -248,12 +281,22 @@ size_t tty_status(struct tty *t, int status_nr) {
 
 	switch (status_nr) {
 	case POLLIN:
-		IRQ_LOCKED_DO(tty_rx_do(t));
+		/* This used to be IRQ_LOCKED_DO(tty_rx_do(t)), standing in for the
+		 * lock the rings did not have. It cannot stay: tty_rx_do() unlocks
+		 * the mutex to call out_wake(), and blocking inside irq_lock() is
+		 * what mutex_unlock() asserts against, which fires here on four
+		 * cores. The ring lock covers what the mask was covering, and covers
+		 * the other cores too. */
+		tty_rx_do(t);
+		ipl = tty_ring_lock(t);
 		res = termios_can_read(&t->termios, &t->i_ring, &t->i_canon_ring,
 		    TTY_IO_BUFF_SZ);
+		tty_ring_unlock(t, ipl);
 		break;
 	case POLLOUT:
+		ipl = tty_ring_lock(t);
 		res = ring_can_write(&t->o_ring, TTY_IO_BUFF_SZ, 1);
+		tty_ring_unlock(t, ipl);
 		break;
 	case POLLERR:
 		res = 0; /* FIXME: HUP isn't implemented */
@@ -273,6 +316,7 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 	termios_init(&t->termios);
 
 	mutex_init(&t->lock);
+	spin_init(&t->ring_lock, __SPIN_UNLOCKED);
 	waitq_init(&t->tty_waitq);
 
 	ring_init(&t->rx_ring);
@@ -290,7 +334,8 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 }
 
 int tty_rx_locked(struct tty *t, char ch, unsigned char flag) {
-	uint16_t *slot = t->rx_buff + t->rx_ring.head;
+	uint16_t *slot;
+	ipl_t ipl;
 
 	/* Some input must be processed immediatly, like Ctrl-C.
 	 * All other data will be stored as unprocecessed (raw) data
@@ -299,18 +344,25 @@ int tty_rx_locked(struct tty *t, char ch, unsigned char flag) {
 
 	tty_task_break_check(t, ch);
 
+	/* `slot` is the head before ring_write() advances
+	 * it, so the two belong to one section. */
+	ipl = tty_ring_lock(t);
+	slot = t->rx_buff + t->rx_ring.head;
 	if (!ring_write(&t->rx_ring, TTY_RX_BUFF_SZ, 1)) {
+		tty_ring_unlock(t, ipl);
 		return -1;
 	}
-
 	*slot = (flag << CHAR_BIT) | (unsigned char)ch;
+	tty_ring_unlock(t, ipl);
 
 	tty_notify(t, POLLIN);
 
 	return 0;
 }
 
-int tty_rx_dequeue(struct tty *t) {
+/* The body recurses, so the lock is taken by the
+ * wrapper below rather than here. */
+static int __tty_rx_dequeue(struct tty *t) {
 	uint16_t *slot = t->rx_buff + t->rx_ring.tail;
 
 	if (!ring_read(&t->rx_ring, TTY_RX_BUFF_SZ, 1)) {
@@ -320,7 +372,7 @@ int tty_rx_dequeue(struct tty *t) {
 	if (TTY_I(t, IGNCR) && *slot == '\r') {
 		t->rx_ring.tail += TTY_RX_BUFF_SZ - 1;
 		ring_fixup_tail(&t->rx_ring, TTY_RX_BUFF_SZ);
-		return tty_rx_dequeue(t);
+		return __tty_rx_dequeue(t);
 	}
 
 	if (TTY_I(t, ICRNL) && *slot == '\r') {
@@ -333,10 +385,28 @@ int tty_rx_dequeue(struct tty *t) {
 	return (int)*slot;
 }
 
+int tty_rx_dequeue(struct tty *t) {
+	ipl_t ipl;
+	int ret;
+
+	ipl = tty_ring_lock(t);
+	ret = __tty_rx_dequeue(t);
+	tty_ring_unlock(t, ipl);
+
+	return ret;
+}
+
 int tty_out_getc(struct tty *t) {
 	char ch;
-	/* TODO Locks */
-	if (!ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1)) {
+	ipl_t ipl;
+	int got;
+
+	/* This is the "TODO Locks" that used to be here. */
+	ipl = tty_ring_lock(t);
+	got = ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1);
+	tty_ring_unlock(t, ipl);
+
+	if (!got) {
 		return -1;
 	}
 
@@ -347,8 +417,11 @@ int tty_out_getc(struct tty *t) {
 
 int tty_out_buf(struct tty *t, void *buf, size_t len) {
 	int ret;
+	ipl_t ipl;
 
+	ipl = tty_ring_lock(t);
 	ret = ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, buf, len);
+	tty_ring_unlock(t, ipl);
 
 	tty_notify(t, POLLOUT);
 
