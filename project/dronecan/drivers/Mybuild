@@ -1,0 +1,12 @@
+package project.dronecan.drivers
+
+@BuildDepends(project.dronecan.libcanard)
+static module canard_embox {
+    @IncludeExport(path="dronecan")
+    source "canard_embox.h"
+
+    source "canard_embox.c"
+
+	@NoRuntime depends project.dronecan.libcanard
+    @NoRuntime depends embox.device.can_dev
+}
