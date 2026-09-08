@@ -1,0 +1,170 @@
+/*
+ * net80211 for embox.
+ *
+ * The sources are fetched from the net80211 repository by the extbld
+ * rules (see the Makefile in this directory) and compiled from the
+ * per-module build tree. All source/header paths below resolve into
+ *   $(EXTERNAL_BUILD_DIR)/third_party/net80211/<module>/net_80211/...
+ * which mirrors third-party/lib/sljit.
+ *
+ * The layout of the checkout:
+ *   net80211/       NetBSD 802.11 stack (verbatim import)
+ *   driver/urtwn/   RTL8188EU driver (verbatim import + registration)
+ *   compat/netbsd/  shadow headers for the NetBSD kernel API
+ *   port/           portable port interface + embox/cherryusb ports
+ */
+package third_party.net80211
+
+/*
+ * NetBSD 802.11 protocol stack. Pure C over the compat shadow headers.
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module net80211_core {
+	@Cflags("-D_KERNEL")
+	@Cflags("-Wno-pointer-sign")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211/port/port_config_bsd.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/net80211")
+	source "ieee80211.c",
+		"ieee80211_proto.c",
+		"ieee80211_node.c",
+		"ieee80211_output.c",
+		"ieee80211_input.c",
+		"ieee80211_netbsd.c",
+		"ieee80211_crypto.c",
+		"ieee80211_crypto_none.c"
+}
+
+/*
+ * RTL8188EU USB driver: the imported if_urtwn.c is pulled in by the
+ * small registration translation unit (urtwn_reg.c).
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module net80211_urtwn {
+	@Cflags("-D_KERNEL")
+	@Cflags("-Wno-pointer-sign")
+	@Cflags("-Wno-unused-function")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_urtwn/net_80211/port/port_config_bsd.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_urtwn/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_urtwn/net_80211")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/driver/urtwn")
+	source "urtwn_reg.c"
+
+	depends net80211_core
+}
+
+/*
+ * NetBSD kernel-API shims for embox (locks/threads, mbuf, ifnet,
+ * firmware lookup). Any USB backend for embox builds on this module.
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module net80211_embox_osal {
+	@Cflags("-D_KERNEL")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_embox_osal/net_80211/port/port_config.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_embox_osal/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_embox_osal/net_80211")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_embox_osal/net_80211/port")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/embox")
+	source "osal_embox.c",
+		"bsd_mbuf.c",
+		"bsd_ifnet.c",
+		"firmware_embed.c"
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
+	depends embox.kernel.timer.sys_timer
+	depends embox.kernel.timer.sleep
+	depends embox.compat.posix.util.gettimeofday
+}
+
+/*
+ * CherryUSB host stack (vendored inside the net80211 checkout) with an
+ * embox OSAL and the RK3568 EHCI glue.
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module cherryusb_host {
+	@Cflags("-Wno-unused-parameter")
+	/* the EHCI hardware link pointers are 32-bit: the truncation is
+	 * intentional, every pool sits below 4G on this platform */
+	@Cflags("-Wno-pointer-to-int-cast")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb/cherryusb/core")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb/cherryusb/common")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb/cherryusb/class/hub")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb/cherryusb/port/ehci")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/cherryusb")
+	source "cherryusb/core/usbh_core.c",
+		"cherryusb/class/hub/usbh_hub.c",
+		"cherryusb/port/ehci/usb_hc_ehci.c",
+		"osal_usb_embox.c",
+		"usb_glue_rk3568.c"
+
+	depends embox.kernel.irq
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
+	depends embox.kernel.timer.sys_timer
+
+	@NoRuntime depends embox.driver.periph_memory
+}
+
+/*
+ * The net80211 port over cherryusb: the usbd_* shim reroutes the
+ * driver's transfers onto CherryUSB, plus the urtwn class hook, the
+ * net bridge and the shell command.
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module net80211_port_cherryusb {
+	@Cflags("-D_KERNEL")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/port_config.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/cherryusb")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/cherryusb/cherryusb/core")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/cherryusb/cherryusb/common")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/cherryusb/cherryusb/class/hub")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/cherryusb")
+	source "usbdi_compat.c",
+		"usbh_urtwn_class.c",
+		"net_bridge.c"
+
+	depends cherryusb_host
+	depends net80211_embox_osal
+	depends net80211_urtwn
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
+	depends embox.kernel.timer.sys_timer
+	depends embox.net.core
+	depends embox.net.wifi.cfg80211
+}
+
+@AutoCmd
+@App
+@Cmd(name = "wlan",
+	help = "net80211 wireless devices",
+	man = '''
+NAME
+	wlan - scan for wireless networks
+
+SYNOPSIS
+	wlan scan [seconds]
+	wlan trace [0|1|2]
+
+DESCRIPTION
+	The scan subcommand brings the interface up, scans for
+	[seconds] and prints the networks found. The trace subcommand
+	selects the USB shim log verbosity: 0 (default) quiet, 1 async
+	events, 2 full control transfers.
+''')
+@Build(script = "$(EXTERNAL_MAKE)")
+module net80211_wlan_cmd {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_wlan_cmd/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_wlan_cmd/net_80211")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_wlan_cmd/net_80211/port")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/cherryusb")
+	source "wlan_cmd.c"
+
+	depends net80211_port_cherryusb
+}
