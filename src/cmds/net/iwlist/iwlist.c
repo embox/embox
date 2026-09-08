@@ -24,9 +24,9 @@
 
 
 
-static inline void print_usage(void) {
+static inline void print_usage(const char *progname) {
 	printf("Usage:\n");
-	printf("  %s <interface> scanning\n");
+	printf("  %s <interface> scanning\n", progname);
 }
 
 int main(int argc, char *argv[]) {
@@ -36,12 +36,12 @@ int main(int argc, char *argv[]) {
 	iface = NULL;
 
 	if (!strcmp("-h", argv[1]) || !strcmp("--help", argv[1])) {
-		print_usage();
+		print_usage(argv[0]);
 		return 0;
 	}
 	
 	if (argc < 3) {
-		print_usage();
+		print_usage(argv[0]);
 		return 0;
 	}
 
