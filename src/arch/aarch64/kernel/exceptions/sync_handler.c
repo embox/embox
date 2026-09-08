@@ -41,10 +41,12 @@ static void print_abort_syndrome(uint32_t syndrome) {
 		log_raw(LOG_EMERG, "Access Flag fault (EL%i)\n", el);
 		break;
 
+	/* The low two bits of DFSC are the level, as above */
 	case 0b001100:
-		el = 0;
 	case 0b001101:
-		log_raw(LOG_EMERG, "Permission fault (EL%i)\n", el);
+	case 0b001110:
+	case 0b001111:
+		log_raw(LOG_EMERG, "Permission fault (level %u)\n", dfsc & 0b11);
 		break;
 
 	case 0b010000:
