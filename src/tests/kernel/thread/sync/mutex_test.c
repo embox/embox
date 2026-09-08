@@ -12,6 +12,7 @@
  */
 
 #include <embox/test.h>
+#include <framework/test/thread_pin.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread.h>
 #include <util/err.h>
@@ -63,5 +64,11 @@ static int setup(void) {
 
 	test_assert_zero(schedee_priority_set(&low->schedee, l));
 	test_assert_zero(schedee_priority_set(&high->schedee, h));
+
+	/* This case asserts an order, and an order between
+	 * threads only exists while they take turns. See test_thread_pin(). */
+	test_thread_pin(low);
+	test_thread_pin(high);
+
 	return 0;
 }

@@ -7,6 +7,7 @@
  */
 
 #include <embox/test.h>
+#include <framework/test/thread_pin.h>
 
 #include <kernel/thread.h>
 #include <util/err.h>
@@ -22,6 +23,12 @@ EMBOX_TEST_SUITE("Priority_based scheduling algorithm.");
 TEST_SETUP(setup);
 
 TEST_CASE("Sleep/wake") {
+	/* The sequence below is an order, and an order
+	 * between threads only exists while they take turns. See
+	 * test_thread_pin(). */
+	test_thread_pin(low);
+	test_thread_pin(high);
+
 	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(high, NULL));

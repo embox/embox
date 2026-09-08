@@ -7,6 +7,7 @@
  */
 
 #include <embox/test.h>
+#include <framework/test/thread_pin.h>
 #include <kernel/thread/sync/semaphore.h>
 #include <kernel/thread.h>
 #include <util/err.h>
@@ -65,6 +66,20 @@ TEST_CASE("General") {
 	test_assert_zero(schedee_priority_set(&mid->schedee, m));
 	test_assert_zero(schedee_priority_set(&high->schedee, h));
 
+	/* This case asserts an exact emission order, and an order between
+	 * threads only exists while they take turns. Given four cores and no
+	 * affinity, low, mid and high run AT THE SAME TIME and the sequence is
+	 * whatever the machine produced -- not a defect, and not what this case
+	 * is about. It is about the semaphore and the priorities, so the three
+	 * threads are put on one core and the turns come back.
+	 *
+	 * The mirror image of the lesson in the scaling test that used to bind
+	 * its workers: a test must pin what it is not measuring and must not
+	 * pin what it is. */
+	test_thread_pin(low);
+	test_thread_pin(mid);
+	test_thread_pin(high);
+
 	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(mid, NULL));
@@ -102,6 +117,15 @@ TEST_CASE("Correctness of semaphore_timedwait") {
 
 	test_assert_zero(schedee_priority_set(&l_low->schedee, ll));
 	test_assert_zero(schedee_priority_set(&h_high->schedee, hh));
+
+	/* Pinned, again: the high thread asks for the semaphore with a deadline
+	 * that has already passed and requires the answer to be "no". That is
+	 * only true while the low thread still holds it -- and on another core
+	 * the low thread may already have let go. Same core, same turns, same
+	 * question. */
+	test_thread_pin(l_low);
+	test_thread_pin(h_high);
+
 	test_assert_zero(thread_launch(l_low));
 
 	test_assert_zero(thread_join(l_low, NULL));

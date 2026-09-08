@@ -31,3 +31,20 @@ module stack_protect_test {
 	depends embox.kernel.thread.core
 	depends embox.framework.LibFramework
 }
+
+module join_smp {
+	source "join_smp.c"
+
+	depends embox.kernel.thread.core
+	depends embox.compat.posix.util.sleep
+	depends embox.framework.LibFramework
+}
+
+module mutex_pair {
+	source "mutex_pair.c"
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.mutex
+	depends embox.compat.posix.util.sleep
+	depends embox.framework.LibFramework
+}

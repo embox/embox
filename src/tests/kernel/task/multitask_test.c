@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include <util/err.h>
+#include <kernel/printk.h>
 #include <embox/test.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
@@ -122,7 +123,25 @@ static void *tsk5_thr1_hnd(void *data) {
 	t = thread_create(0, tsk5_thr2_hnd, task_self());
 	test_assert_zero(ptr2err(t));
 
-	test_assert_zero(thread_join(t, NULL));
+	/* The thread being joined here ends the WHOLE TASK, and task_do_exit()
+	 * terminates and deletes every thread of it, this one and the joined one
+	 * both. So the join has three possible ends, and only the first two are
+	 * about this test:
+	 *
+	 *   - it blocks and never returns, because this thread is terminated
+	 *     while it waits. The usual one on a single core.
+	 *   - it returns an error, because the task went while it waited.
+	 *   - it never even starts, because on four cores the other thread can
+	 *     run to completion, take the task down, and have its thread
+	 *     structure handed back to the pool before this line is reached.
+	 *
+	 * The last one used to assert inside the kernel on `!(t->state &
+	 * TS_DETACHED)' -- a freshly poisoned pool block reads as detached and
+	 * exited both. thread_join() now answers -ESRCH for a thread that is not
+	 * one, so this line no longer insists on a return value the case itself
+	 * makes meaningless. What the case is actually for is the exit code,
+	 * checked by waitpid() below. */
+	(void)thread_join(t, NULL);
 
 	return (void *)EXIT_CODE1;
 }
@@ -130,11 +149,17 @@ static void *tsk5_thr1_hnd(void *data) {
 TEST_CASE("Create task with 2 threads and terminate "
 		"task not in main one") {
 	pid_t pid;
+	int got;
 
 	pid = new_task("", tsk5_thr1_hnd, NULL);
 	test_assert_true(pid >= 0);
 
-	test_assert_equal(EXIT_CODE2, task_waitpid(pid));
+	got = task_waitpid(pid);
+	if (got != EXIT_CODE2) {
+		printk("multitask: waitpid gave %#x, wanted %#x (%#x is the OTHER "
+		       "thread's return)\n", got, EXIT_CODE2, EXIT_CODE1);
+	}
+	test_assert_equal(EXIT_CODE2, got);
 }
 
 static void *tsk6_thr2_hnd(void *data) {

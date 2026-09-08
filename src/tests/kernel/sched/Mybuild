@@ -10,3 +10,13 @@ module waitq {
 module test_sched {
     source "strategy.c"
 }
+
+module runq_smp {
+	source "runq_smp.c"
+
+	depends embox.arch.smp
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.mutex
+	depends embox.kernel.timer.sleep
+	depends embox.framework.test
+}

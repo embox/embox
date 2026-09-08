@@ -50,3 +50,12 @@ module usermode_test {
 module spinlock_test {
 	source "spinlock_test.c"
 }
+
+module sleep_smp {
+	source "sleep_smp.c"
+
+	depends embox.kernel.thread.core
+	depends embox.compat.posix.util.sleep
+	depends embox.compat.posix.pthreads
+	depends embox.framework.LibFramework
+}
