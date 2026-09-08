@@ -30,7 +30,14 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 #ifdef SMP
 	for (int i = 0; i < NCPU; i++) {
 		extern void smp_send_resched(int cpu_id);
-		if(i == cpu_get_id()) {
+		if (i == cpu_get_id()) {
+			continue;
+		}
+		/* A CPU that has not run cpu_init() has no idle thread and no
+		 * scheduler to be woken into; what an IPI means to a core still
+		 * parked in its architecture's wait is the architecture's business,
+		 * not this timer's. The two send sites in sched.c already ask this. */
+		if (!cpu_get_idle(i)) {
 			continue;
 		}
 		smp_send_resched(i);
