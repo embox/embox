@@ -99,6 +99,14 @@ int schedee_init(struct schedee *schedee, int priority,
 	enum schedee_type type)
 {
 	runq_item_init(&schedee->runq_link);
+	/* Not in any level yet. runq_insert() writes the real
+	 * one; this is here so the field never reads as garbage. */
+	schedee->runq_prio = priority;
+
+	/* Never scheduled, so nothing to wait for. */
+	schedee->released = true;
+	/* And nobody is done with it yet. */
+	schedee->finished = false;
 
 	schedee->lock = SPIN_UNLOCKED;
 
