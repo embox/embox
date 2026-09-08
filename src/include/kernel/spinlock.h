@@ -125,20 +125,34 @@ static inline void __spin_unlock(spinlock_t *lock) {
 	assertf(lock->l == __SPIN_LOCKED, "Unlocking a not locked spin");
 	assertf(lock->owner == cpu_get_id(), "Unlocking a spin owned by another CPU");
 	lock->owner = -1u;
-	__barrier();  // XXX this must be SMP barrier
-	lock->l = __SPIN_UNLOCKED;
-	__barrier();
+	/* A release store, which is what the XXX this replaces asked for:
+	 * everything the critical section wrote must be visible to the next CPU
+	 * that takes the lock before it sees the lock free. */
+	atomic_rmw_store(&lock->l, __SPIN_UNLOCKED, __ATOMIC_RELEASE);
 #else /* !(SMP || SPIN_DEBUG) */
 	__barrier();
 #endif /* SMP || SPIN_DEBUG */
 }
 
+/* A spin region wants preemption off, not the BKL. Borrowing
+ * CRITICAL_SCHED_LOCK's bits for it claimed the BKL by raising the count that
+ * stands for it, so every interrupt landing in a spin region ran outside the
+ * BKL believing it was inside. The preempt block is outside
+ * __CRITICAL_BKL_MASK and still harder than CRITICAL_SCHED_LOCK, so it defers
+ * sched_preempt() exactly as before. */
 static inline void __spin_preempt_disable(void) {
-	__critical_count_add(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+	/* A read-modify-write of a per-CPU count from a context that is still
+	 * preemptible -- that is the whole point, it is about to stop being one.
+	 * __spin_preempt_enable() needs no mask: by then the count is non-zero,
+	 * which is itself the guarantee that nothing can migrate. */
+	ipl_t ipl = ipl_save();
+
+	__critical_count_add(__CRITICAL_COUNT(CRITICAL_PREEMPT_LOCK));
+	ipl_restore(ipl);
 }
 
 static inline void __spin_preempt_enable(void) {
-	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_PREEMPT_LOCK));
 	critical_dispatch_pending();
 }
 

@@ -37,4 +37,6 @@ module irq_stack_protection extends irq_stack {
 module irq_lock {
 	source "irq_lock.c"
 	@NoRuntime depends critical
+	/* __irq_lock_ipl is per-CPU now. */
+	@NoRuntime depends embox.kernel.cpu.cpudata_api
 }

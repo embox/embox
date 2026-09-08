@@ -66,25 +66,30 @@
  * provides a way to give answers for such questions.
  *
  @verbatim
- ------   -- --- --   -- --- --   -- --- --
- level    sched_lck   hwirq_hnd   hwirq_lck
- bit_nr   17 ... 12   11 ...  6    5 ...  0
- ------   -- --- --   -- --- --   -- --- --
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
+ level    sched_lck   preempt     hwirq_hnd   hwirq_lck
+ bit_nr   23 ... 18   17 ... 12   11 ...  6    5 ...  0
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
  @endverbatim
  *
  * For example, bit masks of the level corresponding to hardware interrupt
  * locks are the following:
  @verbatim
- ------   -- --- --   -- --- --   -- --- --
- level    sched_lck   hwirq_hnd   hwirq_lck
- bit_nr   17 ... 12   11 ...  6    5 ...  0
- ------   -- --- --   -- --- --   -- --- --
- mask                              *  **  *
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
+ level    sched_lck   preempt     hwirq_hnd   hwirq_lck
+ bit_nr   23 ... 18   17 ... 12   11 ...  6    5 ...  0
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
+ mask                                          *  **  *
  harder
- softer    *  **  *    *  **  *
- count                                    *
- ------   -- --- --   -- --- --   -- --- --
+ softer    *  **  *    *  **  *    *  **  *
+ count                                                *
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
  @endverbatim
+ *
+ * The preempt block is new: the half of the old sched_lck block that
+ * __spin_preempt_disable() used to borrow. It sits below sched_lck so a
+ * pending sched_preempt() stays deferred while a spin region is open, and is
+ * excluded from __CRITICAL_BKL_MASK so opening one does not claim the BKL.
  *
  * @file
  * @date 16.05.10
@@ -98,7 +103,12 @@
 
 #define CRITICAL_IRQ_LOCK         0x0000003f /**< 64 calls depth. */
 #define CRITICAL_IRQ_HANDLER      0x00000fc0 /**< 64 nested interrupts. */
-#define CRITICAL_SCHED_LOCK       0x0003f000 /**< 64 calls. */
+#define CRITICAL_PREEMPT_LOCK     0x0003f000 /**< 64 spin regions. */
+#define CRITICAL_SCHED_LOCK       0x00fc0000 /**< 64 calls. */
+
+/* The part of the count that means "this CPU holds the BKL". Preemption is
+ * disabled without it, so its bits do not answer for the lock. */
+#define __CRITICAL_BKL_MASK       (~CRITICAL_PREEMPT_LOCK)
 
 /* Internal helper macros for bit masks transformation. */
 
@@ -204,6 +214,7 @@ __END_DECLS
 #if ~0 != \
 	  __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_LOCK)        \
 	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_HANDLER)     \
+	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_PREEMPT_LOCK)    \
 	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SCHED_LOCK)
 # error "CRITICAL_XXX must contain a single contiguous block of bits"
 #endif
