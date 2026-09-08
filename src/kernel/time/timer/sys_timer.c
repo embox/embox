@@ -42,6 +42,8 @@ int sys_timer_init(struct sys_timer *tmr, unsigned int flags,
 	if(sched_ticker_get_timer() != (void*)tmr){
 		tmr->timer_sharing = NULL;
 		tmr->state = 0;
+		/* Not queued yet. */
+		tmr->owner_cpu = -1;
 	}
 #else
 	tmr->state = 0;
