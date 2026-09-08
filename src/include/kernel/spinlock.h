@@ -89,15 +89,20 @@ static inline int __spin_trylock_smp(spinlock_t *lock) {
 
 static inline int __spin_trylock(spinlock_t *lock) {
 	int ret;
+
+#if defined(SMP) || defined(SPIN_DEBUG)
 	unsigned int cpu_id = cpu_get_id();
 
 	assertf(lock->owner != cpu_id, "Recursive lock of a spin owned by this CPU");
+#endif
 
 	ret = __spin_trylock_smp(lock);
+#if defined(SMP) || defined(SPIN_DEBUG)
 	if (ret) {
 		assert(lock->owner == -1u);
 		lock->owner = cpu_id;
 	}
+#endif
 #ifdef SPIN_CONTENTION_LIMIT
 	if (ret)
 		lock->contention_count = SPIN_CONTENTION_LIMIT;
@@ -124,7 +129,6 @@ static inline void __spin_unlock(spinlock_t *lock) {
 	lock->l = __SPIN_UNLOCKED;
 	__barrier();
 #else /* !(SMP || SPIN_DEBUG) */
-	lock->owner = -1u;
 	__barrier();
 #endif /* SMP || SPIN_DEBUG */
 }
