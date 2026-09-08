@@ -1,13 +1,17 @@
 package third_party
 
 module libfdt {
+    @IncludeExport(path="", target_name="fdt.h")
     source "include/fdt.h"
+    @IncludeExport(path="", target_name="libfdt_env.h")
     source "include/libfdt_env.h"
     source "include/libfdt_internal.h"
+    @IncludeExport(path="", target_name="libfdt.h")
     source "include/libfdt.h"
     source "fdt.c"
     source "fdt_ro.c"
     source "fdt_rw.c"
+    source "fdt_wip.c"
     source "fdt_strerror.c"
     source "fdt_addresses.c"
     source "fdt_empty_tree.c"

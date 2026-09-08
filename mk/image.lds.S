@@ -31,6 +31,10 @@ SECTION_SYMBOLS(bss)
 SECTIONS {
 	.text : ALIGN(TEXT_ALIGNMENT) {
 
+		/* The reset code and the vector table are reached by address, so
+		 * they have to survive --gc-sections */
+		KEEP(*(.bootcode));
+		KEEP(*(.text.kernel_vectors*));
 		LDS_MODULES_TEXT
 		*(.text)
 		*(.text.*)

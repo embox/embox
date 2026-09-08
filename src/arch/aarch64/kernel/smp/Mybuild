@@ -1,0 +1,47 @@
+package embox.arch.aarch64
+
+/* Overrides embox.arch.generic.onecpu. cpu_count is what NCPU expands to. */
+module cpu extends embox.arch.cpu {
+	option number cpu_count = 1
+
+	source "cpu_id.c"
+
+	@IncludeExport(path="aarch64")
+	source "cpu_id.h"
+}
+
+/* Overrides embox.arch.generic.nosmp. It exports no nosmp.h, so hal/cpu.h
+ * defines SMP. */
+module smp extends embox.arch.smp {
+	option string log_level = "LOG_INFO"
+
+	/* The instruction a PSCI call is made with: "smc", "hvc", or "" for a
+	 * board without PSCI. It has to agree with how the machine was started. */
+	option string psci_method = ""
+
+	/* Where the firmware parked the secondaries, one 64-bit word per core
+	 * (0xd8 on a Raspberry Pi and on QEMU's raspi). 0 = PSCI instead. */
+	option number spintable_base = 0
+
+	source "smp.c"
+	source "psci.c"
+
+	@IncludeExport(path="aarch64")
+	source "psci.h"
+
+	@IncludeExport(path="aarch64")
+	source "smp.h"
+
+	depends cpu
+	depends embox.kernel.thread.core
+	depends embox.kernel.task.kernel_task
+	/* The IPIs: a handler for one of them, and the controller that carries
+	 * them and that every secondary initialises for itself */
+	depends embox.kernel.irq
+	depends embox.driver.interrupt.irqctrl_api
+	/* The clock source each secondary starts its own tick from */
+	depends embox.kernel.time.jiffies
+	@NoRuntime depends embox.kernel.cpu.common
+	@NoRuntime depends embox.kernel.cpu.cpudata
+	depends embox.framework.LibFramework
+}
