@@ -33,6 +33,9 @@ struct task;
 #define TS_LAUNCHED     (0x1 << 0)
 #define TS_EXITED       (0x1 << 1)
 #define TS_DETACHED     (0x1 << 2)
+/* Set by thread_delete(), so that a second deletion of the same thread finds
+ * out rather than frees again. */
+#define TS_DELETED      (0x1 << 3)
 
 #define THREAD_DEFAULT_STACK_SIZE \
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
@@ -43,7 +46,18 @@ struct task;
 /**
  * Thread control block.
  */
+/* Is this pointer a live thread?
+ *
+ * A thread that has been freed goes back to a pool whose next tenant is
+ * memset to 0x53 -- and 0x53 has both TS_DETACHED and TS_EXITED in it, so a
+ * use-after-free reads as a perfectly plausible thread state and asserts
+ * somewhere that says nothing about the mistake. */
+#define THREAD_MAGIC_LIVE 0x54485244u /* "THRD" */
+#define THREAD_MAGIC_DEAD 0xdeadd00du
+
 struct thread {
+	unsigned int       magic;      /**< THREAD_MAGIC_LIVE while it exists */
+
 	struct schedee    schedee;     /**< Schedee interface for scheduler */
 
 	void              *(*run)(void *); /**< Start routine */
