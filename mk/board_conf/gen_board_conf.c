@@ -230,6 +230,8 @@ int main() {
 	const struct can_conf *can;
 	struct conf_item *usb_conf = &board_config[USB_IDX];
 	const struct usb_conf *usb;
+	struct conf_item *dma_conf = &board_config[DMA_IDX];
+	const struct dma_conf *dma;
 
 	config();
 
@@ -325,6 +327,20 @@ int main() {
 
 		printf("\n");
 	}
+
+	/* DMA */
+	for (i = 0; i < dma_conf->array_size; i++) {
+		dma = &((const struct dma_conf *)dma_conf->ptr)[i];
+
+		if (dma->status != ENABLED) {
+			continue;
+		}
+
+		gen_device_conf(&dma->dev);
+
+		printf("\n");
+	}
+
 
 	/* I2C */
 	for (i = 0; i < i2c_conf->array_size; i++) {
