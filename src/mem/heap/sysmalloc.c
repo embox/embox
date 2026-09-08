@@ -25,6 +25,8 @@ static struct dlist_head *kernel_task_mspace(void) {
 	return &task_heap->mm;
 }
 
+extern void *bm_free_not_busy;
+
 void *sysmemalign(size_t boundary, size_t size) {
 	return mspace_memalign(boundary, size, kernel_task_mspace());
 }
@@ -39,6 +41,11 @@ void sysfree(void *ptr) {
 		return;
 	}
 	mspace_free(ptr, kernel_task_mspace());
+	if (bm_free_not_busy == ptr) {
+		bm_free_not_busy = NULL;
+		printk("       sysfree(%p) double free from %p\n", ptr,
+		    __builtin_return_address(0));
+	}
 }
 
 void *sysrealloc(void *ptr, size_t size) {

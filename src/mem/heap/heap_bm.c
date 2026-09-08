@@ -109,6 +109,10 @@ static void set_end_size(struct free_block *block) {
 	*(uintptr_t *) ((void *) block + size - sizeof(block->size)) = size;
 }
 
+/* Set here, reported by whoever called us -- "somebody freed
+ * something twice" is not something anybody can act on. */
+void *bm_free_not_busy;
+
 static struct free_block * concatenate_prev(struct free_block *block) {
 	size_t prev_size, new_size;
 	struct free_block *pblock; /* prev block */
@@ -252,7 +256,7 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 		size = sizeof(struct free_block);
 	}
 
-	size = (size + (3)) & ~(3); /* align by word*/
+	size = (size + 15) & ~(size_t)15; /* AArch64 max_align_t / NEON */
 
 	for (link = free_blocks_list->next; link != free_blocks_list; link = link->next) {
 		block = (struct free_block *) ((uintptr_t *) link - 1);
@@ -307,7 +311,10 @@ void bm_free(void *heap, void *ptr) {
 
 	if (!block_is_busy(block)) {
 		sched_unlock();
-		printk("***** free(): the block not busy\n");
+		/* Say who, because "somebody freed something twice" is not
+		 * something anybody can act on. */
+		bm_free_not_busy = ptr;
+		printk("***** free(): the block %p not busy\n", ptr);
 		return; /* if we try to free block more than once */
 	}
 

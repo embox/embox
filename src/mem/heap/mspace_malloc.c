@@ -37,6 +37,73 @@
 /* TODO make it per task field */
 //static DLIST_DEFINE(task_mem_segments);
 
+/* Segments visited, by the two walks that visit them.
+ *
+ * An mspace is a list of segments and both halves of it are linear searches:
+ * an allocation tries each segment until one has room, and a free searches
+ * each until one contains the pointer. On a heap that grows out of physical
+ * memory -- and this one does, a megabyte at a time -- the list is as long as
+ * the heap is large, and the cost of the whole workload stops being linear in
+ * the number of objects.
+ *
+ * Counted rather than reasoned about, because the two walks are not equally
+ * bad: new segments go on the FRONT, so an allocation usually finds room in
+ * the first one it tries, while a free of a block allocated long ago walks
+ * past every segment made since. */
+unsigned long mspace_alloc_steps;
+unsigned long mspace_free_steps;
+#define mspace_seg_steps mspace_free_steps
+
+/* What the two walks are given so they stop being quadratic in the number of
+ * live objects.
+ *
+ * WHY. With task_is_greed off -- the default -- a segment is sized for the
+ * request that could not be served, so a heap of N objects is a list of
+ * nearly N segments, and every allocation and every free walks all of them.
+ *
+ * TWO OBSERVATIONS, one for each walk:
+ *
+ *   - if no segment could serve `size` at `boundary`, none can serve anything
+ *     larger either -- until a free returns space or a segment is added; both
+ *     clear the remembered failure.
+ *
+ *   - a program frees in bursts near where it allocated, so the segment that
+ *     answered the last free is a good guess for the next one. A guess, and
+ *     verified like any other: wrong, and the walk happens anyway.
+ *
+ * The cache is one entry and belongs to whichever mspace asked last -- these
+ * are per-task heaps, and a task that is not running is not allocating.
+ * Everything here runs under sched_lock(), the same lock the walks do. */
+static struct dlist_head *cache_owner;
+static struct mm_segment *cache_hint;
+static size_t cache_fail_size;
+static size_t cache_fail_boundary;
+static int cache_fail_valid;
+
+static void mspace_cache_select(struct dlist_head *mspace) {
+	if (cache_owner != mspace) {
+		cache_owner = mspace;
+		cache_hint = NULL;
+		cache_fail_valid = 0;
+	}
+}
+
+/* Space appeared, so what did not fit before might now. */
+static void mspace_cache_grew(void) {
+	cache_fail_valid = 0;
+}
+
+/* The list itself is about to be taken apart or moved. A hint into a segment
+ * that is being freed is worse than no hint: pointer_inside_segment() would
+ * read mm->size out of released memory and could claim to own a pointer it
+ * does not. Every path that frees segments wholesale or relinks the list ends
+ * up here. */
+static void mspace_cache_forget(void) {
+	cache_owner = NULL;
+	cache_hint = NULL;
+	cache_fail_valid = 0;
+}
+
 //#define DEBUG
 
 extern struct page_allocator *__heap_pgallocator;
@@ -138,8 +205,19 @@ static void *pointer_to_mm(void *ptr, struct dlist_head *mspace) {
 	assert(ptr);
 	assert(mspace);
 
+	/* The segment the last free landed in. */
+	if (cache_hint != NULL) {
+		mspace_free_steps++;
+		if (pointer_inside_segment(mm_to_segment(cache_hint), cache_hint->size,
+		        ptr)) {
+			return cache_hint;
+		}
+	}
+
 	dlist_foreach_entry(mm, mspace, link) {
+		mspace_seg_steps++;
 		if (pointer_inside_segment(mm_to_segment(mm), mm->size, ptr)) {
+			cache_hint = mm;
 			return mm;
 		}
 	}
@@ -149,12 +227,25 @@ static void *pointer_to_mm(void *ptr, struct dlist_head *mspace) {
 
 static void *mspace_do_alloc(size_t boundary, size_t size, struct dlist_head *mspace) {
 	struct mm_segment *mm;
+
+	/* Nothing here could serve a request this large
+	 * last time, and nothing has been freed or added since. */
+	if (cache_fail_valid && (size >= cache_fail_size)
+	    && (boundary >= cache_fail_boundary)) {
+		return NULL;
+	}
+
 	dlist_foreach_entry(mm, mspace, link) {
+		mspace_alloc_steps++;
 		void *block = bm_memalign(mm_to_segment(mm), boundary, size);
 		if (block != NULL) {
 			return block;
 		}
 	}
+
+	cache_fail_size = size;
+	cache_fail_boundary = boundary;
+	cache_fail_valid = 1;
 
 	return NULL;
 }
@@ -214,6 +305,8 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 
 	assert(mspace);
 
+	mspace_cache_select(mspace);
+
 	block = mspace_do_alloc(boundary, size, mspace);
 	if (block) {
 		goto out_unlock;
@@ -227,6 +320,10 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 	dlist_add_next(&mm->link, mspace);
 
 	bm_init(mm_to_segment(mm), mm->size - sizeof(struct mm_segment));
+
+	/* A segment with room in it is exactly the change the cache above is
+	 * waiting for. */
+	mspace_cache_grew();
 
 	block = mspace_do_alloc(boundary, size, mspace);
 	if (!block) {
@@ -253,6 +350,8 @@ int mspace_free(void *ptr, struct dlist_head *mspace) {
 
 	sched_lock();
 
+	mspace_cache_select(mspace);
+
 	mm = pointer_to_mm(ptr, mspace);
 
 	if (mm != NULL) {
@@ -260,10 +359,30 @@ int mspace_free(void *ptr, struct dlist_head *mspace) {
 
 		segment = mm_to_segment(mm);
 		bm_free(segment, ptr);
+		mspace_cache_grew();
 
 		if (bm_heap_is_empty(segment)) {
-			mm_segment_free(mm, mm->size / PAGE_SIZE());
+			/* Unlink, THEN free.
+			 *
+			 * `struct mm_segment' lives at the start of the segment itself,
+			 * so mm->link is inside the pages being returned. Freeing first
+			 * and unlinking after means dlist_del() reads and writes the
+			 * neighbours through pointers that are already in the page
+			 * allocator's hands -- and on four cores another core can have
+			 * allocated and started writing those pages in between. What it
+			 * leaves is an mspace list with a node in memory that belongs to
+			 * somebody else.
+			 *
+			 * The page count is taken before the unlink for the same reason
+			 * the unlink comes before the free: read what you need while it
+			 * is still yours. */
+			int page_cnt = mm->size / PAGE_SIZE();
+
+			if (cache_hint == mm) {
+				cache_hint = NULL;
+			}
 			dlist_del(&mm->link);
+			mm_segment_free(mm, page_cnt);
 		}
 	} else {
 		/* No segment containing pointer @c ptr was found. */
@@ -326,6 +445,7 @@ void *mspace_calloc(size_t nmemb, size_t size, struct dlist_head *mspace) {
 }
 
 int mspace_init(struct dlist_head *mspace) {
+	mspace_cache_forget();
 	dlist_init(mspace);
 	return 0;
 }
@@ -333,9 +453,22 @@ int mspace_init(struct dlist_head *mspace) {
 int mspace_fini(struct dlist_head *mspace) {
 	struct mm_segment *mm = NULL;
 
+	mspace_cache_forget();
+
 	dlist_foreach_entry(mm, mspace, link) {
 		mm_segment_free(mm, mm->size / PAGE_SIZE());
 	}
+
+	/* And the head is left pointing at segments that have just been given
+	 * away, which is not a state anything should rely on -- and something
+	 * does. Ending this with dlist_init(mspace) is one line and it stops
+	 * x86/user_apps booting: a task's resources are torn down in link order,
+	 * the heap goes before task_phymem_deinit(), and that function free()s
+	 * the phymem_link nodes it allocated from the heap now gone.
+	 *
+	 * So the emptying belongs with a teardown order that puts the heap last,
+	 * which is a change to the task resource framework and not to this file.
+	 * Written down rather than done quietly. */
 
 	return 0;
 }
@@ -355,6 +488,8 @@ size_t mspace_deep_copy_size(struct dlist_head *mspace) {
 void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
 	struct mm_segment *mm = NULL;
 	void *p;
+
+	mspace_cache_forget();
 
 	dlist_init(store_space);
 
@@ -383,6 +518,8 @@ void mspace_deep_restore(struct dlist_head *mspace, struct dlist_head *store_spa
 	assert(mspace);
 	assert(store_space);
 	assert(buf);
+
+	mspace_cache_forget();
 
 	dlist_init(mspace);
 
