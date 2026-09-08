@@ -10,6 +10,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <framework/mod/options.h>
+#include <hal/cache.h>
 #include <hal/mem_barriers.h>
 #include <hal/mmu.h>
 #include <hal/reg.h>
@@ -18,6 +20,18 @@
 #include <util/log.h>
 
 #include "mmu.h"
+
+/* One decision in two options, see the Mybuild: a Non-cacheable table walk
+ * does not snoop the cache a descriptor store is sitting in. */
+#define WALK_CACHEABLE   OPTION_GET(NUMBER, walk_cacheable)
+#define PTE_DCACHE_FLUSH OPTION_GET(NUMBER, pte_dcache_flush)
+
+/* Make a descriptor visible to a walk that does not look in this cache */
+static inline void mmu_desc_written(const void *entry, size_t len) {
+	if (PTE_DCACHE_FLUSH) {
+		dcache_flush(entry, len);
+	}
+}
 
 #define DEFAULT_ASID        0
 
@@ -66,12 +80,14 @@ static int mmu_init(void) {
 
 	/* Table walks are cacheable and Inner Shareable, matching the
 	 * attributes the page tables themselves are mapped with */
-	tcr = FIELD_SET(tcr, TCR_ELn_IRGN0, TCR_ELn_IRGN0_WBWA);
-	tcr = FIELD_SET(tcr, TCR_ELn_ORGN0, TCR_ELn_ORGN0_WBWA);
-	tcr = FIELD_SET(tcr, TCR_ELn_SH0, TCR_ELn_SH0_IS);
-	tcr = FIELD_SET(tcr, TCR_ELn_IRGN1, TCR_ELn_IRGN1_WBWA);
-	tcr = FIELD_SET(tcr, TCR_ELn_ORGN1, TCR_ELn_ORGN1_WBWA);
-	tcr = FIELD_SET(tcr, TCR_ELn_SH1, TCR_ELn_SH1_IS);
+	if (WALK_CACHEABLE) {
+		tcr = FIELD_SET(tcr, TCR_ELn_IRGN0, TCR_ELn_IRGN0_WBWA);
+		tcr = FIELD_SET(tcr, TCR_ELn_ORGN0, TCR_ELn_ORGN0_WBWA);
+		tcr = FIELD_SET(tcr, TCR_ELn_SH0, TCR_ELn_SH0_IS);
+		tcr = FIELD_SET(tcr, TCR_ELn_IRGN1, TCR_ELn_IRGN1_WBWA);
+		tcr = FIELD_SET(tcr, TCR_ELn_ORGN1, TCR_ELn_ORGN1_WBWA);
+		tcr = FIELD_SET(tcr, TCR_ELn_SH1, TCR_ELn_SH1_IS);
+	}
 
 	/* Store Translation Control Register */
 	ARCH_REG_STORE(TCR_EL1, tcr);
@@ -101,6 +117,9 @@ void mmu_on(void) {
 	 * accesses to Non-cacheable memory are not architecturally guaranteed
 	 * to work: on a Cortex-A72 an ldaxr/stxr pair to such memory raises an
 	 * SError. */
+	/* The bootloader's TLB entries are consulted the moment SCTLR.M is set,
+	 * so they go before it, not after */
+	ARCH_REG_STORE(TLBI_VMALLE1, 0);
 	__asm__ __volatile__("ic iallu" : : : "memory");
 	dsb(sy);
 	isb();
@@ -176,6 +195,7 @@ void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
 	}
 
 	*entry = value | MMU_DESC_VD | MMU_DESC_TP;
+	mmu_desc_written(entry, sizeof(*entry));
 }
 
 void mmu_unset(int lvl, uintptr_t *entry) {
@@ -190,6 +210,7 @@ void mmu_unset(int lvl, uintptr_t *entry) {
 	}
 
 	*entry = 0;
+	mmu_desc_written(entry, sizeof(*entry));
 }
 
 uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
@@ -236,6 +257,7 @@ int mmu_pte_set(uintptr_t *entry, uintptr_t value) {
 	assert(entry);
 
 	*entry = value;
+	mmu_desc_written(entry, sizeof(*entry));
 
 	return 0;
 }
