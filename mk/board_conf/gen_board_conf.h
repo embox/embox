@@ -25,11 +25,11 @@ struct field_pin {
 
 struct device_conf {
 	const char *name;
-	struct field_reg_map regs[16];
-	struct field_int irqs[16];
+	struct field_reg_map regs[64];
+	struct field_int irqs[64];
 	struct field_pin pins[64];
-	struct field_int clocks[16];
-	struct field_int dmas[16];
+	struct field_int clocks[64];
+	struct field_int dmas[64];
 	struct field_int misc[64];
 };
 
