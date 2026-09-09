@@ -1280,12 +1280,33 @@ uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 	log_debug("len(%d) volinfo: secperclus(%d), bytepersec(%d)",
 			len, fi->volinfo->secperclus, fi->volinfo->bytepersec );
 
+	/* Everything below divides by these and sizes buffers by bytepersec. */
+	if (fsi == NULL || fi->volinfo == NULL || fi->volinfo->bytepersec == 0
+	    || fi->volinfo->secperclus == 0
+	    || fi->volinfo->bytepersec != fsi->vi.bytepersec) {
+		*successcount = 0;
+		return DFS_ERRMISC;
+	}
+
 	result = DFS_OK;
 	remain = len;
 	*successcount = 0;
 	clastersize = fi->volinfo->secperclus * fi->volinfo->bytepersec;
 
 	while (remain && result == DFS_OK) {
+		bytesread = 0;
+		/* Advance the cursor when starting a new cluster, not after ending one.
+		 * fi->cluster always names the cluster holding the last byte touched. */
+		if (fi->pointer && (fi->pointer % clastersize) == 0) {
+			uint32_t nextclus = fat_get_fat(fsi, p_scratch, fi->cluster);
+
+			if (nextclus < 2 || fat_is_end_of_chain(fsi, nextclus)) {
+				result = DFS_EOF;
+				break;
+			}
+			fi->cluster = nextclus;
+		}
+
 		/* This is a bit complicated. The sector we want to read is addressed
 		 * at a cluster granularity by the fi->cluster member. The file
 		 * pointer tells us how many extra sectors to add to that number.
@@ -1344,12 +1365,14 @@ uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 			 * cluster boundary the first pass through, so all subsequent
 			 * [large] read requests would be able to go a cluster at a time).
 			 */
-			 if (remain >= fi->volinfo->bytepersec) {
+			 /* fsi->vi.bytepersec, not fi->volinfo's: exactly what
+			  * fat_read_sector() writes. */
+			 if (remain >= fsi->vi.bytepersec) {
 				result = fat_read_sector(fsi, buffer, sector);
-				remain -= fi->volinfo->bytepersec;
-				buffer += fi->volinfo->bytepersec;
-				fi->pointer += fi->volinfo->bytepersec;
-				bytesread = fi->volinfo->bytepersec;
+				remain -= fsi->vi.bytepersec;
+				buffer += fsi->vi.bytepersec;
+				fi->pointer += fsi->vi.bytepersec;
+				bytesread = fsi->vi.bytepersec;
 			}
 			/* Case 2B - We are only reading a partial sector */
 			else {
@@ -1363,14 +1386,10 @@ uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		}
 
 		*successcount += bytesread;
-		/* check to see if we stepped over a cluster boundary */
-		if (div(fi->pointer - bytesread, clastersize).quot !=
-			div(fi->pointer, clastersize).quot) {
-			if (fat_is_end_of_chain(fsi, fi->cluster)) {
-				result = DFS_EOF;
-			} else {
-				fi->cluster = fat_get_fat(fsi, p_scratch, fi->cluster);
-			}
+
+		/* Nothing copied: with `remain' unchanged this would loop forever. */
+		if (bytesread == 0) {
+			result = DFS_ERRMISC;
 		}
 	}
 
@@ -1399,6 +1418,14 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 	fsi = fi->fsi;
 
 	if (!(fi->mode & O_WRONLY) && !(fi->mode & O_APPEND) && !(fi->mode & O_RDWR)) {
+		return DFS_ERRMISC;
+	}
+
+	/* Same validation as fat_read_file() -- everything below divides by these. */
+	if (fsi == NULL || fi->volinfo == NULL || fi->volinfo->bytepersec == 0
+	    || fi->volinfo->secperclus == 0
+	    || fi->volinfo->bytepersec != fsi->vi.bytepersec) {
+		*successcount = 0;
 		return DFS_ERRMISC;
 	}
 
@@ -1483,15 +1510,17 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 			 * optimizations here to write multiple sectors at a time, if you
 			 * were thus inclined. Refer to similar notes in fat_read_file.
 			 */
-			if (remain >= fi->volinfo->bytepersec) {
+			/* fsi->vi.bytepersec, not fi->volinfo's: exactly what
+			 * fat_write_sector() reads. */
+			if (remain >= fsi->vi.bytepersec) {
 				result = fat_write_sector(fsi, buffer, sector);
-				remain -= fi->volinfo->bytepersec;
-				buffer += fi->volinfo->bytepersec;
-				fi->pointer += fi->volinfo->bytepersec;
+				remain -= fsi->vi.bytepersec;
+				buffer += fsi->vi.bytepersec;
+				fi->pointer += fsi->vi.bytepersec;
 				if (*size < fi->pointer) {
 					*size = fi->pointer;
 				}
-				byteswritten = fi->volinfo->bytepersec;
+				byteswritten = fsi->vi.bytepersec;
 			}
 			/*
 			 * Case 2B - We are only writing a partial sector and potentially
