@@ -767,9 +767,10 @@ static uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
 /* For long names string is divided in a pretty ugly way so old drivers
  * will be able to read directory content, so we need some ugly code to
  * figure it out. NOTE: we support only ASCII-charaters filenames */
-static void fat_append_longname(char *name, struct fat_dirent *di) {
+static int fat_append_longname(char *name, struct fat_dirent *di) {
 	struct fat_long_dirent *ld;
 	const int chars_per_long_entry = 13;
+	unsigned order;
 	int l;
 
 	assert(name);
@@ -777,7 +778,17 @@ static void fat_append_longname(char *name, struct fat_dirent *di) {
 
 	ld = (void *) di;
 
-	l = chars_per_long_entry * ((di->name[0] & FAT_LONG_ORDER_NUM_MASK) - 1);
+	/* Bound the offset from the entry's sequence number: order 0 (half-written)
+	 * gives -13, order 15 overflows NAME_MAX. */
+	order = di->name[0] & FAT_LONG_ORDER_NUM_MASK;
+	if (order < 1) {
+		return -1;
+	}
+
+	l = chars_per_long_entry * (int)(order - 1);
+	if (l + chars_per_long_entry >= NAME_MAX) {
+		return -1;
+	}
 
 	name[l++] = (char) ld->name1[0];
 	name[l++] = (char) ld->name1[2];
@@ -798,6 +809,8 @@ static void fat_append_longname(char *name, struct fat_dirent *di) {
 	if (di->name[0] & FAT_LONG_ORDER_LAST) {
 		name[l] = '\0';
 	}
+
+	return 0;
 }
 
 /*
@@ -1205,8 +1218,11 @@ uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent, char 
 		}
 	} else {
 		while (dirent->attr == ATTR_LONG_NAME) {
-			if (name_buf != NULL) {
-				fat_append_longname(name_buf, dirent);
+			if (name_buf != NULL
+			    && 0 != fat_append_longname(name_buf, dirent)) {
+				/* Name piece outside the buffer: give up rather than overflow. */
+				name_buf[0] = '\0';
+				return DFS_ERRMISC;
 			}
 			ret = fat_get_next(dir, dirent);
 		}
