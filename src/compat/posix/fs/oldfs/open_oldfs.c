@@ -77,7 +77,12 @@ int open(const char *path, int __oflag, ...) {
 	node = find_node(dir, name);
 
 	node_path.node = node;
-	if_mounted_follow_down(&dir->path);
+	/* Through the DIR, so its reference moves onto the mounted volume
+	 * with it. */
+	if (0 != dir_follow_down(dir)) {
+		rc = -ENOENT;
+		goto out;
+	}
 	node_path.mnt_desc = dir->path.mnt_desc;
 
 	if (node == NULL) {

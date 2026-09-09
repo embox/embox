@@ -39,6 +39,8 @@ struct file_desc {
 	struct idesc f_idesc;
 
 	struct inode *f_inode;
+	/* f_inode's i_gen at open; a mismatch means the slot changed hands. */
+	unsigned int f_gen;
 	const struct file_operations *f_ops;
 	off_t f_pos;
 	/* TODO this need for system without file_nodes where we want to use uart for
@@ -46,6 +48,10 @@ struct file_desc {
  */
 	void *file_info; /* customize in each file system */
 };
+
+/* Returns 0 if the inode slot changed hands or the inode left the name
+ * tree (unmounted or removed). */
+extern int file_desc_valid(struct file_desc *desc);
 
 extern struct file_desc *file_desc_from_idesc(struct idesc *idesc);
 
@@ -60,6 +66,11 @@ extern void file_set_size(struct file_desc *file, size_t size);
 extern void *file_get_inode_data(struct file_desc *file);
 
 extern struct file_desc *file_desc_create(struct inode *node, int __oflag);
+
+/* How many open descriptors name a file on this superblock, so that
+ * kumount() can refuse to free the volume under them. */
+struct super_block;
+extern int file_desc_open_on_sb(const struct super_block *sb);
 
 extern int file_desc_destroy(struct file_desc *);
 

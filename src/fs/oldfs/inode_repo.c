@@ -16,6 +16,7 @@
 #include <util/math.h>
 
 #include <fs/inode.h>
+#include <fs/super_block.h>
 #include <fs/dentry.h>
 #include <fs/vfs.h>
 
@@ -36,6 +37,8 @@ static inline int flock_init(struct inode *node) {
 	return ENOERR;
 }
 
+static unsigned int inode_gen_next;
+
 struct inode *inode_new(struct super_block *sb) {
 	struct inode *node;
 	struct dentry *dentry;
@@ -52,6 +55,10 @@ struct inode *inode_new(struct super_block *sb) {
 
 	memset(node, 0, sizeof(struct inode));
 
+	/* Monotonic, so a reused slot is never mistaken for the same inode;
+	 * a wrap after 2^32 allocations costs one collision. */
+	node->i_gen = ++inode_gen_next;
+
 	node->i_dentry = dentry;
 	dentry->d_inode = node;
 
@@ -64,6 +71,8 @@ struct inode *inode_new(struct super_block *sb) {
 	flock_init(node);
 
 	node->i_nlink = 0;
+	node->i_ref = 0;
+	node->i_dying = 0;
 	slist_link_init(&node->dirent_link);
 
 	return node;
@@ -90,9 +99,36 @@ struct inode *inode_alloc(struct super_block *sb) {
 	return node;
 }
 
+void inode_detach_fs(struct inode *node) {
+	/* Called on umount, while the superblock exists: an inode may outlive its
+	 * unlink but not its filesystem. Safe twice. i_sb is read once, as another
+	 * core may be clearing it. */
+	{
+		struct super_block *sb = node->i_sb;
+
+		if (sb && sb->sb_ops && sb->sb_ops->destroy_inode) {
+			sb->sb_ops->destroy_inode(node);
+		}
+	}
+	node->i_sb = NULL;
+}
+
 void inode_free(struct inode *node) {
+	/* Return the filesystem's private data before the inode goes back to
+	 * the pool; destroy_inode tolerates a NULL private pointer. i_sb is read
+	 * once, as in inode_detach_fs(). */
+	{
+		struct super_block *sb = node->i_sb;
+
+		if (sb && sb->sb_ops && sb->sb_ops->destroy_inode) {
+			sb->sb_ops->destroy_inode(node);
+		}
+	}
 	if (node->i_dentry) {
 		pool_free(&dentry_pool, node->i_dentry);
 	}
+	/* Poison: a release on a freed inode sees -1, not the pool's fresh 0. */
+	node->i_ref = -1;
+	node->i_dying = -1;
 	pool_free(&node_pool, node);
 }
