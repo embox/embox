@@ -1,0 +1,165 @@
+/*
+ * wpa_supplicant for embox.
+ *
+ * The hostap 2.11 based sources are fetched from the wpa_supplicant-rtos
+ * repository by the extbld rules and compiled from the per-module build
+ * tree, mirroring third-party/net80211:
+ *
+ *   src/            hostap tree (vanilla, two small OS-ifdef patches)
+ *   port/embox/     the embox port: os/eloop/l2/driver, supplicant
+ *                   thread, event queue and the wpa command
+ *
+ * The core module compiles the PSK-only file set (no EAP/WPS/P2P/
+ * ctrl-iface/SME); the config header port/embox/wpa_embox_config.h is
+ * force-included everywhere. Warnings are off for the vanilla tree.
+ */
+package third_party.wpa_supplicant
+
+@Build(script = "$(EXTERNAL_MAKE)")
+module wpa_supplicant_core {
+	@Cflags("-w")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_core/wpa_supplicant-rtos/port/embox/wpa_embox_config.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_core/wpa_supplicant-rtos/src")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_core/wpa_supplicant-rtos/src/utils")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/wpa_supplicant-rtos")
+	source "src/common/wpa_common.c",
+		"src/common/ieee802_11_common.c",
+		"src/common/hw_features_common.c",
+		"src/drivers/driver_common.c",
+		"src/drivers/drivers.c",
+		"src/rsn_supp/wpa.c",
+		"src/rsn_supp/wpa_ie.c",
+		"src/rsn_supp/pmksa_cache.c",
+		"src/rsn_supp/preauth.c",
+		"src/utils/common.c",
+		"src/utils/wpabuf.c",
+		"src/utils/base64.c",
+		"src/utils/bitfield.c",
+		"src/utils/wpa_debug.c",
+		"src/crypto/crypto_internal.c",
+		"src/crypto/aes-internal.c",
+		"src/crypto/aes-internal-dec.c",
+		"src/crypto/aes-internal-enc.c",
+		"src/crypto/aes-wrap.c",
+		"src/crypto/aes-unwrap.c",
+		"src/crypto/aes-omac1.c",
+		"src/crypto/sha1.c",
+		"src/crypto/sha1-internal.c",
+		"src/crypto/sha1-prf.c",
+		"src/crypto/sha1-pbkdf2.c",
+		"src/crypto/md5.c",
+		"src/crypto/md5-internal.c",
+		"src/crypto/rc4.c",
+		"src/crypto/sha256.c",
+		"src/crypto/sha256-internal.c",
+		"src/crypto/sha256-prf.c",
+		"src/crypto/tls_none.c",
+		"wpa_supplicant/wpa_supplicant.c",
+		"wpa_supplicant/events.c",
+		"wpa_supplicant/scan.c",
+		"wpa_supplicant/bss.c",
+		"wpa_supplicant/config.c",
+		"wpa_supplicant/config_none.c",
+		"wpa_supplicant/notify.c",
+		"wpa_supplicant/wpas_glue.c",
+		"wpa_supplicant/bssid_ignore.c",
+		"wpa_supplicant/eap_register.c",
+		"wpa_supplicant/op_classes.c",
+		"wpa_supplicant/rrm.c",
+		"wpa_supplicant/robust_av.c"
+}
+
+/*
+ * The embox side of the port: supplicant thread and event queue, the
+ * net80211 driver wrapper and the embox netdev bridge.
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module wpa_supplicant_embox {
+	@Cflags("-Wno-undef")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_embox/wpa_supplicant-rtos/port/embox/wpa_embox_config.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_embox/wpa_supplicant-rtos/src")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_embox/wpa_supplicant-rtos/src/utils")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_embox/wpa_supplicant-rtos/src/l2_packet")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_embox/wpa_supplicant-rtos/src/drivers")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_embox/wpa_supplicant-rtos/wpa_supplicant")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_embox/wpa_supplicant-rtos/port/embox")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_embox/wpa_supplicant-rtos")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211/port")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/wpa_supplicant-rtos/port/embox")
+	source "os_embox.c",
+		"eloop_embox.c",
+		"supp_main_embox.c",
+		"l2_packet_embox.c",
+		"netdev_bridge.c"
+
+	depends wpa_supplicant_core
+	depends wpa_supplicant_net80211
+	depends third_party.net80211.net80211_port_cherryusb
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
+	depends embox.net.core
+	depends embox.net.dev
+	depends embox.net.l2.ethernet
+	depends embox.net.skbuff
+	depends embox.compat.posix.util.gettimeofday
+}
+
+/*
+ * The one translation unit that lives in both worlds: the driver
+ * wrapper calls net80211 directly, so it compiles with the BSD port
+ * config (which owns the shadow types) plus the hostap headers.
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module wpa_supplicant_net80211 {
+	@Cflags("-Wno-undef")
+	@Cflags("-D_KERNEL")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_net80211/wpa_supplicant-rtos/port/embox/wpa_embox_config.h")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211/port/port_config_bsd.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_net80211/wpa_supplicant-rtos/src")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_net80211/wpa_supplicant-rtos/src/utils")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_net80211/wpa_supplicant-rtos/src/drivers")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_supplicant_net80211/wpa_supplicant-rtos/port/embox")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_core/net_80211/port")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/wpa_supplicant-rtos/port/embox")
+	source "driver_embox.c"
+
+	depends third_party.net80211.net80211_port_cherryusb
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
+}
+
+@AutoCmd
+@App
+@Cmd(name = "wpa",
+	help = "control the wpa_supplicant port",
+	man = '''
+NAME
+	wpa - connect to a WPA2-PSK network with the supplicant
+
+SYNOPSIS
+	wpa start
+	wpa connect <ssid> <psk>
+	wpa status
+	wpa disconnect
+
+DESCRIPTION
+	start brings up the supplicant thread. connect selects the
+	network (the association, the 4-way handshake and the key
+	installation then run in the supplicant). status prints the
+	current state, disconnect clears the selection.
+''')
+@Build(script = "$(EXTERNAL_MAKE)")
+module wpa_cmd {
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_cmd/wpa_supplicant-rtos/port/embox/wpa_embox_config.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_cmd/wpa_supplicant-rtos/src")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_cmd/wpa_supplicant-rtos/src/utils")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/wpa_supplicant/wpa_cmd/wpa_supplicant-rtos/port/embox")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/wpa_supplicant-rtos/port/embox")
+	source "wpa_cmd.c"
+
+	depends wpa_supplicant_embox
+}
