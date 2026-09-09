@@ -1040,6 +1040,33 @@ static uint32_t fat_fetch_dir(struct dirinfo *dir) {
 		dir->currententry = 0;
 		dir->currentsector++;
 
+		/* FAT12/16 root is a fixed run of entries, not a cluster chain.
+		 * Walk linearly and stop at the root's end (EOF). */
+		if (dir->fi.dirsector == 0
+		    && (volinfo->filesystem == FAT12
+		        || volinfo->filesystem == FAT16)) {
+			uint32_t root_secs;
+
+			if (dir->currentsector >= volinfo->secperclus) {
+				dir->currentsector = 0;
+				dir->currentcluster++;
+			}
+			read_sector = fat_current_dirsector(dir);
+			root_secs = (volinfo->rootentries * sizeof(struct fat_dirent)
+			                + volinfo->bytepersec - 1)
+			            / volinfo->bytepersec;
+
+			if (read_sector < volinfo->rootdir
+			    || read_sector >= volinfo->rootdir + root_secs) {
+				return DFS_EOF;
+			}
+			if (fat_read_sector(fsi, dir->p_scratch, read_sector)) {
+				return DFS_ERRMISC;
+			}
+
+			return DFS_OK;
+		}
+
 		/* Root directory; special case handling
 		 * Note that currentcluster will only ever be zero if both:
 		 * (a) this is the root directory, and
