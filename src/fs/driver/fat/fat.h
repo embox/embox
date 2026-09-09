@@ -236,6 +236,9 @@ struct fat_fs_info {
 	struct volinfo vi;
 	struct block_dev *bdev;
 	struct inode *root;
+	/* Hint for free-cluster search. Per-volume, verified on use.
+	 * 0 or out of range means "start at beginning". */
+	uint32_t free_hint;
 };
 
 struct fat_file_info {

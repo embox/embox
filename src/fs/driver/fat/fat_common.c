@@ -640,6 +640,12 @@ static uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
 	uint32_t offset, sector, result;
 	struct volinfo *volinfo = &fsi->vi;
 
+	/* Writing 0 frees the cluster. Update the hint so we don't
+	 * skip over newly freed space. */
+	if (new_contents == 0 && cluster >= 2 && cluster < fsi->free_hint) {
+		fsi->free_hint = cluster;
+	}
+
 	switch (volinfo->filesystem) {
 	case FAT12:
 		offset = cluster + (cluster / 2);
@@ -814,16 +820,174 @@ static void fat_append_longname(char *name, struct fat_dirent *di) {
  * 	otherwise the contents of the desired FAT entry.
  * 	Returns FAT32 bad_sector (0x0ffffff7) if there is no free cluster available
  */
+/* The one place that means "cluster `clus` has just been handed out": both
+ * scan paths below end here, which is why the FAT32 free-count
+ * invalidation is one line rather than two copies of it.
+ *
+ * FAT32 keeps a cached free-cluster count in the FSInfo sector. This driver
+ * never maintained it, so after the first allocation it was a lie that
+ * every other FAT implementation would go on believing. */
+#define FAT_FSI_LEAD    0x41615252u
+#define FAT_FSI_STRUCT  0x61417272u
+#define FAT_FSI_OFF_SIG 0
+#define FAT_FSI_OFF_STR 484
+#define FAT_FSI_OFF_FREE 488
+#define FAT_BPB_FSINFO  48
+
+static struct fat_fs_info *fat_fsinfo_seen[4];
+
+static uint32_t fat_le32(const uint8_t *p) {
+	return (uint32_t)p[0] | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16)
+	       | ((uint32_t)p[3] << 24);
+}
+
+/* Mark this volume's free-cluster summary unknown. Once per volume: the
+ * value never becomes true again while this driver is writing, so there is
+ * nothing to keep up to date. */
+static void fat_fsinfo_unknown(struct fat_fs_info *fsi, uint8_t *p_scratch) {
+	unsigned i;
+	uint32_t sec;
+
+	for (i = 0; i < 4; i++) {
+		if (fat_fsinfo_seen[i] == fsi) {
+			return;
+		}
+	}
+	for (i = 0; i < 4; i++) {
+		if (!fat_fsinfo_seen[i]) {
+			fat_fsinfo_seen[i] = fsi;
+			break;
+		}
+	}
+	if (fsi->vi.filesystem != FAT32) {
+		log_info("fsinfo: not FAT32 (%d), leaving the summary alone",
+		    fsi->vi.filesystem);
+		return;
+	}
+	if (fat_read_sector(fsi, p_scratch, 0)) {
+		log_info("fsinfo: cannot read the boot sector");
+		return;
+	}
+	sec = (uint32_t)p_scratch[FAT_BPB_FSINFO]
+	      | ((uint32_t)p_scratch[FAT_BPB_FSINFO + 1] << 8);
+	if (!sec || sec == 0xffffu) {
+		log_info("fsinfo: the boot sector names no FSInfo (%u)",
+		    (unsigned)sec);
+		return;
+	}
+	if (fat_read_sector(fsi, p_scratch, sec)) {
+		log_info("fsinfo: cannot read sector %u", (unsigned)sec);
+		return;
+	}
+	/* Both signatures, so a volume whose FSInfo is not where the boot sector
+	 * claims is left alone instead of overwritten. */
+	if (fat_le32(p_scratch + FAT_FSI_OFF_SIG) != FAT_FSI_LEAD
+	    || fat_le32(p_scratch + FAT_FSI_OFF_STR) != FAT_FSI_STRUCT) {
+		log_info("fsinfo: sector %u carries %08x/%08x, not an FSInfo; "
+		         "leaving it alone",
+		    (unsigned)sec, (unsigned)fat_le32(p_scratch + FAT_FSI_OFF_SIG),
+		    (unsigned)fat_le32(p_scratch + FAT_FSI_OFF_STR));
+		return;
+	}
+	memset(p_scratch + FAT_FSI_OFF_FREE, 0xff, 8); /* free count, next free */
+	if (fat_write_sector(fsi, p_scratch, sec)) {
+		log_info("fsinfo: sector %u would not write back", (unsigned)sec);
+		return;
+	}
+	log_info("fsinfo: free-cluster summary in sector %u marked unknown",
+	    (unsigned)sec);
+}
+
+static uint32_t fat_free_taken(struct fat_fs_info *fsi, uint8_t *p_scratch,
+		uint32_t clus) {
+	(void)p_scratch;
+	fsi->free_hint = clus + 1;
+	fat_fsinfo_unknown(fsi, p_scratch);
+	return clus;
+}
+
+/* Bytes per FAT entry, or 0 for a table this cannot scan a sector at a time.
+ * FAT12's 12-bit entries straddle sector boundaries -- the reason
+ * fat_get_fat() is shaped the way it is -- so it keeps the slow path. */
+static uint32_t fat_entry_width(const struct volinfo *vi) {
+	switch (vi->filesystem) {
+	case FAT16:
+		return 2;
+	case FAT32:
+		return 4;
+	default:
+		return 0;
+	}
+}
+
 static uint32_t fat_get_free_fat(struct fat_fs_info *fsi, uint8_t *p_scratch) {
+	struct volinfo *vi = &fsi->vi;
+	uint32_t n = vi->numclusters;
+	uint32_t width = fat_entry_width(vi);
+	uint32_t cached_sector = 0;
+	int have_cached = 0;
+	uint32_t span;
+	uint32_t start;
 	uint32_t i;
+
 	/*
 	 * Search starts at cluster 2, which is the first usable cluster
 	 * NOTE: This search can't terminate at a bad cluster, because there might
 	 * legitimately be bad clusters on the disk.
+	 *
+	 * ... but it does not have to start there every time, and it
+	 * does not have to read a sector per entry. Without both, allocating the
+	 * Nth cluster of a file rescans the N-1 already taken, one sector read
+	 * apiece, and writing a file is quadratic in its size. Wrapping once
+	 * keeps "the volume is full" answerable.
 	 */
-	for (i = 2; i < fsi->vi.numclusters; i++) {
-		if (!fat_get_fat(fsi, p_scratch, i)) {
-			return i;
+	if (n <= 2) {
+		return DFS_BAD_CLUS;
+	}
+	span = n - 2;
+	start = (fsi->free_hint >= 2 && fsi->free_hint < n)
+	            ? fsi->free_hint - 2
+	            : 0;
+
+	if (!width || !vi->bytepersec) {
+		for (i = 0; i < span; i++) {
+			uint32_t clus = 2 + ((start + i) % span);
+
+			if (!fat_get_fat(fsi, p_scratch, clus)) {
+				return fat_free_taken(fsi, p_scratch, clus);
+			}
+		}
+		return DFS_BAD_CLUS;
+	}
+
+	for (i = 0; i < span; i++) {
+		uint32_t clus = 2 + ((start + i) % span);
+		uint32_t offset = clus * width;
+		uint32_t sector = offset / vi->bytepersec + vi->fat1;
+		uint32_t val;
+
+		offset %= vi->bytepersec;
+		if (!have_cached || sector != cached_sector) {
+			if (fat_read_sector(fsi, p_scratch, sector)) {
+				return DFS_BAD_CLUS;
+			}
+			cached_sector = sector;
+			have_cached = 1;
+		}
+
+		if (width == 2) {
+			val = (uint32_t)p_scratch[offset]
+			      | ((uint32_t)p_scratch[offset + 1] << 8);
+		}
+		else {
+			val = ((uint32_t)p_scratch[offset]
+			          | ((uint32_t)p_scratch[offset + 1] << 8)
+			          | ((uint32_t)p_scratch[offset + 2] << 16)
+			          | ((uint32_t)p_scratch[offset + 3] << 24))
+			      & 0x0fffffffu;
+		}
+		if (!val) {
+			return fat_free_taken(fsi, p_scratch, clus);
 		}
 	}
 	return DFS_BAD_CLUS;

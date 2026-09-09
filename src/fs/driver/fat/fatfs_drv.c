@@ -95,8 +95,19 @@ static int fat_fill_sb_unlocked(struct super_block *sb, const char *source) {
 	}
 
 	fsi = fat_fs_alloc();
+	/* The pool runs out, and it runs out for a reason that has nothing to do
+	 * with this call -- forty mounts that failed after allocating and never
+	 * gave anything back will do it. The store below was unconditional: a data
+	 * abort at FAR_EL1 = 0, three tests after the mounts that caused it. */
+	if (fsi == NULL) {
+		return -ENOMEM;
+	}
+
 	*fsi = (struct fat_fs_info) {
 		.bdev = bdev,
+		/* The first allocation after a mount pays one scan, and every one
+		 * after it is a step. */
+		.free_hint = 2,
 	};
 	sb->sb_data = fsi;
 	sb->sb_iops = &fat_iops;
