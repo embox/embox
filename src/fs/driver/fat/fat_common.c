@@ -17,6 +17,9 @@
 #include <ctype.h>
 
 #include <drivers/block_dev.h>
+#include <string.h>
+#include <kernel/thread.h>
+#include <kernel/thread/sync/mutex.h>
 #include <fs/dir_context.h>
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
@@ -60,6 +63,50 @@ void fat_volinfo_print(struct volinfo *volinfo) {
 #define SYSTEM32 "FAT32   "
 
 uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE] __attribute__((aligned(16)));
+
+/* fat_sector_buff is shared by every volume, file and directory.
+ * Recursive: fat_iterate() calls fat_destroy_inode(), and both take it. */
+static struct mutex fat_global_lock = RMUTEX_INIT_STATIC;
+
+/* Owner and depth, so fat_lock_assert() can tell whether a user of
+ * fat_sector_buff holds the lock. */
+static int fat_lock_depth;
+static void *fat_lock_owner;
+
+unsigned fat_unlocked_scratch;      /* times the scratch was used unlocked */
+char fat_unlocked_where[32];        /* the first place it happened */
+
+/* A mutex even on one core: block device I/O sleeps, and a thread that runs
+ * meanwhile would refill fat_sector_buff under the sleeping one. */
+void fat_lock(void) {
+	mutex_lock(&fat_global_lock);
+	fat_lock_owner = thread_self();
+	fat_lock_depth++;
+}
+
+void fat_unlock(void) {
+	if (--fat_lock_depth == 0) {
+		fat_lock_owner = NULL;
+	}
+	mutex_unlock(&fat_global_lock);
+}
+
+/* Called by everything that touches fat_sector_buff. Costs a comparison. */
+void fat_lock_assert(const char *where) {
+#if defined(SMP)
+	if (fat_lock_depth > 0 && fat_lock_owner == thread_self()) {
+		return;
+	}
+	if (fat_unlocked_scratch == 0) {
+		strncpy(fat_unlocked_where, where, sizeof(fat_unlocked_where) - 1);
+		log_error("UNLOCKED SCRATCH: %s reached fat_sector_buff without the "
+		          "driver lock", where);
+	}
+	fat_unlocked_scratch++;
+#else
+	(void)where;
+#endif
+}
 
 static const char bootcode[130] =
 	{ 0x0e, 0x1f, 0xbe, 0x5b, 0x7c, 0xac, 0x22, 0xc0, 0x74, 0x0b,
@@ -448,6 +495,7 @@ uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsec
  */
 uint32_t fat_get_fat(struct fat_fs_info *fsi,
 		uint8_t *p_scratch, uint32_t cluster) {
+	fat_lock_assert("fat_get_fat");
 	uint32_t offset, sector, result;
 	struct volinfo *volinfo = &fsi->vi;
 
@@ -850,6 +898,7 @@ static uint32_t fat_get_current(struct dirinfo *dir, struct fat_dirent *dirent) 
  * or DFS_ERRMISC for a media error
  */
 uint32_t fat_get_next(struct dirinfo *dir, struct fat_dirent *dirent) {
+	fat_lock_assert("fat_get_next");
 	struct fat_dirent *dirent_src;
 	uint32_t tmp;
 
@@ -894,6 +943,7 @@ uint32_t fat_get_next(struct dirinfo *dir, struct fat_dirent *dirent) {
 
 /* Same as fat_get_next(), but skip long-name entries with following 8.3-entries */
 uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent, char *name_buf) {
+	fat_lock_assert("fat_get_next_long");
 	uint32_t ret;
 	char c;
 	int i;
@@ -1140,6 +1190,42 @@ int fat_root_dir_record(void *bdev) {
 	return DFS_OK;
 }
 
+/* Moves the fi->cluster cursor to fi->pointer; only the read/write loops
+ * maintain it. Walks from firstcluster, so call only when the position moved.
+ */
+uint32_t fat_seek_cluster(struct fat_file_info *fi, uint8_t *p_scratch,
+		uint32_t pointer) {
+	fat_lock_assert("fat_seek_cluster");
+	struct fat_fs_info *fsi = fi->fsi;
+	uint32_t clastersize;
+	uint32_t want;
+	uint32_t clus;
+	uint32_t i;
+
+	clastersize = fi->volinfo->secperclus * fi->volinfo->bytepersec;
+	if (!clastersize) {
+		return DFS_BAD_CLUS;
+	}
+	clus = fi->firstcluster;
+	if (clus < 2) {
+		return DFS_BAD_CLUS;
+	}
+	/* The cursor is the cluster of the byte before the pointer, so a write on a
+	 * cluster boundary does not allocate a cluster it never fills. */
+	want = pointer ? (pointer - 1) / clastersize : 0;
+	for (i = 0; i < want; i++) {
+		if (fat_is_end_of_chain(fsi, clus)) {
+			return DFS_BAD_CLUS;
+		}
+		clus = fat_get_fat(fsi, p_scratch, clus);
+		if (clus < 2 || clus == DFS_BAD_CLUS) {
+			return DFS_BAD_CLUS;
+		}
+	}
+	fi->cluster = clus;
+	return DFS_OK;
+}
+
 /*
  * Read an open file
  * You must supply a prepopulated file_info_t as provided by fat_open_file,
@@ -1149,6 +1235,7 @@ int fat_root_dir_record(void *bdev) {
  */
 uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		uint8_t *buffer, uint32_t *successcount, uint32_t len) {
+	fat_lock_assert("fat_read_file");
 	uint32_t remain;
 	uint32_t result;
 	uint32_t sector;
@@ -1267,6 +1354,7 @@ uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
  */
 uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size) {
+	fat_lock_assert("fat_write_file");
 	uint32_t remain;
 	uint32_t result = DFS_OK;
 	uint32_t sector;
@@ -1559,6 +1647,7 @@ int fat_dir_empty(struct fat_file_info *fi) {
  * p_scratch must point to a sector-sized buffer
  */
 int fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch) {
+	fat_lock_assert("fat_unlike_file");
 	uint32_t tempclus;
 	struct fat_fs_info *fsi;
 	struct dirinfo *di = fi->fdi;
@@ -1791,6 +1880,7 @@ void fat_write_longname(char *name, struct fat_dirent *di) {
 }
 
 int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name) {
+	fat_lock_assert("fat_read_filename");
 	struct fat_dirent de;
 	struct dirinfo *dir;
 	int offt = 1;
