@@ -14,6 +14,11 @@ abstract module fat {
 	@IncludeExport(path="fs")
 	source "fat.h"
 
+	/* Pool occupancy, in its own header because fat.h cannot be included
+	 * from outside this module. */
+	@IncludeExport(path="fs")
+	source "fat_pool_use.h"
+
 	source "fat_common.c"
 	source "fatfs_subr.c"
 	source "fat_common_mem.c"
@@ -23,6 +28,9 @@ abstract module fat {
 	source "fatfs_drv.c"
 
 	depends embox.driver.block_dev
+	/* The driver keeps one global sector buffer for every volume, file and
+	 * directory, so every entry point is serialised against every other. */
+	depends embox.kernel.thread.mutex
 }
 
 module fat_old extends fat {
