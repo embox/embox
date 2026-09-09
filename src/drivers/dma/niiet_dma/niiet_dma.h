@@ -18,6 +18,8 @@
 #define DMA_TYPE_I2C      "DMA_I2C"
 #define DMA_TYPE_TMR      "DMA_TMR"
 
+struct niiet_dma_req;
+
 struct niiet_dma_req {
 	uintptr_t dr_src;
 	int       dr_src_width;
@@ -31,10 +33,11 @@ struct niiet_dma_req {
 
 	uint32_t  dr_flags;
 	uint32_t  dr_status;
+	int     (*dr_callback)(struct niiet_dma_req *req, void *data, int res);
 
 };
 
-extern int niiet_dma_init(uintptr_t label);
+extern int niiet_dma_init(uintptr_t label, int ch);
 
 extern int niiet_dma_req(int ch, struct niiet_dma_req *conf);
 extern int niiet_dma_get_type(char *type);
