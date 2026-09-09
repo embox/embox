@@ -236,7 +236,7 @@ int fat_create_partition(void *dev, int fat_n) {
 	uint16_t bytepersec = bdev->block_size;
 	size_t num_sect = block_dev(bdev)->size / bytepersec;
 	assert(bdev->block_size <= FAT_MAX_SECTOR_SIZE);
-	uint32_t secperfat = 1;
+	uint32_t secperfat;
 	uint16_t rootentries = 0x0200;             /* 512 for FAT16 */
 	int reserved;
 	int err;
@@ -266,6 +266,40 @@ int fat_create_partition(void *dev, int fat_n) {
 		.sig_aa = 0xAA,
 	};
 
+
+	/* Size the FAT table for the volume. Previously hardcoded to 1 sector,
+	 * which caused writes beyond the table boundary for larger volumes.
+	 * Iteratively compute the correct size based on cluster count. */
+	{
+		uint32_t root_sect = (rootentries * 32 + bytepersec - 1) / bytepersec;
+		uint32_t secperclus = lbr.bpb.secperclus;
+		uint32_t reserved_sect = 1;
+		uint32_t numfats = 2;
+
+		secperfat = 1;
+		for (i = 0; i < 8; i++) {
+			uint32_t data, clusters, bytes, want;
+
+			data = num_sect - reserved_sect - root_sect - numfats * secperfat;
+			clusters = data / secperclus + 2;
+
+			if (clusters < 4085) {
+				bytes = (clusters * 3 + 1) / 2;  /* FAT12: 12 bits each */
+			}
+			else if (clusters < 65525) {
+				bytes = clusters * 2;
+			}
+			else {
+				bytes = clusters * 4;
+			}
+
+			want = (bytes + bytepersec - 1) / bytepersec;
+			if (want <= secperfat) {
+				break;
+			}
+			secperfat = want;
+		}
+	}
 
 	if (0xFFFF > num_sect)	{
 		lbr.bpb.sectors_s_l = (uint8_t)(0x00000FF & num_sect);
