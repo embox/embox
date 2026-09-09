@@ -2095,6 +2095,15 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	fat_set_fat(fsi, fat_sector_buff, fi->cluster, cluster);
 
 	if (S_ISDIR(mode)) {
+		/* Zero the whole cluster before writing . and .. entries.
+		 * Previously only one sector was written from a buffer that had
+		 * leftover data, causing directory scans to read garbage entries.
+		 * fat_clear_clus() leaves the scratch buffer zeroed, which is
+		 * what fat_set_direntry() needs. */
+		if (0 != fat_clear_clus(fsi, fi->cluster, fat_sector_buff)) {
+			return DFS_ERRMISC;
+		}
+
 		/* create . and ..  files of this catalog */
 		fat_set_direntry(di->currentcluster, fi->cluster);
 		cluster = fi->volinfo->dataarea +
