@@ -47,7 +47,6 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 	struct mount_descriptor *mdesc;
 	struct inode *node, *root_node;
 	struct path path;
-	struct mount_descriptor *mnt_desc;
 
 	if (vfs_lookup(strpath, &path)) {
 		return -ENOENT;
@@ -62,9 +61,20 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 
 	vfs_add_leaf(node, root_node);
 
-	mnt_desc = mount_desc_by_inode(path.node);
-
-	mdesc = mount_table_add(&path, mnt_desc, root_node, "");
+	/* This used to ask mount_desc_by_inode(path.node), which
+	 * answers a narrower question than its name suggests -- it returns a
+	 * descriptor only for an inode that IS a mount point or a mount root.
+	 * "/test" is neither, being an ordinary child of the root, so the answer
+	 * was NULL, and mount_table_add() asserts that a NULL parent means there
+	 * is no root mount yet. Assertion, abort, and from outside a board that
+	 * simply stops: the suite looked like it hung the boot.
+	 *
+	 * The descriptor of the filesystem a path is IN is what vfs_lookup() has
+	 * already put in the path -- that is what struct path::mnt_desc is for,
+	 * and it is what mount_table_add() wants as a parent. It was being
+	 * thrown away and asked for again, in a way that has not worked since
+	 * the field existed. */
+	mdesc = mount_table_add(&path, path.mnt_desc, root_node, "");
 	assert(mdesc);
 
 	return 0;

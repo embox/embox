@@ -5,4 +5,16 @@ module concurrency_test {
 	source "concurrency_test_file.txt"
 
 	source "concurrency_test.c"
+
+	/* A test suite runs from its module's `enable` op, so the module
+	 * graph is what decides whether the things it needs exist yet. This one
+	 * declared nothing, so it ran before the root filesystem was mounted and
+	 * every open() of its own @InitFS file returned -1 -- 3 of 3 cases
+	 * failing, and a failing suite aborts the runlevel, so the board never
+	 * reached a shell.
+	 *
+	 * rootfs_oldfs is what InitFsTest next door already depends on for the
+	 * same reason; pthreads is what two of the three cases are written in. */
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.pthreads
 }
