@@ -36,6 +36,7 @@ module net80211_core {
 		"net80211/ieee80211_netbsd.c",
 		"net80211/ieee80211_crypto.c",
 		"net80211/ieee80211_crypto_none.c",
+		"net80211/ieee80211_crypto_ccmp.c",
 		/* software AES-CCMP: the verbatim NetBSD crypto/aes import
 		 * plus the port shim binding <crypto/aes/aes.h> to
 		 * aes_bear_impl */
@@ -162,11 +163,15 @@ NAME
 
 SYNOPSIS
 	wlan scan [seconds]
+	wlan status
+	wlan ccmtest
 	wlan trace [0|1|2]
 
 DESCRIPTION
 	The scan subcommand brings the interface up, scans for
-	[seconds] and prints the networks found. The trace subcommand
+	[seconds] and prints the networks found. status prints interface,
+	association, crypto counters and receiver registers without keys.
+	ccmtest runs the RFC 3610 AES-CCM self-tests. The trace subcommand
 	selects the USB shim log verbosity: 0 (default) quiet, 1 async
 	events, 2 full control transfers.
 ''')
