@@ -282,13 +282,38 @@ void vfs_get_leaf_path(struct path *path) {
 }
 
 void if_mounted_follow_down(struct path *path) {
-	if (path->node->mounted) {
-		path->mnt_desc = mount_table_get_child(path->mnt_desc, path->node);
+	struct mount_descriptor *child;
 
-		assert(path->mnt_desc);
-
-		path->node = path->mnt_desc->mnt_root;
+	if (!path->node->mounted) {
+		return;
 	}
+
+	child = mount_table_get_child(path->mnt_desc, path->node);
+	if (child == NULL) {
+		/* `mounted' is read without the lock, so it can be a moment stale --
+		 * and mount_table.c says so in as many words. The answer to a stale
+		 * non-zero is "this is not a mount point after all", which is what the
+		 * tree looks like a moment later anyway. It used to be an assertion,
+		 * and on four cores it fired: measured in the mount_smp suite,
+		 * vfs.c:284. */
+		return;
+	}
+
+	/* Do not walk into a volume that is being taken apart. kumount() frees
+	 * every inode of it, and a walk that steps in here comes back out holding
+	 * one of them. The mount point of the parent filesystem is the honest
+	 * answer: it is what this path resolves to a moment later in any case. */
+	/* See file_desc_alloc(). */
+	{
+		struct super_block *sb = child->mnt_root ? child->mnt_root->i_sb : NULL;
+
+		if (sb && sb->sb_unmounting) {
+			return;
+		}
+	}
+
+	path->mnt_desc = child;
+	path->node = child->mnt_root;
 }
 
 /**
