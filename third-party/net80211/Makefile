@@ -6,8 +6,9 @@
 #   net80211/     NetBSD 802.11 stack (verbatim import)
 #   driver/urtwn/ RTL8188EU driver
 #   compat/netbsd/ shadow headers for the NetBSD kernel API
-#   port/         port interface + embox shims + cherryusb backend
+#   port/         the port interface with osal/, bus/ and net/
+#                 adapter categories; cmd/ holds the shell command
 
 PKG_NAME := net80211
-PKG_VER := a14682c4a0185ec3f7bbf5308e9f6a2aeffe1666
+PKG_VER := f202037238a086a4eecf1d6dcbee26276a4818d5
 PKG_SOURCES := https://github.com/KevinACoder/net_80211.git

@@ -11,7 +11,8 @@
  *   net80211/       NetBSD 802.11 stack (verbatim import)
  *   driver/urtwn/   RTL8188EU driver (verbatim import + registration)
  *   compat/netbsd/  shadow headers for the NetBSD kernel API
- *   port/           portable port interface + embox/cherryusb ports
+ *   port/           the port interface with osal/, bus/ and net/
+ *                   adapter categories; cmd/ holds the shell command
  */
 package third_party.net80211
 
@@ -68,22 +69,43 @@ module net80211_urtwn {
 }
 
 /*
- * NetBSD kernel-API shims for embox (locks/threads, mbuf, ifnet,
- * firmware lookup). Any USB backend for embox builds on this module.
+ * The OS adaptation for embox: NetBSD kernel services (locks/threads,
+ * timers) and the embedded firmware lookup.
  */
 @Build(script = "$(EXTERNAL_MAKE)")
-module net80211_embox_osal {
+module net80211_osal_embox {
 	@Cflags("-D_KERNEL")
-	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_embox_osal/net_80211/port/port_config.h")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_embox_osal/net_80211/compat/netbsd")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_embox_osal/net_80211")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_embox_osal/net_80211/port")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/embox")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_osal_embox/net_80211/port/port_config.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_osal_embox/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_osal_embox/net_80211")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_osal_embox/net_80211/port")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/osal/embox")
 	source "osal_embox.c",
-		"bsd_mbuf.c",
-		"bsd_ifnet.c",
 		"firmware_embed.c"
 
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
+	depends embox.kernel.timer.sys_timer
+	depends embox.kernel.timer.sleep
+	depends embox.compat.posix.util.gettimeofday
+}
+
+/*
+ * The presentation layer for the embox network stack: the BSD mbuf
+ * and ifnet shells the imported code runs on.
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module net80211_net_embox {
+	@Cflags("-D_KERNEL")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_net_embox/net_80211/port/port_config.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_net_embox/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_net_embox/net_80211")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_net_embox/net_80211/port")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/net/embox")
+	source "bsd_mbuf.c",
+		"bsd_ifnet.c"
+
+	depends net80211_osal_embox
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
 	depends embox.kernel.timer.sys_timer
@@ -101,12 +123,12 @@ module cherryusb_host {
 	/* the EHCI hardware link pointers are 32-bit: the truncation is
 	 * intentional, every pool sits below 4G on this platform */
 	@Cflags("-Wno-pointer-to-int-cast")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb/cherryusb/core")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb/cherryusb/common")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb/cherryusb/class/hub")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/cherryusb/cherryusb/port/ehci")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/cherryusb")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/bus/usb/cherryusb")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/bus/usb/cherryusb/cherryusb/core")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/bus/usb/cherryusb/cherryusb/common")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/bus/usb/cherryusb/cherryusb/class/hub")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/cherryusb_host/net_80211/port/bus/usb/cherryusb/cherryusb/port/ehci")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/bus/usb/cherryusb")
 	source "cherryusb/core/usbh_core.c",
 		"cherryusb/class/hub/usbh_hub.c",
 		"cherryusb/port/ehci/usb_hc_ehci.c",
@@ -124,8 +146,8 @@ module cherryusb_host {
 
 /*
  * The net80211 port over cherryusb: the usbd_* shim reroutes the
- * driver's transfers onto CherryUSB, plus the urtwn class hook, the
- * net bridge and the shell command.
+ * driver's transfers onto CherryUSB, plus the urtwn class hook and
+ * the net bridge.
  */
 @Build(script = "$(EXTERNAL_MAKE)")
 module net80211_port_cherryusb {
@@ -134,17 +156,18 @@ module net80211_port_cherryusb {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/compat/netbsd")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/cherryusb")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/cherryusb/cherryusb/core")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/cherryusb/cherryusb/common")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/cherryusb/cherryusb/class/hub")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/cherryusb")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/bus/usb/cherryusb")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/bus/usb/cherryusb/cherryusb/core")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/bus/usb/cherryusb/cherryusb/common")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_cherryusb/net_80211/port/bus/usb/cherryusb/cherryusb/class/hub")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/bus/usb/cherryusb")
 	source "usbdi_compat.c",
 		"usbh_urtwn_class.c",
 		"net_bridge.c"
 
 	depends cherryusb_host
-	depends net80211_embox_osal
+	depends net80211_osal_embox
+	depends net80211_net_embox
 	depends net80211_urtwn
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
@@ -180,7 +203,7 @@ module net80211_wlan_cmd {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_wlan_cmd/net_80211/compat/netbsd")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_wlan_cmd/net_80211")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_wlan_cmd/net_80211/port")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/cherryusb")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/cmd")
 	source "wlan_cmd.c"
 
 	depends net80211_port_cherryusb
