@@ -1800,8 +1800,8 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 			lastcluster = fat_end_of_chain(fsi);
 			fat_set_fat(fsi, p_scratch, fi->cluster, lastcluster);
 
-			/* Now follow the cluster chain to free the file space */
-			while (!fat_is_end_of_chain(fsi, nextcluster)) {
+			/* Follow cluster chain to free space. Same `>= 2` guard as fat_unlike_file(). */
+			while (nextcluster >= 2 && !fat_is_end_of_chain(fsi, nextcluster)) {
 				lastcluster = nextcluster;
 				nextcluster = fat_get_fat(fsi, p_scratch, nextcluster);
 
@@ -1832,7 +1832,6 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 	struct fat_dirent de = { };
 	struct dirinfo saved_di = { };
-	struct dirinfo last_di = { };
 	void *p_scratch = di->p_scratch;
 	struct fat_fs_info *fsi = fi->fsi;
 
@@ -1843,11 +1842,16 @@ static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 	}
 
 	while (true) {
-		memcpy(&last_di, di, sizeof(last_di));
+		/* fat_get_next() returns DFS_EOF at end of directory. */
+		if (DFS_OK != fat_get_next(di, &de)) {
+			return;
+		}
 
-		fat_get_next(di, &de);
-
-		if (fi->cluster == fat_direntry_get_clus(&de)) {
+		/* Use firstcluster, not the cursor. fi->cluster is the last byte
+		 * touched, not what the directory entry holds. Skip blank/deleted
+		 * entries (name[0] == '\0'). */
+		if (de.name[0] != '\0'
+		    && fi->firstcluster == fat_direntry_get_clus(&de)) {
 			if (saved_di.p_scratch == NULL) {
 				/* Not a long entry */
 				return;
@@ -1874,9 +1878,11 @@ static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 			memset(&saved_di, 0, sizeof(saved_di));
 		} else if ((de.name[0] & FAT_LONG_ORDER_NUM_MASK) &&
 				saved_di.p_scratch == NULL) {
-			/* Save directory state only if it was not saved
-			 * for previous entry */
-			memcpy(&saved_di, &last_di, sizeof(saved_di));
+			/* Copy from AFTER the read. fat_get_next() leaves currententry
+			 * one beyond the entry it returned. A copy taken before the read
+			 * names the previous sector with an index one past its end. */
+			memcpy(&saved_di, di, sizeof(saved_di));
+			saved_di.currententry--;
 		}
 	}
 }
@@ -1928,11 +1934,18 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch) {
 		return DFS_ERRMISC;
 	}
 
-	/* Now follow the cluster chain to free the file space */
-	while (!fat_is_end_of_chain(fsi, fi->firstcluster)) {
+	/* Follow cluster chain to free space. `>= 2` guard: clusters 0 and 1 are
+	 * reserved; without it a chain containing zero overwrites the media
+	 * descriptor. */
+	while (fi->firstcluster >= 2 && !fat_is_end_of_chain(fsi, fi->firstcluster)) {
 		tempclus = fi->firstcluster;
 		fi->firstcluster = fat_get_fat(fsi, p_scratch, fi->firstcluster);
 		fat_set_fat(fsi, p_scratch, tempclus, 0);
+	}
+	if (fi->firstcluster < 2) {
+		log_error("cluster chain of a deleted file reached %u; "
+		          "the chain was broken, stopping there",
+		    (unsigned)fi->firstcluster);
 	}
 	return DFS_OK;
 }
