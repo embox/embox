@@ -44,7 +44,7 @@ static int esc_mo_send_msg(struct motor_dev *dev, struct motor_msg *msg) {
 
 	pwm_set_duty_array(dev->md_pwm_dev, dev->md_pwm_chan, dma_buf,
 	    DSHOT_DMA_BUFFER_SIZE);
-
+	pwm_enable(dev->md_pwm_dev, 1 << dev->md_pwm_chan);
 	return 0;
 }
 
