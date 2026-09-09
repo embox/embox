@@ -41,12 +41,13 @@ static int setup_suite(void) {
 		return -ENOMEM;
 	}
 
-	inode_name_set(test_node, "R");
-	inode_name_set(test_node, "A");
-	inode_name_set(test_node, "B");
-	inode_name_set(test_node, "C");
-	inode_name_set(test_node, "D");
-	inode_name_set(test_node, "E");
+	/* The names the tree below is built from, in build order. */
+	inode_name_set(test_root, "R");
+	inode_name_set(a, "A");
+	inode_name_set(b, "B");
+	inode_name_set(c, "C");
+	inode_name_set(d, "D");
+	inode_name_set(e, "E");
 
 	vfs_add_leaf(a, test_root);
 	vfs_add_leaf(b, test_root);
@@ -73,15 +74,9 @@ static int teardown_suite(void) {
 	return 0;
 }
 
+/* Resolve relative to NODE, not to the running system's root. */
 static struct inode *vfs_lookup_nr(struct inode *node, const char *str_path) {
-	static struct path nr_return;
-	int lookup_ecode;
-
-	lookup_ecode = vfs_lookup(str_path, &nr_return);
-	if (lookup_ecode < 0) {
-		return NULL;
-	}
-	return nr_return.node;
+	return vfs_subtree_lookup(node, str_path);
 }
 
 TEST_CASE("vfs_lookup_nr should find all nodes") {
