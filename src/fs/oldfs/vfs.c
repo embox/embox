@@ -270,13 +270,31 @@ void vfs_get_leaf_path(struct path *path) {
 }
 
 void if_mounted_follow_down(struct path *path) {
-	if (path->node->mounted) {
-		path->mnt_desc = mount_table_get_child(path->mnt_desc, path->node);
+	struct mount_descriptor *child;
 
-		assert(path->mnt_desc);
-
-		path->node = path->mnt_desc->mnt_root;
+	if (!path->node->mounted) {
+		return;
 	}
+
+	child = mount_table_get_child(path->mnt_desc, path->node);
+	if (child == NULL) {
+		/* `mounted' is read without the lock and can be stale; then this is
+		 * not a mount point after all. */
+		return;
+	}
+
+	/* Do not walk into a volume being unmounted; stop at the mount point.
+	 * i_sb is read once, as in file_desc_alloc(). */
+	{
+		struct super_block *sb = child->mnt_root ? child->mnt_root->i_sb : NULL;
+
+		if (sb && sb->sb_unmounting) {
+			return;
+		}
+	}
+
+	path->mnt_desc = child;
+	path->node = child->mnt_root;
 }
 
 /**
