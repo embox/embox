@@ -470,6 +470,11 @@ int clk_enable(char *clk_name) {
 		niiet_can_set_rcu(num);
 		return 0;
 	}
+	if (0 == strncmp(clk_name, CLK_NAME_DMA, sizeof(CLK_NAME_DMA) - 1)) {
+		num = 0;
+		niiet_dma_set_rcu(num);
+		return 0;
+	}
 
 	return -ENOSUPP;
 }
