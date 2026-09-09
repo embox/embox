@@ -8,9 +8,14 @@
 
 #include <framework/test/emit.h>
 #include <hal/ipl.h>
+#include <kernel/spinlock.h>
+
+/* One lock for every buffer: masking interrupts does not exclude other
+ * cores, and every thread a suite starts writes here. */
+static spinlock_t emit_lock = SPIN_STATIC_UNLOCKED;
 
 void test_emit_into(struct test_emit_buffer *b, char ch) {
-	ipl_t ipl = ipl_save();
+	ipl_t ipl = spin_lock_ipl(&emit_lock);
 	{
 		if (test_emit_buffer_overflown(b)) {
 			goto out;
@@ -26,5 +31,5 @@ void test_emit_into(struct test_emit_buffer *b, char ch) {
 		}
 	}
 out:
-	ipl_restore(ipl);
+	spin_unlock_ipl(&emit_lock, ipl);
 }
