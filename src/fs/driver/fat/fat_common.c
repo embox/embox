@@ -2046,6 +2046,12 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	fat_set_fat(fsi, fat_sector_buff, fi->cluster, cluster);
 
 	if (S_ISDIR(mode)) {
+		/* Zero the whole cluster; fat_clear_clus() also leaves the scratch zeroed
+		 * for fat_set_direntry(). */
+		if (0 != fat_clear_clus(fsi, fi->cluster, fat_sector_buff)) {
+			return DFS_ERRMISC;
+		}
+
 		/* create . and ..  files of this catalog */
 		fat_set_direntry(di->currentcluster, fi->cluster);
 		cluster = fi->volinfo->dataarea +
