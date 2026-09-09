@@ -1376,7 +1376,6 @@ int fat_root_dir_record(void *bdev) {
 	struct fat_fs_info fsi;
 	uint32_t pstart, psize;
 	uint8_t pactive, ptype;
-	struct fat_dirent de;
 	int dev_blk_size = block_dev(bdev)->block_size;
 	int root_dir_sz;
 
@@ -1394,49 +1393,33 @@ int fat_root_dir_record(void *bdev) {
 		return -1;
 	}
 
-	cluster = fsi.vi.rootdir / fsi.vi.secperclus;
-
-	de = (struct fat_dirent) {
-		.name = "ROOT DIR   ",
-		.attr = ATTR_DIRECTORY,
-	};
-	fat_direntry_set_clus(&de, cluster);
-
-	fat_set_filetime(&de);
-
-	/*
-	 * write the directory entry
-	 * note that we no longer have the sector containing the directory
-	 * entry, tragically, so we have to re-read it
-	 */
-
-	/* we clear other FAT TABLE */
+	/* Previously wrote a "ROOT DIR" entry at cluster rootdir/secperclus,
+	 * which is not a valid cluster. On remount, the walk would descend
+	 * into data clusters, reading file data as directory entries.
+	 * A FAT root directory holds no entry for itself. Clear it. */
 	memset(fat_sector_buff, 0, sizeof(fat_sector_buff));
-	memcpy(&(((struct fat_dirent*) fat_sector_buff)[0]), &de, sizeof(struct fat_dirent));
-
-	if (0 > block_dev_write(	bdev,
-					(char *) fat_sector_buff,
-					fsi.vi.bytepersec,
-					fsi.vi.rootdir * fsi.vi.bytepersec / dev_blk_size)) {
-		return DFS_ERRMISC;
-	}
 
 	root_dir_sz = (fsi.vi.rootentries * sizeof(struct fat_dirent) +
-	               fsi.vi.bytepersec - 1) / fsi.vi.bytepersec - 1;
+	               fsi.vi.bytepersec - 1) / fsi.vi.bytepersec;
 
-	if (root_dir_sz)
-		memset(fat_sector_buff, 0, sizeof(struct fat_dirent)); /* The rest is zeroes already */
-	/* Clear the rest of root directory */
 	while (root_dir_sz) {
-		block_dev_write(bdev,
-				(char *) fat_sector_buff,
-				fsi.vi.bytepersec,
-				(root_dir_sz + fsi.vi.rootdir) * fsi.vi.bytepersec / dev_blk_size);
 		root_dir_sz--;
+		if (0 > block_dev_write(bdev,
+		            (char *) fat_sector_buff,
+		            fsi.vi.bytepersec,
+		            (fsi.vi.rootdir + root_dir_sz) * fsi.vi.bytepersec
+		                / dev_blk_size)) {
+			return DFS_ERRMISC;
+		}
 	}
 
+	/* Previously wrote an entry for cluster 0xffff, 128 KiB into a table
+	 * that is 40 KiB long. The write landed outside the FAT, in the data
+	 * area. The entries a FAT reserves are 0 and 1: the media descriptor
+	 * and the end-of-chain mark. */
 	cluster = fat_end_of_chain(&fsi);
-	fat_set_fat(&fsi, fat_sector_buff, cluster, cluster);
+	fat_set_fat(&fsi, fat_sector_buff, 0, (cluster & ~0xffu) | 0xf8u);
+	fat_set_fat(&fsi, fat_sector_buff, 1, cluster);
 
 	return DFS_OK;
 }
