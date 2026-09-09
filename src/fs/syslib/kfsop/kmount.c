@@ -37,10 +37,10 @@ static int vfs_mount_walker(struct inode *dir) {
 				dir,
 				&dir_context);
 
-		if (res == -1){
-			/* End of directory */
+		if (res != 0) {
+			/* -1 is end of directory; other values are filesystem errors. */
 			inode_free(node);
-			return 0;
+			return res == -1 ? 0 : res;
 		}
 
 		node->i_ops = dir->i_ops;
@@ -53,6 +53,22 @@ static int vfs_mount_walker(struct inode *dir) {
 			vfs_mount_walker(node);
 		}
 	} while (1);
+}
+
+/* Mirror of umount_walker() in kumount.c, for a mount that got as far as
+ * walking the volume and then could not be registered. Same shape: children
+ * first, then the node, filesystem gets its data back on the way. */
+static void mount_unwalk(struct inode *node) {
+	struct inode *child;
+
+	if (S_ISDIR(node->i_mode)) {
+		while (NULL != (child = vfs_subtree_get_child_next(node, NULL))) {
+			mount_unwalk(child);
+		}
+	}
+
+	inode_detach_fs(node);
+	vfs_del_leaf(node);
 }
 
 int kmount(const char *source, const char *dest, const char *fs_type) {
@@ -73,6 +89,8 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 
 	res = fs_perm_lookup(dest, &lastpath, &dir_node);
 	if (ENOERR != res) {
+		/* Superblock already allocated; free it on failure. */
+		super_block_free(sb);
 		errno = -res;
 		return -1;
 	}
@@ -88,9 +106,10 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 
 	mnt_desc = mount_table_add(&dir_node, mnt_desc, sb->sb_root, source);
 	if (NULL == mnt_desc) {
+		/* Give back what the walker made. */
+		mount_unwalk(sb->sb_root);
 		super_block_free(sb);
-		//todo free root
-		errno = -res;
+		errno = EBUSY;
 		return -1;
 	}
 
