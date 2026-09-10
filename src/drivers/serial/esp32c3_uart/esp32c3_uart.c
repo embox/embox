@@ -130,7 +130,7 @@ static int esp32c3_uart_getc(struct uart *dev) {
 }
 
 static int esp32c3_uart_putc(struct uart *dev, int ch) {
-    while (REG32_LOAD(UART_STATUS(dev->base_addr)) & 0x3FF) {};
+    while (REG32_LOAD(UART_STATUS(dev->base_addr)) & (0x3FF << 16)) {};
 
     REG32_STORE(UART_FIFO(dev->base_addr), (uint32_t)(ch & 0xFF));
 
