@@ -77,7 +77,16 @@ int open(const char *path, int __oflag, ...) {
 	node = find_node(dir, name);
 
 	node_path.node = node;
-	if_mounted_follow_down(&dir->path);
+	/* Through the DIR, so that the reference the DIR
+	 * holds moves onto the mounted volume with it. Calling
+	 * if_mounted_follow_down() on dir->path directly left the reference
+	 * behind on the mount point and had closedir() release one it never took
+	 * -- and left the volume root, which everything below here uses, held by
+	 * nobody while another core unmounted it. */
+	if (0 != dir_follow_down(dir)) {
+		rc = -ENOENT;
+		goto out;
+	}
 	node_path.mnt_desc = dir->path.mnt_desc;
 
 	if (node == NULL) {

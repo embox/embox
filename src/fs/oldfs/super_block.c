@@ -100,7 +100,14 @@ int super_block_free(struct super_block *sb) {
 	if (sb->sb_root) {
 		/* Mount root should be generally
 		 * freed on umount */
-		inode_free(sb->sb_root);
+		/* A directory walk holds this inode -- readdir() replaces its own path
+		 * with the mounted volume's root and keeps it for the life of the DIR.
+		 * Freeing it outright is the use-after-free that closedir() then trips
+		 * over as "i_ref > 0" on a pool slot somebody else already owns. Hand
+		 * the filesystem its data back while it still exists, then give the
+		 * inode up properly. */
+		inode_detach_fs(sb->sb_root);
+		inode_release(sb->sb_root);
 	}
 
 	pool_free(&super_block_pool, sb);

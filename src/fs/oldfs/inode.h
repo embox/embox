@@ -53,6 +53,22 @@ struct inode {
 	void                 *i_privdata;
 
 	unsigned int i_nlink;
+
+	/* i_nlink counts names; i_ref counts users of the pointer.
+	 * Between finding a path and using it, another core can unlink the
+	 * inode. i_ref protects against this; i_dying marks an inode that
+	 * left the name tree but still has users. Both are accessed under
+	 * vfs.c's tree lock. */
+	int i_ref;
+	int i_dying;
+
+	/* Generation number for this pool slot allocation.
+	 * A descriptor holds a pointer, and a freed-and-reused pointer is
+	 * still valid -- to somebody else's file. The generation catches this:
+	 * whoever holds this inode records the number it saw, and a mismatch
+	 * means the slot changed hands. */
+	unsigned int i_gen;
+
 	struct slist_link dirent_link;
 
 	/* node name (use vfs_get_path_by_node() for get full path*/
@@ -75,6 +91,36 @@ extern void inode_del(struct inode *node);
  *    If zero, the name must be a null-terminated string.
  */
 extern struct inode *inode_alloc(struct super_block *sb);
+
+/* inode_ref() returns 0 if the inode is dying (caller must not use it).
+ * Every successful reference is matched by exactly one inode_unref().
+ * Both live in vfs.c, next to the lock that orders them against vfs_del_leaf(). */
+extern int inode_ref(struct inode *node);
+extern void inode_unref(struct inode *node);
+
+/* "The tree is done with this inode." Frees it if nobody holds it, marks it
+ * dying if somebody does -- the last inode_unref() frees it then. This is
+ * the ONLY way an inode that was ever reachable may be given up. */
+extern void inode_release(struct inode *node);
+
+/* Hands the filesystem back whatever it hung off this inode, now. Needed
+ * before the superblock goes, because a deferred inode outlives the unlink. */
+extern void inode_detach_fs(struct inode *node);
+
+/* Frees postponed because somebody still held the inode, and references
+ * refused because it was already dying. Both are evidence that the window
+ * this counting exists to close is a real one. */
+extern unsigned long inode_free_deferred;
+extern unsigned long inode_ref_refused;
+
+/* Uses of a descriptor whose inode is not the one it opened, and uses of one
+ * whose inode has left the tree. Both must be zero; a non-zero value names a
+ * silent corruption that would otherwise be found by its consequences. */
+extern unsigned long fdesc_stale_gen;
+extern unsigned long fdesc_dead_inode;
+
+/* Walks that arrived at an inode after it left the name tree. */
+extern unsigned long vfs_walk_dying;
 
 extern void inode_free(struct inode *node);
 extern void *inode_priv(const struct inode *node);

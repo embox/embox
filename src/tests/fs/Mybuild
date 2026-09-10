@@ -65,3 +65,82 @@ module mount_table {
 
 	depends embox.fs.fs_api
 }
+
+module fat_ops {
+	source "fat_ops.c"
+
+	/* Needs two pools raised, because the root-capacity case creates 96 files
+	 * at once:
+	 *
+	 *   embox.fs.driver.fat(inode_quantity=128)  -- the stock 16 is a
+	 *       directory of eight, and the case stops at file 16 with ENOMEM;
+	 *   embox.fs.node(fnode_quantity=1024)       -- the stock 64 covers the
+	 *       rest of the tree as well, and the case then stops at file 41.
+	 *
+	 * A template that names neither gets both defaults: templates/x86/smp
+	 * does not name the FAT driver at all, so it arrives through this
+	 * module's own depends with the stock 16.  Nothing here can force
+	 * another module's option, so the requirement is stated rather than
+	 * enforced -- and the suite says which file it stopped at and why, which
+	 * is how both numbers were found rather than guessed. */
+
+	/* The suite mounts a ramdisk, and the root it runs against is read-only
+	 * initfs -- mkdir() there fails. So the mount point comes from the same
+	 * place the suite does: a file whose only job is to make the directory
+	 * exist, the way http_admin's pages make theirs. */
+	@InitFS(target_dir="tmp_fat")
+	source "fat_ops_mountpoint.txt"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.driver.fat
+	depends embox.fs.filesystem
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}
+
+module mount_smp {
+	source "mount_smp.c"
+
+	/* Same reason as fat_ops next door: the root is read-only initfs, so the
+	 * mount point has to come from the initfs itself. */
+	@InitFS(target_dir="tmp_mnt")
+	source "mount_smp_mountpoint.txt"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.driver.fat
+	depends embox.fs.filesystem
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.pthreads
+	depends embox.framework.LibFramework
+}
+
+module inode_life {
+	source "inode_life.c"
+
+	@InitFS(target_dir="tmp_inode")
+	source "inode_life_mountpoint.txt"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.driver.fat
+	depends embox.fs.filesystem
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.pthreads
+	depends embox.framework.LibFramework
+}
+
+module fat_big {
+	source "fat_big.c"
+
+	@InitFS(target_dir="tmp_big")
+	source "fat_big_mountpoint.txt"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.driver.fat
+	depends embox.fs.filesystem
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}

@@ -19,6 +19,7 @@
 #include <util/err.h>
 
 #include <fs/file_desc.h>
+#include <kernel/printk.h>
 #include <fs/super_block.h>
 #include <fs/fs_driver.h>
 #include <fs/inode_operation.h>
@@ -33,6 +34,7 @@ extern struct block_dev *bdev_by_path(const char *source);
 extern struct file_operations fat_fops;
 
 extern int fat_clean_sb(struct super_block *sb);
+extern int fat_destroy_inode(struct inode *inode);
 extern int fat_create(struct inode *i_new, struct inode *i_dir, int mode);
 
 
@@ -76,7 +78,7 @@ extern struct file_operations fat_fops;
  *
  * @return Negative error code
  */
-int fat_fill_sb(struct super_block *sb, const char *source) {
+static int fat_fill_sb_unlocked(struct super_block *sb, const char *source) {
 	struct fat_fs_info *fsi;
 	struct block_dev *bdev;
 	uint32_t pstart, psize;
@@ -93,8 +95,19 @@ int fat_fill_sb(struct super_block *sb, const char *source) {
 	}
 
 	fsi = fat_fs_alloc();
+	/* The pool runs out, and it runs out for a reason that has nothing to do
+	 * with this call -- forty mounts that failed after allocating and never
+	 * gave anything back will do it. The store below was unconditional: a data
+	 * abort at FAR_EL1 = 0, three tests after the mounts that caused it. */
+	if (fsi == NULL) {
+		return -ENOMEM;
+	}
+
 	*fsi = (struct fat_fs_info) {
 		.bdev = bdev,
+		/* The first allocation after a mount pays one scan, and every one
+		 * after it is a step. */
+		.free_hint = 2,
 	};
 	sb->sb_data = fsi;
 	sb->sb_iops = &fat_iops;
@@ -151,7 +164,7 @@ error:
  *
  * @return Negative error code or 0 if succeed
  */
-int fat_clean_sb(struct super_block *sb) {
+static int fat_clean_sb_unlocked(struct super_block *sb) {
 	struct fat_fs_info *fsi;
 
 	assert(sb);
@@ -162,11 +175,37 @@ int fat_clean_sb(struct super_block *sb) {
 
 	fat_fs_free(fsi);
 
-	fat_dirinfo_free(inode_priv(sb->sb_root));
+	/* Through destroy_inode rather than by hand, because it clears
+	 * the inode's private pointer. super_block_free() calls inode_free() on
+	 * this same root immediately afterwards, and inode_free now releases
+	 * private data too -- freeing it here without clearing the pointer would
+	 * put one dirinfo on the pool free list twice. */
+	fat_destroy_inode(sb->sb_root);
 
 	return 0;
 }
 
+
+/* Mount and unmount walk the directory tree through the same global scratch
+ * buffer as everything else, and they can run while a second thread is
+ * writing a file on another volume. */
+int fat_fill_sb(struct super_block *sb, const char *source) {
+	int res;
+
+	fat_lock();
+	res = fat_fill_sb_unlocked(sb, source);
+	fat_unlock();
+	return res;
+}
+
+int fat_clean_sb(struct super_block *sb) {
+	int res;
+
+	fat_lock();
+	res = fat_clean_sb_unlocked(sb);
+	fat_unlock();
+	return res;
+}
 
 static const struct fs_driver fatfs_driver = {
 	.name     = "vfat",

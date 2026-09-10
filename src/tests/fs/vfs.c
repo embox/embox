@@ -41,12 +41,16 @@ static int setup_suite(void) {
 		return -ENOMEM;
 	}
 
-	inode_name_set(test_node, "R");
-	inode_name_set(test_node, "A");
-	inode_name_set(test_node, "B");
-	inode_name_set(test_node, "C");
-	inode_name_set(test_node, "D");
-	inode_name_set(test_node, "E");
+	/* `test_node` has not existed for a long time -- every one of
+	 * these six named it, so this suite has not compiled since whatever
+	 * rename took it away. The names are the ones the tree below is built
+	 * from, in the order it builds them. */
+	inode_name_set(test_root, "R");
+	inode_name_set(a, "A");
+	inode_name_set(b, "B");
+	inode_name_set(c, "C");
+	inode_name_set(d, "D");
+	inode_name_set(e, "E");
 
 	vfs_add_leaf(a, test_root);
 	vfs_add_leaf(b, test_root);
@@ -73,15 +77,13 @@ static int teardown_suite(void) {
 	return 0;
 }
 
+/* This used to ignore `node` and call vfs_lookup(), which resolves against
+ * the RUNNING SYSTEM'S root -- so every case here compared a node of the
+ * detached tree the suite builds against something out of the real filesystem,
+ * and the first assertion failed. vfs_subtree_lookup() is the one that answers
+ * the question this suite is asking: resolve a path relative to a given node. */
 static struct inode *vfs_lookup_nr(struct inode *node, const char *str_path) {
-	static struct path nr_return;
-	int lookup_ecode;
-
-	lookup_ecode = vfs_lookup(str_path, &nr_return);
-	if (lookup_ecode < 0) {
-		return NULL;
-	}
-	return nr_return.node;
+	return vfs_subtree_lookup(node, str_path);
 }
 
 TEST_CASE("vfs_lookup_nr should find all nodes") {

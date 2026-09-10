@@ -39,6 +39,10 @@ struct file_desc {
 	struct idesc f_idesc;
 
 	struct inode *f_inode;
+	/* The generation f_inode carried when this descriptor was opened. If they
+	 * ever differ, the slot changed hands and this descriptor is pointing at
+	 * another file. */
+	unsigned int f_gen;
 	const struct file_operations *f_ops;
 	off_t f_pos;
 	/* TODO this need for system without file_nodes where we want to use uart for
@@ -46,6 +50,11 @@ struct file_desc {
  */
 	void *file_info; /* customize in each file system */
 };
+
+/* Is this descriptor still about the file it was opened on? Answers 0 for a
+ * slot that changed hands and for an inode that has left the name tree -- an
+ * unmounted volume, or a file somebody removed. */
+extern int file_desc_valid(struct file_desc *desc);
 
 extern struct file_desc *file_desc_from_idesc(struct idesc *idesc);
 
@@ -60,6 +69,11 @@ extern void file_set_size(struct file_desc *file, size_t size);
 extern void *file_get_inode_data(struct file_desc *file);
 
 extern struct file_desc *file_desc_create(struct inode *node, int __oflag);
+
+/* How many open descriptors name a file on this superblock, so that
+ * kumount() can refuse to free the volume under them. */
+struct super_block;
+extern int file_desc_open_on_sb(const struct super_block *sb);
 
 extern int file_desc_destroy(struct file_desc *);
 

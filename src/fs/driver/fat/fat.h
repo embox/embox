@@ -236,6 +236,9 @@ struct fat_fs_info {
 	struct volinfo vi;
 	struct block_dev *bdev;
 	struct inode *root;
+	/* Hint for free-cluster search. Per-volume, verified on use.
+	 * 0 or out of range means "start at beginning". */
+	uint32_t free_hint;
 };
 
 struct fat_file_info {
@@ -288,6 +291,8 @@ extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
                                   uint8_t *pptype, uint32_t *psize);
 extern uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsector);
 extern uint32_t fat_open_rootdir(struct fat_fs_info *fsi, struct dirinfo *dirinfo);
+extern uint32_t fat_seek_cluster(struct fat_file_info *fi, uint8_t *p_scratch,
+		uint32_t pointer);
 extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
                               uint8_t *buffer, uint32_t *successcount, uint32_t len);
 extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
@@ -326,5 +331,14 @@ extern uint32_t fat_direntry_get_size(struct fat_dirent *de);
 extern void     fat_direntry_set_size(struct fat_dirent *de, uint32_t size);
 
 extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
+
+/* Serialises the whole driver (shared fat_sector_buff). Recursive. */
+extern void fat_lock(void);
+extern void fat_unlock(void);
+
+/* Finds an unlocked user of the scratch buffer. */
+extern void fat_lock_assert(const char *where);
+extern unsigned fat_unlocked_scratch;
+extern char fat_unlocked_where[32];
 
 #endif /* FAT_H_ */
