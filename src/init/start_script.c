@@ -39,6 +39,9 @@ static int run_script(void) {
 	}
 
 	tty_dev_name = setup_tty(OPTION_STRING_GET(tty_dev));
+	if (NULL == tty_dev_name) {
+		tty_dev_name = "(none)";
+	}
 
 	printf("\nStarted shell [%s] on device [%s]\n",
 		shell->name, tty_dev_name);
