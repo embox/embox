@@ -13,6 +13,9 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
+/* The <sys/select.h> header shall define the timeval structure */
+#include <sys/time.h>
+
 __BEGIN_DECLS
 
 #define _FDSETWORDS       0x4
