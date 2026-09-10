@@ -10,5 +10,5 @@
 #                 adapter categories; cmd/ holds the shell command
 
 PKG_NAME := net80211
-PKG_VER := f202037238a086a4eecf1d6dcbee26276a4818d5
+PKG_VER := 1826e1d65fa728323554ca110fdc3b11bf0e1af8
 PKG_SOURCES := https://github.com/KevinACoder/net_80211.git

@@ -6,5 +6,5 @@
 # directly. Keep the revision pinned for reproducible builds.
 
 PKG_NAME := wpa_supplicant
-PKG_VER := 7d69fde4a0f0f5af664efbd221acd420bd292cbc
+PKG_VER := 0248409847056512eafae878a0a2260f10437b3c
 PKG_SOURCES := https://github.com/KevinACoder/wpa_supplicant-rtos.git
