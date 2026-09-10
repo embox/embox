@@ -96,7 +96,9 @@ module wpa_supplicant_embox {
 
 	depends wpa_supplicant_core
 	depends wpa_supplicant_net80211
-	depends third_party.net80211.net80211_port_cherryusb
+	depends third_party.net80211.net80211_osal_embox
+	depends third_party.net80211.net80211_net_embox
+	depends third_party.net80211.net80211_core
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
 	depends embox.net.core
@@ -127,7 +129,8 @@ module wpa_supplicant_net80211 {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/wpa_supplicant-rtos/port/embox")
 	source "driver_embox.c"
 
-	depends third_party.net80211.net80211_port_cherryusb
+	depends third_party.net80211.net80211_core
+	depends third_party.net80211.net80211_osal_embox
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
 }
