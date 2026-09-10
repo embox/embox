@@ -34,6 +34,7 @@ module net80211_core {
 		"net80211/ieee80211_node.c",
 		"net80211/ieee80211_output.c",
 		"net80211/ieee80211_input.c",
+		"net80211/ieee80211_amrr.c",
 		"net80211/ieee80211_netbsd.c",
 		"net80211/ieee80211_crypto.c",
 		"net80211/ieee80211_crypto_none.c",
@@ -75,13 +76,16 @@ module net80211_urtwn {
 @Build(script = "$(EXTERNAL_MAKE)")
 module net80211_osal_embox {
 	@Cflags("-D_KERNEL")
+	@Cflags("-Wno-pointer-sign")
+	@Cflags("-Wno-unused-function")
 	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_osal_embox/net_80211/port/port_config.h")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_osal_embox/net_80211/compat/netbsd")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_osal_embox/net_80211")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_osal_embox/net_80211/port")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/osal/embox")
 	source "osal_embox.c",
-		"firmware_embed.c"
+		"firmware_embed.c",
+		"port_core.c"
 
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
@@ -172,6 +176,68 @@ module net80211_port_cherryusb {
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
 	depends embox.kernel.timer.sys_timer
+	depends embox.net.core
+	depends embox.net.wifi.cfg80211
+}
+
+/*
+ * The PCIe bus backend in the embox world: claim the device from the
+ * enumerated PCI tree, map its register window, allocate one MSI
+ * vector, run the interrupt worker, and implement the bus_dma /
+ * PCI-autoconf shims. Lives outside the BSD-world module so the
+ * embox and compat headers never meet in one translation unit.
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module net80211_pcie_bus_embox {
+	@Cflags("-Wno-unused-parameter")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_pcie_bus_embox/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_pcie_bus_embox/net_80211")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/port/bus/pcie/embox")
+	source "pcie_embox.c"
+
+	depends net80211_osal_embox
+	depends embox.driver.pci
+	/* the claim allocates an MSI vector: the ITS must be up first */
+	depends embox.driver.interrupt.gicv3_its
+	@NoRuntime depends embox.driver.pci_msi
+	@NoRuntime depends embox.arch.mem_barriers
+	depends embox.kernel.irq
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
+}
+
+/*
+ * The net80211 port over the embox PCI stack: the imported iwm driver
+ * with its bus adapter. The verbatim if_iwm.c is pulled in by the
+ * small registration translation unit (iwm_reg.c).
+ */
+@Build(script = "$(EXTERNAL_MAKE)")
+module net80211_port_pcie_embox {
+	@Cflags("-D_KERNEL")
+	@Cflags("-Wno-pointer-sign")
+	@Cflags("-Wno-unused-function")
+	@Cflags("-Wno-unused-parameter")
+	@Cflags("-Wno-unused-variable")
+	@Cflags("-Wno-unused-but-set-variable")
+	@Cflags("-Wno-sign-compare")
+	@Cflags("-Wno-missing-field-initializers")
+	@Cflags("-Wno-missing-prototypes")
+	@Cflags("-Wno-old-style-definition")
+	@Cflags("-Wno-unused-label")
+	@Cflags("-Wno-implicit-fallthrough")
+	@Cflags("-Wno-maybe-uninitialized")
+	@Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_pcie_embox/net_80211/port/port_config_bsd.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_pcie_embox/net_80211/compat/netbsd")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_pcie_embox/net_80211")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/net80211/net80211_port_pcie_embox/net_80211/port")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/net_80211/driver/iwm")
+	source "iwm_reg.c"
+
+	depends net80211_core
+	depends net80211_osal_embox
+	depends net80211_net_embox
+	depends net80211_pcie_bus_embox
 	depends embox.net.core
 	depends embox.net.wifi.cfg80211
 }
