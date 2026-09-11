@@ -20,6 +20,9 @@
 #define NIIET_PWM_DMA_CHAN_OFF    (16)
 #define NIIET_PWM_DMA_EN_OFF      (31)
 
+#define NIIET_TMR_DMA_RX          1
+#define NIIET_TMR_DMA_TX          0
+
 #define NIIET_PWM_DMA_EN(desc)    \
 				(desc & (1 << NIIET_PWM_DMA_EN_OFF))
 

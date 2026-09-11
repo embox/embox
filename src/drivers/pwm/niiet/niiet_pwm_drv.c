@@ -75,6 +75,9 @@ static inline void niiet_pwm_set_period_reg(struct niiet_tmr_regs *regs, int p) 
 static inline void niiet_pwm_outen(struct niiet_tmr_regs *regs, int chan) {
 }
 
+static inline void niiet_trm_set_dma(struct niiet_tmr_regs *regs, int ch, int d)  {
+}
+
 #else /* VG1T_VERSION != 0 */
 
 static inline uint32_t niiet_pwm_get_clk_div(struct niiet_pwm_priv *priv) {
@@ -104,6 +107,20 @@ static inline void niiet_pwm_set_period_reg(struct niiet_tmr_regs *regs, int p) 
 
 static inline void niiet_pwm_outen(struct niiet_tmr_regs *regs, int chan) {
     regs->CTRL |= TMR_CTRL_OUTEN(chan);
+}
+
+static inline void niiet_trm_set_dma(struct niiet_tmr_regs *regs, int ch, int d) {
+    int bit;
+    if (d == NIIET_TMR_DMA_RX) {
+        bit = TMR_CTRL_DMARXSTOP_SHIFT;
+        regs->DMA_RXIM |= (1 << (ch * 2 + 1));// | 0x1;
+        regs->DMA_TXIM &= (1 << (ch * 2 + 1));
+    } else {
+        bit = TMR_CTRL_DMATXSTOP_SHIFT;
+        regs->DMA_TXIM |= (1 << (ch * 2 + 1));// | 0x1;
+        regs->DMA_RXIM &= (1 << (ch * 2 + 1));
+    }
+    regs->CTRL |= (1 << bit);
 }
 
 #endif /* VG1T_VERSION == 0*/
@@ -169,6 +186,15 @@ static int niiet_pwm_enable(struct pwm_device *dev, uint32_t chan_mask) {
     ctrl |= TMR_CTRL_MODE(TMR_CTRL_MODE_UP);
     regs->CTRL = ctrl;
 
+    for (int i = 0; i < NIIET_PWM_CHAN_MAX; i++) {
+        if (!((1 << i) & chan_mask)) {
+            continue;
+        }
+		if (dev->pwmd_dma && NIIET_PWM_DMA_EN(dev->pwmd_dma[i])) {
+            niiet_dma_activate(i);
+		}
+	}
+
     return 0;
 }
 
@@ -220,6 +246,7 @@ static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
 	struct niiet_capcom_reg *capcom_reg;
 	uint32_t cap_ctrl;
 	struct niiet_dma_req req = {0};
+    char dma_type[32];
 
 	assert(dev);
 
@@ -232,6 +259,10 @@ static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
 	cap_ctrl = TMR_CAPCOM_CTRL_OUTMODE(TMR_CAPCOM_CTRL_OUTMODE_RESET_SET);
 	capcom_reg->CAPCOM_CTRL = cap_ctrl;
 
+    niiet_trm_set_dma(regs, chan_num, NIIET_TMR_DMA_RX);
+
+    snprintf(dma_type, sizeof(dma_type), DMA_TYPE_TMR "%d", dev->pwmd_id);
+
 	req.dr_src = (uintptr_t)(void *)duty_ns;
 	req.dr_src_width = 4;
 	req.dr_src_inc = 4;
@@ -239,8 +270,8 @@ static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
 	req.dr_dest = (uintptr_t)(void *)&capcom_reg->CAPCOM_VAL;
 	req.dr_dest_width = 4;
 	req.dr_dest_inc = 0;
-	req.dr_dest_type = niiet_dma_get_type(DMA_TYPE_TMR);
-	req.dr_req_size = size;
+	req.dr_dest_type = niiet_dma_get_type(dma_type);
+	req.dr_req_size = size * 4;
 	niiet_dma_req(NIIET_PWM_DMA_CHAN(dev->pwmd_dma[chan_num]), &req);
 
 	return 0;
