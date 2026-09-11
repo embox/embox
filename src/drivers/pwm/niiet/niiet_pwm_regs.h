@@ -83,6 +83,9 @@ struct niiet_tmr_regs {
 #define TMR_CTRL_OUTEN(chan)  \
 					(((1 << chan) & TMR_CTRL_OUTEN_MASK) << TMR_CTRL_OUTEN_SHIFT)
 
+#define TMR_CTRL_DMARXSTOP_SHIFT     7
+#define TMR_CTRL_DMATXSTOP_SHIFT     6
+
 #define TMR_CAPCOM_CTRL_SCCI (1 << 10) /* Synchronized Capture/Compare Input */
 #define TMR_CAPCOM_CTRL_CAP  (1 << 8)  /* Capture Mode Enable */
 #define TMR_CAPCOM_CTRL_CCI  (1 << 3)  /* Capture/Compare Input */
