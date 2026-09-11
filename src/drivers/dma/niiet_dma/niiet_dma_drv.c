@@ -6,6 +6,8 @@
  * @date 13.08.2022
  */
 
+#include <util/log.h>
+
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
@@ -27,7 +29,7 @@
 
 #define DMA_DEV_ID     0
 
-#define CONF_DMA                  MACRO_CONCAT(CONF_DMA,DMA_DEV_ID)
+#define CONF_DMA             MACRO_CONCAT(CONF_DMA,DMA_DEV_ID)
 
 #define DMA_BASE_ADDR        MACRO_CONCAT(CONF_DMA,_REGION_BASE_ADDR)
 #define DMA_CLK_NAME         MACRO_CONCAT(CONF_DMA,_CLK_ENABLE)
@@ -201,6 +203,142 @@ static inline int niiet_dma_ch_to_irq(int ch) {
 	return -1;
 }
 
+static inline int niiet_dma_irq_to_ch(int irq) {
+	switch(irq) {
+#if defined CONF_DMA0_IRQ_CHAN0
+		case CONF_DMA0_IRQ_CHAN0:
+			return 0;
+#endif /* CONF_DMA0_IRQ_CHAN0 */
+#if defined CONF_DMA0_IRQ_CHAN1
+		case CONF_DMA0_IRQ_CHAN1:
+			return 1;
+#endif /* CONF_DMA0_IRQ_CHAN1 */
+#if defined CONF_DMA0_IRQ_CHAN2
+		case CONF_DMA0_IRQ_CHAN2:
+			return 2;
+#endif /* CONF_DMA0_IRQ_CHAN2 */
+#if defined CONF_DMA0_IRQ_CHAN3
+		case CONF_DMA0_IRQ_CHAN3:
+			return 3;
+#endif /* CONF_DMA0_IRQ_CHAN3 */
+#if defined CONF_DMA0_IRQ_CHAN4
+		case CONF_DMA0_IRQ_CHAN4:
+			return 4;
+#endif /* CONF_DMA0_IRQ_CHAN4 */
+#if defined CONF_DMA0_IRQ_CHAN5
+		case CONF_DMA0_IRQ_CHAN5:
+			return 5;
+#endif /* CONF_DMA0_IRQ_CHAN5 */
+#if defined CONF_DMA0_IRQ_CHAN6
+		case CONF_DMA0_IRQ_CHAN6:
+			return 6;
+#endif /* CONF_DMA0_IRQ_CHAN6 */
+#if defined CONF_DMA0_IRQ_CHAN7
+		case CONF_DMA0_IRQ_CHAN7:
+			return 7;
+#endif /* CONF_DMA0_IRQ_CHAN7 */
+#if defined CONF_DMA0_IRQ_CHAN8
+		case CONF_DMA0_IRQ_CHAN8:
+			return 8;
+#endif /* CONF_DMA0_IRQ_CHAN8 */
+#if defined CONF_DMA0_IRQ_CHAN9
+		case CONF_DMA0_IRQ_CHAN9:
+			return 9;
+#endif /* CONF_DMA0_IRQ_CHAN9 */
+#if defined CONF_DMA0_IRQ_CHAN10
+		case CONF_DMA0_IRQ_CHAN10:
+			return 10;
+#endif /* CONF_DMA0_IRQ_CHAN10 */
+#if defined CONF_DMA0_IRQ_CHAN11
+		case CONF_DMA0_IRQ_CHAN11:
+			return 11;
+#endif /* CONF_DMA0_IRQ_CHAN11 */
+#if defined CONF_DMA0_IRQ_CHAN12
+		case CONF_DMA0_IRQ_CHAN12:
+			return 12;
+#endif /* CONF_DMA0_IRQ_CHAN12 */
+#if defined CONF_DMA0_IRQ_CHAN13
+		case CONF_DMA0_IRQ_CHAN13:
+			return 13;
+#endif /* CONF_DMA0_IRQ_CHAN13 */
+#if defined CONF_DMA0_IRQ_CHAN14
+		case CONF_DMA0_IRQ_CHAN14:
+			return 14;
+#endif /* CONF_DMA0_IRQ_CHAN14 */
+#if defined CONF_DMA0_IRQ_CHAN15
+		case CONF_DMA0_IRQ_CHAN15:
+			return 15;
+#endif /* CONF_DMA0_IRQ_CHAN15 */
+#if defined CONF_DMA0_IRQ_CHAN16
+		case CONF_DMA0_IRQ_CHAN16:
+			return 16;
+#endif /* CONF_DMA0_IRQ_CHAN16 */
+#if defined CONF_DMA0_IRQ_CHAN17
+		case CONF_DMA0_IRQ_CHAN17:
+			return 17;
+#endif /* CONF_DMA0_IRQ_CHAN17 */
+#if defined CONF_DMA0_IRQ_CHAN18
+		case CONF_DMA0_IRQ_CHAN18:
+			return 18;
+#endif /* CONF_DMA0_IRQ_CHAN18 */
+#if defined CONF_DMA0_IRQ_CHAN19
+		case CONF_DMA0_IRQ_CHAN19:
+			return 19;
+#endif /* CONF_DMA0_IRQ_CHAN19 */
+#if defined CONF_DMA0_IRQ_CHAN20
+		case CONF_DMA0_IRQ_CHAN20:
+			return 20;
+#endif /* CONF_DMA0_IRQ_CHAN20 */
+#if defined CONF_DMA0_IRQ_CHAN21
+		case CONF_DMA0_IRQ_CHAN21:
+			return 21;
+#endif /* CONF_DMA0_IRQ_CHAN21 */
+#if defined CONF_DMA0_IRQ_CHAN22
+		case CONF_DMA0_IRQ_CHAN22:
+			return 22;
+#endif /* CONF_DMA0_IRQ_CHAN22 */
+#if defined CONF_DMA0_IRQ_CHAN23
+		case CONF_DMA0_IRQ_CHAN23:
+			return 23;
+#endif /* CONF_DMA0_IRQ_CHAN23 */
+#if defined CONF_DMA0_IRQ_CHAN24
+		case CONF_DMA0_IRQ_CHAN24:
+			return 24;
+#endif /* CONF_DMA0_IRQ_CHAN24 */
+#if defined CONF_DMA0_IRQ_CHAN25
+		case CONF_DMA0_IRQ_CHAN25:
+			return 25;
+#endif /* CONF_DMA0_IRQ_CHAN25 */
+#if defined CONF_DMA0_IRQ_CHAN26
+		case CONF_DMA0_IRQ_CHAN26:
+			return 26;
+#endif /* CONF_DMA0_IRQ_CHAN26 */
+#if defined CONF_DMA0_IRQ_CHAN27
+		case CONF_DMA0_IRQ_CHAN27:
+			return 27;
+#endif /* CONF_DMA0_IRQ_CHAN27 */
+#if defined CONF_DMA0_IRQ_CHAN28
+		case CONF_DMA0_IRQ_CHAN28:
+			return 28;
+#endif /* CONF_DMA0_IRQ_CHAN28 */
+#if defined CONF_DMA0_IRQ_CHAN29
+		case CONF_DMA0_IRQ_CHAN29:
+			return 29;
+#endif /* CONF_DMA0_IRQ_CHAN29 */
+#if defined CONF_DMA0_IRQ_CHAN30
+		case CONF_DMA0_IRQ_CHAN30:
+			return 30;
+#endif /* CONF_DMA0_IRQ_CHAN30 */
+#if defined CONF_DMA0_IRQ_CHAN31
+		case CONF_DMA0_IRQ_CHAN31:
+			return 31;
+#endif /* CONF_DMA0_IRQ_CHAN31 */
+		default:
+			return -1;
+	}
+	return -1;
+}
+
 struct niiet_dma_priv {
 	struct niiet_dma_req *req[CONF_DMA0_MISC_CHAN_NUM];
 };
@@ -208,6 +346,11 @@ struct niiet_dma_priv {
 static struct niiet_dma_priv niiet_dma_priv;
 
 static irq_return_t niiet_dma_irq_handler(unsigned int irq_num, void *dev_id) {
+	int chan;
+	chan = niiet_dma_irq_to_ch(irq_num);
+	log_error("niiet_dma_irq_handler(irq=%d chan=%d)", chan);
+	DMA->CH[chan].INT_CLEAR = 1;
+
 	return 0;
 }
 
@@ -234,29 +377,45 @@ int niiet_dma_init(uintptr_t label, int ch) {
 int niiet_dma_req(int ch, struct niiet_dma_req *req) {
 	niiet_dma_priv.req[ch] = req;
 
+
 	DMA->CH_ENABLE &= ~((uint32_t)(1) << ch);
-	DMA->CH[0].STATIC0 = DMA_CH_STATIC0_RD_TOKENS(0x1);
-	DMA->CH[0].STATIC1 = DMA_CH_STATIC1_WR_TOKENS(0x1);
-	DMA->CH[0].STATIC4 = 0;
+	DMA->CH[ch].STATIC0 = DMA_CH_STATIC0_RD_TOKENS(0x1);
+	DMA->CH[ch].STATIC1 = DMA_CH_STATIC1_WR_TOKENS(0x1);
+	DMA->CH[ch].STATIC4 = 0;
+	DMA->CH[ch].CH_ACTIVE = 0;
+	DMA->CH[ch].CH_START = 0;
 
 	DMA->CH_ENABLE |= ((uint32_t)(1) << ch);
-	DMA->CH[0].STATIC0 |= DMA_CH_STATIC0_RD_BURST_MAX(req->dr_src_width)
+	DMA->CH[ch].STATIC0 = DMA_CH_STATIC0_RD_TOKENS(0x1)
+	                      | DMA_CH_STATIC0_RD_BURST_MAX(req->dr_src_width)
 	                      | DMA_CH_STATIC0_RD_INCR(req->dr_src_inc ? 1 : 0);
-	DMA->CH[0].STATIC1 |= DMA_CH_STATIC1_WR_BURST_MAX(req->dr_dest_width)
+	DMA->CH[ch].STATIC1 = DMA_CH_STATIC1_WR_TOKENS(0x1)
+	                      | DMA_CH_STATIC1_WR_BURST_MAX(req->dr_dest_width)
 	                      | DMA_CH_STATIC1_WR_INCR(req->dr_dest_inc ? 1 : 0);
 
-	DMA->CH[0].STATIC4 = DMA_CH_STATIC4_RD_PER_NUM(req->dr_src_type)
+	DMA->CH[ch].STATIC4 = DMA_CH_STATIC4_RD_PER_NUM(req->dr_src_type)
 	                     | DMA_CH_STATIC4_WR_PER_NUM(req->dr_dest_type);
-	DMA->CH[0].SRC_PTR = req->dr_src;
-	DMA->CH[0].DST_PTR = req->dr_dest;
-	DMA->CH[0].NDTL = DMA_CH_NDTL_BUFFER_SIZE(req->dr_req_size);
+	DMA->CH[ch].SRC_PTR = req->dr_src;
+	DMA->CH[ch].DST_PTR = req->dr_dest;
+	DMA->CH[ch].NDTL = DMA_CH_NDTL_BUFFER_SIZE(req->dr_req_size);
 
-	DMA->CH[0].CONFIG = DMA_CH_CONFIG_CMD_LAST(1) | DMA_CH_CONFIG_CMD_SET_INT(1);
-	DMA->CH[0].INT_ENABLE = DMA_CH_INT_ENABLE_CH_END(1);
+	DMA->CH[ch].CONFIG = DMA_CH_CONFIG_CMD_LAST(1) | DMA_CH_CONFIG_CMD_SET_INT(1);
+	DMA->CH[ch].INT_ENABLE = DMA_CH_INT_ENABLE_CH_END(1);
 
-	DMA->CH[0].CH_ACTIVE = 1;
-	DMA->CH[0].CH_START = 1;
+	DMA->CH[ch].CH_ACTIVE = 0;
+	DMA->CH[ch].CH_START = 0;
 
+	return 0;
+}
 
+int niiet_dma_activate(int ch) {
+	DMA->CH[ch].INT_CLEAR = 0xFFFFFFFF;
+	DMA->CH[ch].CH_ACTIVE = 1;
+	DMA->CH[ch].CH_START = 1;
+	return 0;
+}
+
+int niiet_dma_wait(int ch) {
+	while (1);
 	return 0;
 }
