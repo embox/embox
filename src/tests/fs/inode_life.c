@@ -53,7 +53,7 @@ extern unsigned long fdesc_dead_inode;
 extern unsigned long fdesc_stale_gen;
 
 static unsigned long counter_read(unsigned long *p) {
-	return atomic_load(p, __ATOMIC_RELAXED);
+	return atomic_rmw_load(p, __ATOMIC_RELAXED);
 }
 
 static void pattern_fill(char *buf, size_t len, unsigned seed) {

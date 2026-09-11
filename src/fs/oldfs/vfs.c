@@ -81,7 +81,7 @@ static ipl_t vfs_tree_enter(void) {
 	ipl_t ipl = ipl_save();
 
 	if (!__spin_trylock(&vfs_tree_lock)) {
-		atomic_add_fetch(&vfs_tree_contended, 1, __ATOMIC_RELAXED);
+		atomic_rmw_add_fetch(&vfs_tree_contended, 1, __ATOMIC_RELAXED);
 		__spin_lock(&vfs_tree_lock);
 	}
 
