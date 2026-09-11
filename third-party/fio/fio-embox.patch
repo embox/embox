@@ -1,0 +1,396 @@
+--- fio/os/os.h	2026-09-05 15:36:08.854240236 +0800
++++ fio/os/os.h	2026-09-11 15:39:04.184683059 +0800
+@@ -25,6 +25,7 @@
+ 	os_android,
+ 	os_dragonfly,
+ 	os_qnx,
++	os_embox,
+ 
+ 	os_nr,
+ };
+@@ -34,7 +35,9 @@
+ } cpu_features;
+ 
+ /* IWYU pragma: begin_exports */
+-#if defined(__linux__)
++#if defined(__EMBOX__)
++#include "os-embox.h"
++#elif defined(__linux__)
+ #include "os-linux.h"
+ #elif defined(__FreeBSD__)
+ #include "os-freebsd.h"
+--- fio/configure	2026-09-05 15:36:08.764287072 +0800
++++ fio/configure	2026-09-11 21:51:19.291280383 +0800
+@@ -364,7 +364,9 @@
+   cc="${CC-${cross_prefix}gcc}"
+ fi
+ 
+-if check_define __ANDROID__ ; then
++if check_define __EMBOX__ ; then
++  targetos='Embox'
++elif check_define __ANDROID__ ; then
+   targetos="Android"
+ elif check_define __linux__ ; then
+   targetos="Linux"
+@@ -660,7 +662,10 @@
+   return 0;
+ }
+ EOF
+-if ! compile_prog "" "" "C11 atomics"; then
++# The Embox port expresses the operations it needs with the compiler's
++# builtins (os/os-embox.h): the kernel's <stdatomic.h> has the types but
++# not the generic functions, so this probe cannot pass there.
++if test "$targetos" != "Embox" && ! compile_prog "" "" "C11 atomics"; then
+   echo
+   echo "Your compiler doesn't support C11 atomics. gcc 4.9/clang 3.6 are the"
+   echo "minimum versions with it - perhaps your compiler is too old?"
+--- fio/Makefile	2026-09-05 15:36:08.756286964 +0800
++++ fio/Makefile	2026-09-11 15:44:00.541348321 +0800
+@@ -263,6 +263,13 @@
+   LIBS	 += -lpthread -lrt
+   LDFLAGS += -rdynamic
+ endif
++ifeq ($(CONFIG_TARGET_OS), Embox)
++  # Embox links through the embox-gcc wrapper, which drops -l/-pthread/
++  # -rdynamic and appends the kernel image: no OS libraries to name.
++  # The net and exec engines want a socket/fork toolchain the kernel does
++  # not have.
++  SOURCE := $(filter-out engines/net.c engines/exec.c, $(SOURCE))
++endif
+ ifeq ($(CONFIG_TARGET_OS), DragonFly)
+   SOURCE += trim.c
+   LIBS	 += -lpthread -lrt
+--- fio/ioengines.c	2026-09-05 15:36:08.840288098 +0800
++++ fio/ioengines.c	2026-09-11 15:44:00.540150101 +0800
+@@ -125,6 +125,11 @@
+ static struct ioengine_ops *dlopen_ioengine(struct thread_data *td,
+ 					    const char *engine_lib)
+ {
++#ifndef CONFIG_DYNAMIC_ENGINES
++	/* The port has no dynamic loader: only the engines built into the
++	 * binary can be loaded. */
++	return NULL;
++#else
+ 	struct ioengine_ops *ops;
+ 	void *dlhandle;
+ 
+@@ -173,6 +178,7 @@
+ 
+ 	ops->dlhandle = dlhandle;
+ 	return ops;
++#endif
+ }
+ 
+ static struct ioengine_ops *__load_ioengine(const char *engine)
+--- fio/init.c	2026-09-05 15:36:08.840288098 +0800
++++ fio/init.c	2026-09-11 15:44:00.540655840 +0800
+@@ -1308,8 +1308,10 @@
+ 		if (ops == td->io_ops && dlhandle == td->io_ops->dlhandle)
+ 			return 0;
+ 
++#ifdef CONFIG_DYNAMIC_ENGINES
+ 		if (dlhandle && dlhandle != td->io_ops->dlhandle)
+ 			dlclose(dlhandle);
++#endif
+ 
+ 		/* Unload the old engine. */
+ 		free_ioengine(td);
+--- fio/smalloc.c	2026-09-05 15:36:08.867297050 +0800
++++ fio/smalloc.c	2026-09-11 16:14:09.157527698 +0800
+@@ -18,7 +18,17 @@
+ #define SMALLOC_BPI	(sizeof(unsigned int) * 8)
+ #define SMALLOC_BPL	(SMALLOC_BPB * SMALLOC_BPI)
+ 
++#ifdef FIO_EMBOX_HEAP_ANON
++/*
++ * The kernel serves small allocations from its own pool but a multi
++ * megabyte one lands in a heap whose free list is not set up on this
++ * port, and that aborts.  One megabyte pools are enough for the
++ * structures fio allocates here.
++ */
++#define INITIAL_SIZE	1024*1024	/* new pool size */
++#else
+ #define INITIAL_SIZE	16*1024*1024	/* new pool size */
++#endif
+ #define INITIAL_POOLS	8		/* maximum number of pools to setup */
+ 
+ #define MAX_POOLS	16
+@@ -175,6 +185,11 @@
+ 	pool->nr_blocks = bitmap_blocks;
+ 	pool->free_blocks = bitmap_blocks * SMALLOC_BPI;
+ 
++#ifdef FIO_EMBOX_HEAP_ANON
++	ptr = calloc(1, alloc_size);
++	if (!ptr)
++		goto out_fail;
++#else
+ 	mmap_flags = OS_MAP_ANON;
+ #ifdef CONFIG_ESX
+ 	mmap_flags |= MAP_PRIVATE;
+@@ -185,6 +200,7 @@
+ 
+ 	if (ptr == MAP_FAILED)
+ 		goto out_fail;
++#endif
+ 
+ 	pool->map = ptr;
+ 	pool->bitmap = (unsigned int *)((char *) ptr + (pool->nr_blocks * SMALLOC_BPL));
+@@ -199,7 +215,11 @@
+ out_fail:
+ 	log_err("smalloc: failed adding pool\n");
+ 	if (pool->map)
++#ifdef FIO_EMBOX_HEAP_ANON
++		free(pool->map);
++#else
+ 		munmap(pool->map, pool->mmap_size);
++#endif
+ 	return false;
+ }
+ 
+@@ -214,12 +234,17 @@
+ 	 * instances only once.
+ 	 */
+ 	if (!mp) {
++#ifdef FIO_EMBOX_HEAP_ANON
++		mp = calloc(MAX_POOLS, sizeof(struct pool));
++		assert(mp);
++#else
+ 		mp = (struct pool *) mmap(NULL,
+ 			MAX_POOLS * sizeof(struct pool),
+ 			PROT_READ | PROT_WRITE,
+ 			OS_MAP_ANON | MAP_SHARED, -1, 0);
+ 
+ 		assert(mp != MAP_FAILED);
++#endif
+ 	}
+ 
+ 	for (i = 0; i < INITIAL_POOLS; i++) {
+@@ -241,7 +266,11 @@
+ 	 * This will also remove the temporary file we used as a backing
+ 	 * store, it was already unlinked
+ 	 */
++#ifdef FIO_EMBOX_HEAP_ANON
++	free(pool->map);
++#else
+ 	munmap(pool->map, pool->mmap_size);
++#endif
+ 
+ 	if (pool->lock)
+ 		fio_sem_remove(pool->lock);
+@@ -254,7 +283,11 @@
+ 	for (i = 0; i < nr_pools; i++)
+ 		cleanup_pool(&mp[i]);
+ 
++#ifdef FIO_EMBOX_HEAP_ANON
++	free(mp);
++#else
+ 	munmap(mp, MAX_POOLS * sizeof(struct pool));
++#endif
+ }
+ 
+ #ifdef SMALLOC_REDZONE
+--- fio/fio_sem.c	2026-09-05 15:36:08.836288044 +0800
++++ fio/fio_sem.c	2026-09-11 16:07:05.592531243 +0800
+@@ -33,7 +33,11 @@
+ void fio_sem_remove(struct fio_sem *sem)
+ {
+ 	__fio_sem_remove(sem);
++#ifdef FIO_EMBOX_HEAP_ANON
++	free(sem);
++#else
+ 	munmap((void *) sem, sizeof(*sem));
++#endif
+ }
+ 
+ int __fio_sem_init(struct fio_sem *sem, int value)
+@@ -56,6 +60,13 @@
+ {
+ 	struct fio_sem *sem = NULL;
+ 
++#ifdef FIO_EMBOX_HEAP_ANON
++	sem = calloc(1, sizeof(struct fio_sem));
++	if (!sem) {
++		perror("calloc semaphore");
++		return NULL;
++	}
++#else
+ 	sem = (void *) mmap(NULL, sizeof(struct fio_sem),
+ 				PROT_READ | PROT_WRITE,
+ 				OS_MAP_ANON | MAP_SHARED, -1, 0);
+@@ -63,6 +74,7 @@
+ 		perror("mmap semaphore");
+ 		return NULL;
+ 	}
++#endif
+ 
+ 	if (!__fio_sem_init(sem, value))
+ 		return sem;
+--- fio/rwlock.c	2026-09-05 15:36:08.867297050 +0800
++++ fio/rwlock.c	2026-09-11 16:07:05.592680592 +0800
+@@ -29,7 +29,11 @@
+ {
+ 	assert(lock->magic == FIO_RWLOCK_MAGIC);
+ 	pthread_rwlock_destroy(&lock->lock);
++#ifdef FIO_EMBOX_HEAP_ANON
++	free(lock);
++#else
+ 	munmap((void *) lock, sizeof(*lock));
++#endif
+ }
+ 
+ struct fio_rwlock *fio_rwlock_init(void)
+@@ -38,6 +42,13 @@
+ 	pthread_rwlockattr_t attr;
+ 	int ret;
+ 
++#ifdef FIO_EMBOX_HEAP_ANON
++	lock = calloc(1, sizeof(struct fio_rwlock));
++	if (!lock) {
++		perror("calloc rwlock");
++		goto err;
++	}
++#else
+ 	lock = (void *) mmap(NULL, sizeof(struct fio_rwlock),
+ 				PROT_READ | PROT_WRITE,
+ 				OS_MAP_ANON | MAP_SHARED, -1, 0);
+@@ -46,6 +57,7 @@
+ 		lock = NULL;
+ 		goto err;
+ 	}
++#endif
+ 
+ 	lock->magic = FIO_RWLOCK_MAGIC;
+ 
+--- fio/engines/sync.c	2026-09-05 15:36:08.776287234 +0800
++++ fio/engines/sync.c	2026-09-11 16:18:45.375789655 +0800
+@@ -491,7 +491,7 @@
+ };
+ #endif
+ 
+-static void fio_init fio_syncio_register(void)
++static void fio_sync_register_engines(void)
+ {
+ 	register_ioengine(&ioengine_rw);
+ 	register_ioengine(&ioengine_prw);
+@@ -504,6 +504,18 @@
+ #endif
+ }
+ 
++#ifdef FIO_EMBOX_NO_CTORS
++void fio_embox_register_sync_engines(void)
++{
++	fio_sync_register_engines();
++}
++#else
++static void fio_init fio_syncio_register(void)
++{
++	fio_sync_register_engines();
++}
++#endif
++
+ static void fio_exit fio_syncio_unregister(void)
+ {
+ 	unregister_ioengine(&ioengine_rw);
+--- fio/engines/null.c	2026-09-05 15:36:08.776287234 +0800
++++ fio/engines/null.c	2026-09-11 16:18:45.376078956 +0800
+@@ -176,10 +176,17 @@
+ 	.flags		= FIO_DISKLESSIO | FIO_FAKEIO,
+ };
+ 
++#ifdef FIO_EMBOX_NO_CTORS
++void fio_embox_register_null_engine(void)
++{
++	register_ioengine(&ioengine);
++}
++#else
+ static void fio_init fio_null_register(void)
+ {
+ 	register_ioengine(&ioengine);
+ }
++#endif
+ 
+ static void fio_exit fio_null_unregister(void)
+ {
+--- fio/libfio.c	2026-09-05 15:36:08.845086924 +0800
++++ fio/libfio.c	2026-09-11 16:18:45.376264637 +0800
+@@ -449,6 +449,19 @@
+ 	page_mask = ps - 1;
+ 
+ 	fio_keywords_init();
++
++#ifdef FIO_EMBOX_NO_CTORS
++	/* The kernel does not run ELF constructors: register the ioengines
++	 * that are built into this port by hand (see os/os-embox.h). */
++	{
++		extern void fio_embox_register_sync_engines(void);
++		extern void fio_embox_register_null_engine(void);
++
++		fio_embox_register_sync_engines();
++		fio_embox_register_null_engine();
++	}
++#endif
++
+ 	return 0;
+ }
+ 
+--- fio/arch/arch.h	2026-09-05 15:36:08.758863178 +0800
++++ fio/arch/arch.h	2026-09-11 21:51:19.287698927 +0800
+@@ -3,7 +3,7 @@
+ 
+ #ifdef __cplusplus
+ #include <atomic>
+-#else
++#elif !defined(__EMBOX__)
+ #include <stdatomic.h>
+ #endif
+ 
+@@ -59,6 +59,26 @@
+ 	std::atomic_store_explicit(p, (v),			\
+ 			     std::memory_order_release)
+ #else
++#if defined(__EMBOX__)
++/*
++ * The kernel's <stdatomic.h> carries the types but not the generic
++ * operations, and it links no libatomic: the compiler's own builtins are
++ * what its atomics use.  Embox is single-security-state aarch64 here, so
++ * every type fio uses is lock free.
++ */
++#define atomic_add(p, v)					\
++	__atomic_fetch_add((p), (v), __ATOMIC_SEQ_CST)
++#define atomic_sub(p, v)					\
++	__atomic_fetch_sub((p), (v), __ATOMIC_SEQ_CST)
++#define atomic_load_relaxed(p)					\
++	__atomic_load_n((p), __ATOMIC_RELAXED)
++#define atomic_load_acquire(p)					\
++	__atomic_load_n((p), __ATOMIC_ACQUIRE)
++#define atomic_store_relaxed(p, v)				\
++	__atomic_store_n((p), (v), __ATOMIC_RELAXED)
++#define atomic_store_release(p, v)				\
++	__atomic_store_n((p), (v), __ATOMIC_RELEASE)
++#else
+ #define atomic_add(p, v)					\
+ 	atomic_fetch_add((_Atomic typeof(*(p)) *)(p), v)
+ #define atomic_sub(p, v)					\
+@@ -76,6 +96,7 @@
+ 	atomic_store_explicit((_Atomic typeof(*(p)) *)(p), (v),	\
+ 			      memory_order_release)
+ #endif
++#endif
+ 
+ /* IWYU pragma: begin_exports */
+ #if defined(__i386__)
+--- fio/idletime.c	2026-09-05 15:36:08.840288098 +0800
++++ fio/idletime.c	2026-09-11 21:51:19.289245640 +0800
+@@ -206,10 +206,12 @@
+ 		log_err("fio: pthread_attr_init %s\n", strerror(ret));
+ 		return;
+ 	}
++#ifndef FIO_EMBOX_PTHREAD_NO_SCOPE
+ 	if ((ret = pthread_attr_setscope(&tattr, PTHREAD_SCOPE_SYSTEM))) {
+ 		log_err("fio: pthread_attr_setscope %s\n", strerror(ret));
+ 		return;
+ 	}
++#endif
+ 
+ 	ipc.ipts = malloc(ipc.nr_cpus * sizeof(struct idle_prof_thread));
+ 	if (!ipc.ipts) {
