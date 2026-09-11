@@ -9,6 +9,8 @@
 #ifndef DRIVERS_DMA_NIIET_DMA_H_
 #define DRIVERS_DMA_NIIET_DMA_H_
 
+#include <util/macro.h>
+
 #include <stdint.h>
 
 #define DMA_TYPE_MEM      "DMA_MEM"
@@ -17,6 +19,7 @@
 #define DMA_TYPE_SPI      "DMA_SPI"
 #define DMA_TYPE_I2C      "DMA_I2C"
 #define DMA_TYPE_TMR      "DMA_TMR"
+
 
 struct niiet_dma_req;
 
@@ -41,5 +44,8 @@ extern int niiet_dma_init(uintptr_t label, int ch);
 
 extern int niiet_dma_req(int ch, struct niiet_dma_req *conf);
 extern int niiet_dma_get_type(char *type);
+
+extern int niiet_dma_activate(int ch);
+extern int niiet_dma_wait(int ch);
 
 #endif /* DRIVERS_DMA_NIIET_DMA_H_ */
