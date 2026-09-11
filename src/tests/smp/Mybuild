@@ -23,3 +23,11 @@ module run_cmd_smp {
 
 	depends embox.arch.smp
 }
+
+module smp_threads {
+	source "smp_threads.c"
+
+	depends embox.arch.smp
+	depends embox.kernel.thread.core
+	depends embox.framework.test
+}

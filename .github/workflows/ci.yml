@@ -23,6 +23,7 @@ jobs:
           - x86/test/units
           - x86/test/packetdrill
           - aarch64/test/units
+          - aarch64/smp
           - riscv64/test/cxx
           - riscv64/test/units
           - mips/third_party

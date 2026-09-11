@@ -34,6 +34,9 @@ module smp extends embox.arch.smp {
 
 	depends cpu
 	depends embox.kernel.thread.core
+	/* The one affinity implementation with sched_affinity_get(), which
+	 * sched.c calls as soon as SMP is defined */
+	@NoRuntime depends embox.kernel.sched.affinity.smp
 	depends embox.kernel.task.kernel_task
 	/* The IPIs: a handler for one of them, and the controller that carries
 	 * them and that every secondary initialises for itself */
