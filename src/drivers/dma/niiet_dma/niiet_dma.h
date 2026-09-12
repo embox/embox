@@ -32,7 +32,7 @@ struct niiet_dma_req {
 	int       dr_dest_width;
 	int       dr_dest_inc;
 	int       dr_dest_type;
-	int       dr_req_size;
+	int       dr_size;
 
 	uint32_t  dr_flags;
 	uint32_t  dr_status;

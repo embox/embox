@@ -397,7 +397,7 @@ int niiet_dma_req(int ch, struct niiet_dma_req *req) {
 	                     | DMA_CH_STATIC4_WR_PER_NUM(req->dr_dest_type);
 	DMA->CH[ch].SRC_PTR = req->dr_src;
 	DMA->CH[ch].DST_PTR = req->dr_dest;
-	DMA->CH[ch].NDTL = DMA_CH_NDTL_BUFFER_SIZE(req->dr_req_size);
+	DMA->CH[ch].NDTL = DMA_CH_NDTL_BUFFER_SIZE(req->dr_size);
 
 	DMA->CH[ch].CONFIG = DMA_CH_CONFIG_CMD_LAST(1) | DMA_CH_CONFIG_CMD_SET_INT(1);
 	DMA->CH[ch].INT_ENABLE = DMA_CH_INT_ENABLE_CH_END(1);
