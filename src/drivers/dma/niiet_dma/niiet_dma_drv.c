@@ -18,6 +18,8 @@
 #include <kernel/irq.h>
 
 #include <drivers/clk.h>
+#include <drivers/dma.h>
+
 #include <drivers/niiet_dma.h>
 
 #include "niiet_dma_regs.h"
@@ -36,7 +38,7 @@
 
 #define DMA ((volatile struct niiet_dma_regs *)DMA_BASE_ADDR)
 
-int niiet_dma_get_type(char *type) {
+int niiet_dma_get_type(struct dma_dev *dev, char *type) {
     int num;
 
     if (0 == strncmp(type, DMA_TYPE_MEM, sizeof(DMA_TYPE_MEM) - 1)) {
@@ -340,7 +342,7 @@ static inline int niiet_dma_irq_to_ch(int irq) {
 }
 
 struct niiet_dma_priv {
-	struct niiet_dma_req *req[CONF_DMA0_MISC_CHAN_NUM];
+	struct dma_req *req[CONF_DMA0_MISC_CHAN_NUM];
 };
 
 static struct niiet_dma_priv niiet_dma_priv;
@@ -354,13 +356,18 @@ static irq_return_t niiet_dma_irq_handler(unsigned int irq_num, void *dev_id) {
 	return 0;
 }
 
-int niiet_dma_init(uintptr_t label, int ch) {
+
+int niiet_dma_init(struct dma_dev *dev) {
+
+	clk_enable(DMA_CLK_NAME());
+
+	return 0;
+}
+
+int niiet_dma_config(struct dma_dev *dev, int ch, struct dma_config *conf) {
 	int irq;
 	int res;
 
-	(void)label;
-
-	clk_enable(DMA_CLK_NAME());
 	irq = niiet_dma_ch_to_irq(ch);
 	if (irq == -1) {
 		return -1;
@@ -374,7 +381,7 @@ int niiet_dma_init(uintptr_t label, int ch) {
 	return 0;
 }
 
-int niiet_dma_req(int ch, struct niiet_dma_req *req) {
+int niiet_dma_transfer(struct dma_dev *dev, int ch, struct dma_req *req) {
 	niiet_dma_priv.req[ch] = req;
 
 
@@ -397,7 +404,7 @@ int niiet_dma_req(int ch, struct niiet_dma_req *req) {
 	                     | DMA_CH_STATIC4_WR_PER_NUM(req->dr_dest_type);
 	DMA->CH[ch].SRC_PTR = req->dr_src;
 	DMA->CH[ch].DST_PTR = req->dr_dest;
-	DMA->CH[ch].NDTL = DMA_CH_NDTL_BUFFER_SIZE(req->dr_req_size);
+	DMA->CH[ch].NDTL = DMA_CH_NDTL_BUFFER_SIZE(req->dr_size);
 
 	DMA->CH[ch].CONFIG = DMA_CH_CONFIG_CMD_LAST(1) | DMA_CH_CONFIG_CMD_SET_INT(1);
 	DMA->CH[ch].INT_ENABLE = DMA_CH_INT_ENABLE_CH_END(1);
@@ -408,7 +415,8 @@ int niiet_dma_req(int ch, struct niiet_dma_req *req) {
 	return 0;
 }
 
-int niiet_dma_activate(int ch) {
+int niiet_dma_activate(struct dma_dev *dev, uint32_t ch) {
+	/*FIXUP chmask*/
 	DMA->CH[ch].INT_CLEAR = 0xFFFFFFFF;
 	DMA->CH[ch].CH_ACTIVE = 1;
 	DMA->CH[ch].CH_START = 1;
@@ -419,3 +427,13 @@ int niiet_dma_wait(int ch) {
 	while (1);
 	return 0;
 }
+
+static struct dma_ops niiet_dma_ops = {
+	.do_init = niiet_dma_init,
+	.do_config = niiet_dma_config,
+	.do_transfer = niiet_dma_transfer,
+	.do_activate = niiet_dma_activate,
+	.do_get_type = niiet_dma_get_type,
+};
+
+DMA_DEV_DEF(DMA_DEV_ID, DMA_BASE_ADDR, &niiet_dma_ops, &niiet_dma_priv, 0, 32);
