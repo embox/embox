@@ -271,7 +271,7 @@ static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
 	req.dr_dest_width = 4;
 	req.dr_dest_inc = 0;
 	req.dr_dest_type = niiet_dma_get_type(dma_type);
-	req.dr_req_size = size * 4;
+	req.dr_size = size * 4;
 	niiet_dma_req(NIIET_PWM_DMA_CHAN(dev->pwmd_dma[chan_num]), &req);
 
 	return 0;
