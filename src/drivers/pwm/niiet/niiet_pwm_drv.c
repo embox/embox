@@ -18,13 +18,13 @@
 #include <drivers/pwm.h>
 #include <drivers/pin_description.h>
 #include <drivers/gpio.h>
+#include <drivers/dma.h>
 #include <drivers/niiet_dma.h>
 #include <drivers/clk.h>
 
 #include "niiet_pwm_priv.h"
 #include "niiet_pwm_regs.h"
 
-//extern int clk_enable(char *clk_name);
 
 #if VG1T_VERSION == 0 /*vg015*/
 static inline uint32_t niiet_pwm_get_clk_div(struct niiet_pwm_priv *priv) {
@@ -160,8 +160,8 @@ static int niiet_pwm_init(struct pwm_device *dev) {
 			niiet_pwm_outen((void *)dev->pwmd_desc->pwmd_base_addr, i);
 		}
 		if (dev->pwmd_dma && NIIET_PWM_DMA_EN(dev->pwmd_dma[i])) {
-			niiet_dma_init(NIIET_PWM_DMA_NUM(dev->pwmd_dma[i]),
-			    NIIET_PWM_DMA_CHAN(dev->pwmd_dma[i]));
+            struct dma_config conf;
+			niiet_dma_config(NULL, NIIET_PWM_DMA_CHAN(dev->pwmd_dma[i]), &conf);
 			pwm_dma_config(dev, i, priv->dma_buffer[i], NIIET_PWM_DMA_BUF_SIZE);
 		}
 	}
@@ -191,7 +191,7 @@ static int niiet_pwm_enable(struct pwm_device *dev, uint32_t chan_mask) {
             continue;
         }
 		if (dev->pwmd_dma && NIIET_PWM_DMA_EN(dev->pwmd_dma[i])) {
-            niiet_dma_activate(i);
+            niiet_dma_activate(NULL, i);
 		}
 	}
 
@@ -245,7 +245,7 @@ static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
 	struct niiet_tmr_regs *regs;
 	struct niiet_capcom_reg *capcom_reg;
 	uint32_t cap_ctrl;
-	struct niiet_dma_req req = {0};
+	struct dma_req req = {0};
     char dma_type[32];
 
 	assert(dev);
@@ -266,13 +266,13 @@ static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
 	req.dr_src = (uintptr_t)(void *)duty_ns;
 	req.dr_src_width = 4;
 	req.dr_src_inc = 4;
-	req.dr_src_type = niiet_dma_get_type(DMA_TYPE_MEM);
+	req.dr_src_type = niiet_dma_get_type(NULL, DMA_TYPE_MEM);
 	req.dr_dest = (uintptr_t)(void *)&capcom_reg->CAPCOM_VAL;
 	req.dr_dest_width = 4;
 	req.dr_dest_inc = 0;
-	req.dr_dest_type = niiet_dma_get_type(dma_type);
+	req.dr_dest_type = niiet_dma_get_type(NULL, dma_type);
 	req.dr_size = size * 4;
-	niiet_dma_req(NIIET_PWM_DMA_CHAN(dev->pwmd_dma[chan_num]), &req);
+	niiet_dma_transfer(NULL, NIIET_PWM_DMA_CHAN(dev->pwmd_dma[chan_num]), &req);
 
 	return 0;
 }

@@ -9,4 +9,5 @@ module niiet_dma_drv {
 	source "niiet_dma.h"
 
 	@NoRuntime depends embox.driver.clk.core
+	depends embox.driver.dma.dma_new
 }
