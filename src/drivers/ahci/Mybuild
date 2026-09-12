@@ -12,3 +12,25 @@ module ti8168 {
 	source "ti8168.c"
 	depends embox.driver.ahci.core
 }
+
+/* DesignWare AHCI controller, polled command path (RK3568 on-chip SATA
+ * and other SoCs carrying a DWC AHCI host). Takes over the command
+ * engine of a link the firmware already trained. */
+module dwc_ahci {
+	option string log_level="LOG_INFO"
+
+	option number base_addr = 0xFC000000
+	option number stride = 0x400000
+	option number ctrl_quantity = 2
+	option number port_quantity = 1
+	/* Block layer block size of the device nodes: the readers get one
+	 * block per request from the /dev idesc path. */
+	option number block_size = 4096
+
+	source "dwc_ahci.c"
+
+	depends embox.driver.block_dev
+
+	@NoRuntime depends embox.driver.periph_memory
+	@NoRuntime depends embox.arch.mem_barriers
+}

@@ -1,0 +1,37 @@
+package third_party.cmd
+
+@App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Cmd(name = "fio",
+	help = "Flexible I/O tester",
+	man = '''
+		NAME
+			fio - flexible I/O tester
+
+		SYNOPSIS
+			fio [options] [jobfile ...]
+
+		DESCRIPTION
+			fio spawns a number of threads or processes doing a
+			particular type of I/O action as given by the options
+			and reports the result.  A raw block device is named
+			through its /dev entry and is sized by the port.
+	''')
+module fio {
+	source "^BUILD/extbld/^MOD_PATH/install/fio.o"
+
+	@NoRuntime depends embox.compat.posix.LibPosix
+	@NoRuntime depends embox.compat.posix.stubs
+	@NoRuntime depends embox.compat.posix.unistd.fork
+	@NoRuntime depends embox.compat.posix.sys.resource
+	@NoRuntime depends embox.compat.posix.sys.ipc
+	@NoRuntime depends embox.compat.posix.sys.shm
+	@NoRuntime depends embox.compat.posix.pthread.pthread_stack
+	@NoRuntime depends embox.compat.posix.pthread_rwlock
+	@NoRuntime depends embox.compat.posix.sys.mman.mmap
+	@NoRuntime depends embox.compat.posix.util.sleep
+	@NoRuntime depends embox.compat.posix.time.nanosleep
+	@NoRuntime depends embox.compat.posix.unistd.getopt
+	@NoRuntime depends embox.compat.libc.stdio.getline
+}
