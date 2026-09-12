@@ -19,8 +19,8 @@
 #include <lib/libds/array_spread.h>
 #include <util/macro.h>
 /* #include <drivers/dma/dma.h> */
+/* #include <drivers/spi_dma.h> */
 
-#include <drivers/spi_dma.h>
 #include <drivers/spi_controller.h>
 
 #include <drivers/pin_description.h>

@@ -10,7 +10,7 @@
 #include <stdbool.h>
 
 #include <drivers/dma/dma.h>
-
+#include <drivers/spi_dma.h> 
 #include <drivers/spi.h>
 
 #include "bcm283x_spi_dev.h"

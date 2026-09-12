@@ -1,5 +1,10 @@
 package embox.driver.spi
 
+module spi_dma {
+	@IncludeExport(path="drivers")
+	source "spi_dma.h"
+}
+
 module core {
 	option string log_level="LOG_NONE"
 	option boolean use_cs = true
@@ -13,8 +18,9 @@ module core {
 	source "spi_controller_repo.c"
 
 	depends embox.device.char_dev
-	depends embox.driver.dma.dma_api
+	//depends embox.driver.dma.dma_api
 }
+
 
 module spi0_dev0 {
 	option string log_level="LOG_NONE"
