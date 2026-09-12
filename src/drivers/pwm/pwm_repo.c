@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 
-#include <lib/libds/array.h>
+#include <lib/libds/array_spread.h>
 
 #include <drivers/pwm.h>
 
