@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <sys/cdefs.h>
 
+#include <util/macro.h>
+
 #include <lib/libds/array_spread.h>
 
 #include <drivers/pin_description.h>
