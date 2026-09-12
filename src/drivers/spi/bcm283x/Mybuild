@@ -16,15 +16,16 @@ module bcm283x_spi0 {
 	source "bcm283x_spi0.h"
 
 	depends core
-	depends embox.driver.spi.spi_dma
+	depends embox.driver.spi.bcm283x_spi_dma
 	depends embox.driver.periph_memory
 	depends embox.driver.gpio.core
 }
 
-module spi_dma {
+module bcm283x_spi_dma {
 	option string log_level="LOG_NONE"
 
-	source "spi_dma.c"
+	source "bcm283x_spi_dma.c"
 
 	depends embox.driver.dma.dma_api
+	depends embox.driver.spi.spi_dma
 }
