@@ -2,31 +2,22 @@ package project.dronecan.examples
 
 @AutoCmd
 @Cmd(name="SimpleNode",help="")
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
 @BuildDepends(project.dronecan.libcanard)
 @BuildDepends(project.dronecan.drivers.canard_embox)
+@BuildDepends(project.dronecan.dsdl)
+@BuildDepends(project.dronecan.dronecan_dsdlc)
 module SimpleNode {
-    @IncludeExport(path="")
-    source "uavcan.protocol.NodeStatus.h"
-
-    @IncludeExport(path="")
-    source "uavcan.protocol.GetNodeInfo.h"
-
-    @IncludeExport(path="")
-    source "uavcan.protocol.GetNodeInfo_req.h"
-
-    @IncludeExport(path="")
-    source "uavcan.protocol.GetNodeInfo_res.h"
-
-    @IncludeExport(path="")
-    source "uavcan.protocol.HardwareVersion.h"
-
-    @IncludeExport(path="")
-    source "uavcan.protocol.SoftwareVersion.h"
-
-    source "simple_node.c"
-    source "uavcan.protocol.NodeStatus.c"
-    source "uavcan.protocol.GetNodeInfo_res.c"
+    @IncludePath(
+        "$(EXTERNAL_BUILD_DIR)/project/dronecan/examples/SimpleNode/install/include"
+    )
+    @AddPrefix("^BUILD/extbld/^MOD_PATH/install/src")
+    source  "simple_node.c",
+        "uavcan.protocol.NodeStatus.c",
+        "uavcan.protocol.GetNodeInfo_res.c"
 
 	@NoRuntime depends project.dronecan.libcanard
     @NoRuntime depends project.dronecan.drivers.canard_embox
+    @NoRuntime depends project.dronecan.dsdl
+    @NoRuntime depends project.dronecan.dronecan_dsdlc
 }
