@@ -72,7 +72,9 @@ void startup_ap(void) {
 	/* enable external interrupt on each AP independently */
 	clint_clear_ipi();
 	irq = irqctrl_set_level(RISCV_IRQ_SOFT, 1);
-	irq_attach(irq, soft_irq_handler, 0, NULL, NULL);
+	/* The handler is attached once, by the boot hart; what each core still
+	 * has to do for itself is unmask the interrupt in its own CSR. */
+	irqctrl_enable(irq);
 
 	/* set up clock interrupt for each AP independently */
 	clint_set_timer(0);
@@ -109,6 +111,15 @@ static inline void cpu_start(int cpu_id) {
 
 static int unit_init(void) {
 	int i, self_id;
+	unsigned int irq;
+
+	/* The boot hart needs the software interrupt as much as the others:
+	 * smp_send_resched() is aimed in both directions, and until this is here
+	 * every IPI sent to cpu 0 is dropped -- the enable bit is a per-hart CSR
+	 * and only startup_ap() ever set it. */
+	clint_clear_ipi();
+	irq = irqctrl_set_level(RISCV_IRQ_SOFT, 1);
+	irq_attach(irq, soft_irq_handler, 0, NULL, NULL);
 
 	sched_ticker_set_shared();
 	/* Start all CPUs */
