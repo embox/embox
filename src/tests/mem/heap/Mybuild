@@ -34,6 +34,11 @@ module heap_extended_test {
 
 module heap_threads_test {
 	option number test_obj_size = 0x1000 /* in bytes */
+	/* Objects per thread. Was unbounded -- "until malloc returns
+	 * NULL" -- which only terminates on a fixed-size task heap; on a board
+	 * whose mspace grows out of physical memory it is however much RAM there
+	 * is, one 4 KiB object at a time. */
+	option number test_objs_max = 256
 
 	source "heap_threads_test.c"
 

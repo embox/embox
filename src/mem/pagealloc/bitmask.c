@@ -30,13 +30,22 @@ static inline void *page_i2ptr(struct page_allocator *allocator, int i) {
 	return allocator->pages_start + i * allocator->page_size;
 }
 
-static unsigned int search_first_free(struct page_allocator *allocator,
-		unsigned int start_page) {
-	unsigned int res;
+/* One sentinel, and it is the width of the index that carries it. The old one
+ * was `-1' returned as unsigned int -- 0xffffffff -- and the caller kept it in
+ * a size_t, where on a 64-bit target it never equals (size_t)-1. */
+#define PAGE_NONE ((size_t)-1)
+
+static size_t search_first_free(struct page_allocator *allocator,
+		size_t start_page) {
+	size_t res;
+
+	if (start_page >= allocator->pages_n) {
+		return PAGE_NONE;
+	}
 
 	res = bitmap_find_zero_bit(allocator->bitmap, allocator->pages_n, start_page);
 
-	return res != allocator->pages_n ? res : -1;
+	return res != allocator->pages_n ? res : PAGE_NONE;
 }
 
 static unsigned int check_n_free(struct page_allocator *allocator,
@@ -80,7 +89,19 @@ static void *search_multi_page(struct page_allocator *allocator, size_t page_q) 
 	size_t page_n = 0;
 	size_t found_page_q;
 
-	while (-1 != (page_n = search_first_free(allocator, page_n))) {
+	/* Answered here rather than by the loop: a request for more pages than
+	 * the allocator has can never be satisfied, and saying so at once costs
+	 * one comparison instead of a scan of the whole bitmap. */
+	if ((page_q == 0) || (page_q > allocator->pages_n)) {
+		return NULL;
+	}
+
+	/* search_first_free() leaves page_n on a free page, so check_n_free()
+	 * counts at least one and the index always moves. That is what ends this
+	 * loop, and it is why the sentinel above has to be the right width: an
+	 * allocation that cannot be satisfied has to come back as NULL, not hang
+	 * the caller. */
+	while (PAGE_NONE != (page_n = search_first_free(allocator, page_n))) {
 		if (page_q == (found_page_q = check_n_free(allocator, page_n, page_q))) {
 			mark_n_busy(allocator, page_n, page_q);
 			return page_i2ptr(allocator, page_n);

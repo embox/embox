@@ -16,6 +16,7 @@
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
+#include <hal/cpu.h>
 #include <riscv/clint.h>
 
 #define RTC_FREQ OPTION_GET(NUMBER, rtc_freq)
@@ -24,11 +25,11 @@
 #define CYCLE_PER_NSEC (RTC_FREQ / NSEC_PER_SEC)
 #define CYCLE_PER_TICK (RTC_FREQ / JIFFIES_PERIOD)
 
-static uint64_t prev_mtimecmp;
-static uint64_t curr_mtimecmp;
+static uint64_t prev_mtimecmp[NCPU];
+static uint64_t curr_mtimecmp[NCPU];
 
 static cycle_t riscv_mtimer_get_cycles(struct clock_source *cs) {
-	return (cycle_t)(clint_get_time() - prev_mtimecmp);
+	return (cycle_t)(clint_get_time() - prev_mtimecmp[cpu_get_id()]);
 }
 
 static uint64_t riscv_mtimer_get_time(struct clock_source *cs) {
@@ -40,14 +41,25 @@ static uint64_t riscv_mtimer_get_time(struct clock_source *cs) {
 }
 
 static irq_return_t riscv_mtimer_irq_handler(unsigned int irq_nr, void *data) {
+	unsigned int cpu = cpu_get_id();
+	uint64_t now = clint_get_time();
 	unsigned int ticks;
 
-	ticks = (clint_get_time() - curr_mtimecmp) / CYCLE_PER_TICK + 1;
+	if ((curr_mtimecmp[cpu] == 0) || (now < curr_mtimecmp[cpu])) {
+		/* The first interrupt this core takes, or one taken on a deadline
+		 * that has not come: either way the difference below would be a
+		 * wrap, not an elapsed time. */
+		curr_mtimecmp[cpu] = now;
+		ticks = 1;
+	}
+	else {
+		ticks = (now - curr_mtimecmp[cpu]) / CYCLE_PER_TICK + 1;
+	}
 
-	prev_mtimecmp = curr_mtimecmp;
-	curr_mtimecmp += ticks * CYCLE_PER_TICK;
+	prev_mtimecmp[cpu] = curr_mtimecmp[cpu];
+	curr_mtimecmp[cpu] += ticks * CYCLE_PER_TICK;
 
-	clint_set_timer(curr_mtimecmp);
+	clint_set_timer(curr_mtimecmp[cpu]);
 
 	clock_handle_ticks(data, ticks);
 

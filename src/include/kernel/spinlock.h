@@ -26,6 +26,7 @@
 
 #include <framework/mod/options.h>
 #include <config/embox/kernel/spinlock.h>
+#include <util/atomic_rmw.h>
 #if OPTION_MODULE_GET(embox__kernel__spinlock, BOOLEAN, spin_debug)
 #define SPIN_DEBUG
 #endif
@@ -73,7 +74,11 @@ static inline int __spin_trylock_smp(spinlock_t *lock) {
 #ifdef __HAVE_ARCH_CMPXCHG
 	return (__SPIN_UNLOCKED == cmpxchg(&lock->l, __SPIN_UNLOCKED, __SPIN_LOCKED));
 #else /* !__HAVE_ARCH_CMPXCHG */
-	return __sync_bool_compare_and_swap(&lock->l, __SPIN_UNLOCKED, __SPIN_LOCKED);
+	/* Acquire on success, so nothing inside the critical section can be
+	 * observed before the lock is held; relaxed on failure, because a failed
+	 * try orders nothing. The __sync_ builtin this replaces was a full seq_cst
+	 * barrier -- correct, just stronger than an acquire has to be. */
+	return atomic_rmw_try_lock(&lock->l, __SPIN_UNLOCKED, __SPIN_LOCKED);
 #endif /* __HAVE_ARCH_CMPXCHG */
 }
 
@@ -107,9 +112,17 @@ static inline int __spin_trylock(spinlock_t *lock) {
 	if (ret)
 		lock->contention_count = SPIN_CONTENTION_LIMIT;
 	else {
-		// TODO this must be atomic dec
-		lock->contention_count--;
-		assertf(lock->contention_count, "Possible spin deadlock");
+		/* Every CPU spinning on this lock decrements the same field; a lost
+		 * update makes the counter reach zero early and the detector reports
+		 * a deadlock that is not there. Relaxed: this counts, it orders
+		 * nothing. */
+		unsigned long left;
+
+		left = atomic_rmw_sub_fetch(&lock->contention_count, 1, __ATOMIC_RELAXED);
+		/* Name the lock and its owner: "waited too long" on its own is not a
+		 * diagnosis, which lock and who holds it are. */
+		assertf(left, "Possible spin deadlock: lock %p held by cpu %u", lock,
+		    lock->owner);
 	}
 #endif
 	return ret;
@@ -125,20 +138,34 @@ static inline void __spin_unlock(spinlock_t *lock) {
 	assertf(lock->l == __SPIN_LOCKED, "Unlocking a not locked spin");
 	assertf(lock->owner == cpu_get_id(), "Unlocking a spin owned by another CPU");
 	lock->owner = -1u;
-	__barrier();  // XXX this must be SMP barrier
-	lock->l = __SPIN_UNLOCKED;
-	__barrier();
+	/* A release store, which is what the XXX this replaces asked for:
+	 * everything the critical section wrote must be visible to the next CPU
+	 * that takes the lock before it sees the lock free. */
+	atomic_rmw_store(&lock->l, __SPIN_UNLOCKED, __ATOMIC_RELEASE);
 #else /* !(SMP || SPIN_DEBUG) */
 	__barrier();
 #endif /* SMP || SPIN_DEBUG */
 }
 
+/* A spin region wants preemption off, not the BKL. Borrowing
+ * CRITICAL_SCHED_LOCK's bits for it claimed the BKL by raising the count that
+ * stands for it, so every interrupt landing in a spin region ran outside the
+ * BKL believing it was inside. The preempt block is outside
+ * __CRITICAL_BKL_MASK and still harder than CRITICAL_SCHED_LOCK, so it defers
+ * sched_preempt() exactly as before. */
 static inline void __spin_preempt_disable(void) {
-	__critical_count_add(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+	/* A read-modify-write of a per-CPU count from a context that is still
+	 * preemptible -- that is the whole point, it is about to stop being one.
+	 * __spin_preempt_enable() needs no mask: by then the count is non-zero,
+	 * which is itself the guarantee that nothing can migrate. */
+	ipl_t ipl = ipl_save();
+
+	__critical_count_add(__CRITICAL_COUNT(CRITICAL_PREEMPT_LOCK));
+	ipl_restore(ipl);
 }
 
 static inline void __spin_preempt_enable(void) {
-	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_PREEMPT_LOCK));
 	critical_dispatch_pending();
 }
 

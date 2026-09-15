@@ -115,7 +115,7 @@ static struct file_desc *file_desc_alloc(struct inode *node) {
 			return NULL;
 		}
 		if (i == FDESC_LIVE_MAX) {
-			atomic_add_fetch(&fdesc_live_lost, 1, __ATOMIC_RELAXED);
+			atomic_rmw_add_fetch(&fdesc_live_lost, 1, __ATOMIC_RELAXED);
 		}
 	}
 	return desc;
@@ -209,7 +209,7 @@ int file_desc_valid(struct file_desc *desc) {
 	 * else's file -- which is exactly what a NULL guard cannot see, and what
 	 * wrote one file's bytes into another. */
 	if (node->i_gen != desc->f_gen) {
-		atomic_add_fetch(&fdesc_stale_gen, 1, __ATOMIC_RELAXED);
+		atomic_rmw_add_fetch(&fdesc_stale_gen, 1, __ATOMIC_RELAXED);
 		return 0;
 	}
 
@@ -219,7 +219,7 @@ int file_desc_valid(struct file_desc *desc) {
 	 * given its data back. Answer the descriptor rather than let it reach
 	 * whatever took the driver's private slot. */
 	if (node->i_dying) {
-		atomic_add_fetch(&fdesc_dead_inode, 1, __ATOMIC_RELAXED);
+		atomic_rmw_add_fetch(&fdesc_dead_inode, 1, __ATOMIC_RELAXED);
 		return 0;
 	}
 

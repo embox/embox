@@ -12,9 +12,13 @@
 
 struct affinity;
 extern void sched_affinity_init(struct affinity *a);
+/* An implementation that defines these inline in its
+ * own header says so, and these declarations step aside. */
+#ifndef __SCHED_AFFINITY_INLINED
 extern int sched_affinity_check(struct affinity *a, int mask);
 extern void sched_affinity_set(struct affinity *a, int mask);
 extern int sched_affinity_get(struct affinity *a);
+#endif
 
 #define SCHED_AFFINITY_INIT() \
 	__SCHED_AFFINITY_INIT()

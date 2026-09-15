@@ -25,6 +25,7 @@
 #include <kernel/task/resource/idesc_table.h>
 #include <kernel/thread/thread_sched_wait.h>
 #include <lib/libds/ring.h>
+#include <hal/ipl.h>
 #include <lib/libds/ring_buff.h>
 #include <mem/misc/pool.h>
 #include <util/member.h>
@@ -268,6 +269,7 @@ static int pty_master_status(struct idesc *idesc, int mask) {
 	struct pty *pty = ipty->pty;
 	struct tty *tty = pty_to_tty(pty);
 	int res;
+	ipl_t ipl;
 
 	/* if slave is closed read/write/err will not block and will
  	 * cause error */
@@ -279,10 +281,15 @@ static int pty_master_status(struct idesc *idesc, int mask) {
 
 	switch (mask) {
 	case POLLIN:
+		/* The same two rings, the same lock. */
+		ipl = tty_ring_lock(tty);
 		res = ring_can_read(&tty->o_ring, TTY_IO_BUFF_SZ, 1);
+		tty_ring_unlock(tty, ipl);
 		break;
 	case POLLOUT:
+		ipl = tty_ring_lock(tty);
 		res = ring_can_write(&tty->rx_ring, TTY_RX_BUFF_SZ, 1);
+		tty_ring_unlock(tty, ipl);
 		break;
 	default:
 	case POLLERR:

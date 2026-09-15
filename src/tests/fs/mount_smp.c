@@ -136,7 +136,7 @@ extern unsigned long fdesc_live_lost __attribute__((weak));
 extern unsigned long vfs_walk_dying __attribute__((weak));
 
 static unsigned long counter_read(unsigned long *p) {
-	return p ? atomic_load(p, __ATOMIC_RELAXED) : 0;
+	return p ? atomic_rmw_load(p, __ATOMIC_RELAXED) : 0;
 }
 
 static void *worker_main(void *arg) {

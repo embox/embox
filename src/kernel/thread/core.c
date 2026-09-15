@@ -18,6 +18,8 @@
  * @see tests/kernel/thread/core_test.c
  */
 
+#include <kernel/printk.h>
+#include <lib/libds/array.h>
 #include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -37,6 +39,7 @@
 #include <kernel/sched/schedee_priority.h>
 #include <kernel/sched/current.h>
 #include <hal/cpu.h>
+#include <hal/ipl.h>
 #include <kernel/cpu/cpu.h>
 #include <kernel/cpu/cpudata.h>
 
@@ -45,6 +48,7 @@
 #include <hal/context.h>
 #include <util/err.h>
 #include <compiler.h>
+#include <util/atomic_rmw.h>
 
 extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
@@ -59,7 +63,20 @@ void thread_set_current(struct thread *t) {
 }
 
 struct thread *thread_self(void) {
-	return cpudata_var(__current_thread);
+	struct thread *t;
+	ipl_t ipl;
+
+	/* The answer is "the thread running on this CPU", and this thread is it --
+	 * but only for as long as it stays on this CPU. Migrate between the CPU id
+	 * and the load and the answer is somebody else's thread, which is how
+	 * threadsig_lock() and threadsig_unlock() came to increment and decrement
+	 * two different counters. The pointer stays correct after the mask is
+	 * dropped: it names this thread, not this CPU. */
+	ipl = ipl_save();
+	t = cpudata_var(__current_thread);
+	ipl_restore(ipl);
+
+	return t;
 }
 
 /**
@@ -211,6 +228,7 @@ void thread_init(struct thread *t, int priority,
 	assert(thread_stack_get(t));
 	assert(thread_stack_get_size(t));
 
+	t->magic = THREAD_MAGIC_LIVE;
 	t->id = id_counter++; /* setup thread ID */
 
 	dlist_head_init(&t->thread_link); /* default unlink value */
@@ -272,27 +290,120 @@ struct thread *thread_init_stack(void *stack, size_t stack_sz,
 	return thread;
 
 }
+/* Threads that have exited but whose CPU has not finished leaving them. A
+ * thread cannot free its own stack, and until __sched_deactivate() sets
+ * schedee.released it is still running on it. Every caller holds sched_lock(),
+ * so the list needs no lock. */
+static DLIST_DEFINE(thread_zombies);
+static int parked;
+
+/* The last few threads handed back to the pool, so that a use-after-free can
+ * name who freed it rather than only where it was noticed. Written under
+ * sched_lock(), read only when something has already gone wrong. */
+struct thread_free_note {
+	struct thread *t;
+	void *from;
+	unsigned int seq;
+};
+static struct thread_free_note thread_free_ring[16];
+static unsigned int thread_free_seq;
+
+static void thread_note_free(struct thread *t, void *from) {
+	struct thread_free_note *n;
+
+	t->magic = THREAD_MAGIC_DEAD;
+
+	n = &thread_free_ring[thread_free_seq % ARRAY_SIZE(thread_free_ring)];
+	n->t = t;
+	n->from = from;
+	n->seq = ++thread_free_seq;
+}
+
+/* Answers with a printk rather than an assertion: the caller is about to do
+ * something to a thread that is not one, and what it does next is less
+ * interesting than where the pointer came from. */
+static int thread_is_live(struct thread *t, const char *what) {
+	unsigned int i;
+
+	if (t->magic == THREAD_MAGIC_LIVE) {
+		return 1;
+	}
+
+	printk("%s(%p): not a live thread -- magic %#x, state %#x\n", what, t,
+	    t->magic, t->state);
+
+	for (i = 0; i < ARRAY_SIZE(thread_free_ring); i++) {
+		if (thread_free_ring[i].t == t) {
+			printk("    freed by %p, %u free(s) ago\n",
+			    thread_free_ring[i].from,
+			    thread_free_seq - thread_free_ring[i].seq);
+		}
+	}
+
+	return 0;
+}
+
 void thread_delete(struct thread *t) {
-	static struct thread *zombie = NULL;
+	struct thread *z;
 
 	assert(t);
+	if (!thread_is_live(t, "thread_delete")) {
+		return;
+	}
+	/* Name the caller. An assertion here says only that somebody
+	 * deleted a live thread, which is not something anybody can act on. */
+	if (!(t->state & TS_EXITED)) {
+		printk("thread_delete(%p) state %#x task %p self %p, from %p\n", t,
+		    t->state, t->task, thread_self(), __builtin_return_address(0));
+	}
 	assert(t->state & TS_EXITED);
+
+	/* Whoever gets here first reclaims the thread; the rest only find out.
+	 *
+	 * A thread can be reached by two reclaimers at once: task_do_exit() walks
+	 * the task's threads and deletes each one, and a sibling in thread_join()
+	 * wakes the moment thread_terminate() sets TS_EXITED and deletes the very
+	 * same thread. On one core the join never got to run -- the joining thread
+	 * was terminated first. With the boot-core fence lifted it runs on another
+	 * core, and the two deletions raced: a double sysfree() of the thread's
+	 * local storage, every run of the same binary. */
+	if (t->state & TS_DELETED) {
+		return;
+	}
+	t->state |= TS_DELETED;
 
 	task_thread_unregister(t->task, t);
 	thread_local_free(t);
 	thread_wait_deinit(&t->thread_wait_list);
 
-	if (zombie) {
-		thread_free(zombie);
+	/* Whatever was parked earlier and has since been let go. */
+	dlist_foreach_entry(z, &thread_zombies, thread_link) {
+		if (atomic_rmw_load(&z->schedee.released, __ATOMIC_ACQUIRE)) {
+			dlist_del(&z->thread_link);
+			thread_note_free(z, __builtin_return_address(0));
+			thread_free(z);
+			parked--;
+		}
 	}
+	/* A parked thread is freed by the next deletion after its core lets go of
+	 * it, so the list is short by construction. If it is not, the flag is not
+	 * arriving and this has turned into a leak -- say so here rather than run
+	 * the pool dry and fail somewhere else. */
+	assertf(parked < 32, "thread_zombies holds %d threads", parked);
 
-	if (t != thread_self()) {
+	if ((t == thread_self())
+	    || !atomic_rmw_load(&t->schedee.released, __ATOMIC_ACQUIRE)) {
+		/* Still standing on it: this thread's own stack, or another core
+		 * that has not come out of the scheduler with it yet. */
+		dlist_head_init(&t->thread_link);
+		dlist_add_prev(&t->thread_link, &thread_zombies);
+		parked++;
+	}
+	else {
 		assert(!t->schedee.active);
 		assert(!t->schedee.ready);
+		thread_note_free(t, __builtin_return_address(0));
 		thread_free(t);
-		zombie = NULL;
-	} else {
-		zombie = t;
 	}
 }
 
@@ -322,6 +433,11 @@ void _NORETURN thread_exit(void *ret) {
 	}
 
 	sched_lock();
+
+	/* Before `waiting`, so that a wakeup racing this one either finds a thread
+	 * that is simply running (and does nothing) or finds the flag. In between
+	 * there is nothing to find. */
+	sched_finished(&current->schedee);
 
 	// sched_finish(current);
 	current->schedee.waiting = true;
@@ -357,6 +473,10 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	sched_lock();
 	{
+		if (!thread_is_live(t, "thread_join")) {
+			sched_unlock();
+			return -ESRCH;
+		}
 		assert(!(t->state & TS_DETACHED));
 
 		if (!(t->state & TS_EXITED)) {
@@ -385,6 +505,10 @@ int thread_detach(struct thread *t) {
 
 	sched_lock();
 	{
+		if (!thread_is_live(t, "thread_detach")) {
+			sched_unlock();
+			return -ESRCH;
+		}
 		assert(!(t->state & TS_DETACHED));
 
 		if (!(t->state & TS_EXITED)) {
@@ -426,6 +550,12 @@ int thread_terminate(struct thread *t) {
 		// sched_finish(t);
 		// assert(0, "NIY");
 		// thread_delete(t);
+		/* sched_freeze() clears `waiting`, which on its own is what the
+		 * comment below calls "prevent scheduler to add thread in runq". On
+		 * four cores that is not enough: a wakeup already in flight can still
+		 * reach this schedee. */
+		sched_finished(&t->schedee);
+
 		sched_freeze(&t->schedee);
 
 		t->state |= TS_EXITED;

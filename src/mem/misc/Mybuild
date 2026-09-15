@@ -16,6 +16,8 @@ module pool_ndebug extends pool {
 	source "pool.c"
 
 	@NoRuntime depends embox.lib.libds
+	/* pool_alloc/pool_free take a spinlock. */
+	@NoRuntime depends embox.kernel.spinlock
 }
 
 module pool_debug extends pool {

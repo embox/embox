@@ -23,6 +23,7 @@
 #include <hal/ipl.h>
 
 #include <kernel/time/timer_strat.h>
+#include <util/atomic_rmw.h>
 
 __BEGIN_DECLS
 
@@ -53,7 +54,26 @@ struct sys_timer {
 	sys_timer_queue_t lnk;
 #ifdef SMP /* XXX */
 	sys_timer_queue_t multi_lnk[NCPU];
+	/**
+	 * One counter per list, for the same reason as one link per list.
+	 *
+	 * The lists are delta lists, so a queued timer's counter means "after the
+	 * entry in front of me, in this list". A timer on four lists needs four of
+	 * them. Only the scheduler ticker is; every other timer uses `cnt` below
+	 * and leaves this alone. See TIMER_CNT() in head_timer_smp.c.
+	 */
+	clock_t multi_cnt[NCPU];
 	struct sys_timer_sharing *timer_sharing;
+	/**
+	 * Which CPU's list this timer is queued on.
+	 *
+	 * The timer lists are per-CPU, and a timer outlives the caller's stay on a
+	 * CPU -- a timed wait routinely starts its timer on one core and closes it
+	 * on another. Written by timer_strat_start(), read by timer_strat_stop().
+	 * -1 when not queued. The scheduler ticker is on every list at once and
+	 * does not use this.
+	 */
+	int owner_cpu;
 #endif
 	struct dlist_head st_wait_link;
 
@@ -93,24 +113,30 @@ static inline void sys_timer_set_private(struct sys_timer *tmr) {
 }
 #endif
 
+/* The mask stays up for the whole answer, and both words are read atomically.
+ * `cpu_get_id()` names the bit; reading it and then using it after
+ * ipl_restore() asks about a core this thread may no longer be on. */
 static inline bool sys_timer_is_started(struct sys_timer *tmr) {
 #ifdef SMP /* XXX */
+	bool ret;
 	ipl_t ipl = ipl_save();
 	unsigned int cpuid = cpu_get_id();
-	ipl_restore(ipl);
-	if(!sys_timer_is_shared(tmr)) {
-		return tmr->state & SYS_TIMER_STATE_STARTED;
-	}else{
-		if(tmr->state & SYS_TIMER_STATE_STARTED) {
-			if(tmr->timer_sharing->shared_cpu & (0x1 << cpuid))
-				return 1;
-			else
-				return 0;
-		}else{
-			return 0;
-		}
-	}
 
+	if (!sys_timer_is_shared(tmr)) {
+		ret = !!(atomic_rmw_load(&tmr->state, __ATOMIC_RELAXED)
+		         & SYS_TIMER_STATE_STARTED);
+	}
+	else if (!(atomic_rmw_load(&tmr->state, __ATOMIC_RELAXED)
+	           & SYS_TIMER_STATE_STARTED)) {
+		ret = 0;
+	}
+	else {
+		ret = !!(atomic_rmw_load(&tmr->timer_sharing->shared_cpu, __ATOMIC_RELAXED)
+		         & (0x1u << cpuid));
+	}
+	ipl_restore(ipl);
+
+	return ret;
 #else
 	return tmr->state & SYS_TIMER_STATE_STARTED;
 #endif
@@ -120,26 +146,50 @@ static inline void sys_timer_set_started(struct sys_timer *tmr) {
 #ifdef SMP /* XXX */
 	ipl_t ipl = ipl_save();
 	unsigned int cpuid = cpu_get_id();
-	ipl_restore(ipl);
-	if(sys_timer_is_shared(tmr)) {
-		tmr->timer_sharing->shared_cpu |= (0x1 << cpuid);
+
+	if (sys_timer_is_shared(tmr)) {
+		/* Every core writes this word. A plain |= loses another core's
+		 * concurrent &=, and a lost clear is what makes a later
+		 * timer_strat_stop() mend a list this timer is not on.
+		 *
+		 * Relaxed, not a shortcut: a core only ever writes its own bit and
+		 * reads it only to decide about its own list, so nothing here orders
+		 * anything else -- atomicity alone is what is needed. Sequential
+		 * consistency would be a barrier on every context switch, 15% of
+		 * `smptest malloc 4`, measured. */
+		atomic_rmw_or_fetch(&tmr->timer_sharing->shared_cpu, 0x1u << cpuid,
+		    __ATOMIC_RELAXED);
 	}
-#endif
+	atomic_rmw_or_fetch(&tmr->state, SYS_TIMER_STATE_STARTED, __ATOMIC_RELAXED);
+	ipl_restore(ipl);
+#else
 	tmr->state |= SYS_TIMER_STATE_STARTED;
+#endif
 }
 
 static inline void sys_timer_set_stopped(struct sys_timer *tmr) {
 #ifdef SMP /* XXX */
 	ipl_t ipl = ipl_save();
 	unsigned int cpuid = cpu_get_id();
+
+	if (sys_timer_is_shared(tmr)) {
+		/* and_fetch, not fetch_and: the decision below is about the word as
+		 * it is after this core has left it, and reading it again would let
+		 * another core's set slip in between. */
+		if (0 == atomic_rmw_and_fetch(&tmr->timer_sharing->shared_cpu,
+		             ~(0x1u << cpuid), __ATOMIC_RELAXED)) {
+			atomic_rmw_and_fetch(&tmr->state, ~(uint32_t)SYS_TIMER_STATE_STARTED,
+			    __ATOMIC_RELAXED);
+		}
+	}
+	else {
+		atomic_rmw_and_fetch(&tmr->state, ~(uint32_t)SYS_TIMER_STATE_STARTED,
+		    __ATOMIC_RELAXED);
+	}
 	ipl_restore(ipl);
-	if(sys_timer_is_shared(tmr)) {
-		tmr->timer_sharing->shared_cpu &= ~(0x1 << cpuid);
-		if(tmr->timer_sharing->shared_cpu == 0x0)
-			tmr->state &= ~SYS_TIMER_STATE_STARTED;
-	}else
+#else
+	tmr->state &= ~SYS_TIMER_STATE_STARTED;
 #endif
-		tmr->state &= ~SYS_TIMER_STATE_STARTED;
 }
 
 static inline bool sys_timer_is_periodic(struct sys_timer *tmr) {

@@ -66,25 +66,30 @@
  * provides a way to give answers for such questions.
  *
  @verbatim
- ------   -- --- --   -- --- --   -- --- --
- level    sched_lck   hwirq_hnd   hwirq_lck
- bit_nr   17 ... 12   11 ...  6    5 ...  0
- ------   -- --- --   -- --- --   -- --- --
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
+ level    sched_lck   preempt     hwirq_hnd   hwirq_lck
+ bit_nr   23 ... 18   17 ... 12   11 ...  6    5 ...  0
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
  @endverbatim
  *
  * For example, bit masks of the level corresponding to hardware interrupt
  * locks are the following:
  @verbatim
- ------   -- --- --   -- --- --   -- --- --
- level    sched_lck   hwirq_hnd   hwirq_lck
- bit_nr   17 ... 12   11 ...  6    5 ...  0
- ------   -- --- --   -- --- --   -- --- --
- mask                              *  **  *
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
+ level    sched_lck   preempt     hwirq_hnd   hwirq_lck
+ bit_nr   23 ... 18   17 ... 12   11 ...  6    5 ...  0
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
+ mask                                          *  **  *
  harder
- softer    *  **  *    *  **  *
- count                                    *
- ------   -- --- --   -- --- --   -- --- --
+ softer    *  **  *    *  **  *    *  **  *
+ count                                                *
+ ------   -- --- --   -- --- --   -- --- --   -- --- --
  @endverbatim
+ *
+ * The preempt block is new: the half of the old sched_lck block that
+ * __spin_preempt_disable() used to borrow. It sits below sched_lck so a
+ * pending sched_preempt() stays deferred while a spin region is open, and is
+ * excluded from __CRITICAL_BKL_MASK so opening one does not claim the BKL.
  *
  * @file
  * @date 16.05.10
@@ -98,7 +103,12 @@
 
 #define CRITICAL_IRQ_LOCK         0x0000003f /**< 64 calls depth. */
 #define CRITICAL_IRQ_HANDLER      0x00000fc0 /**< 64 nested interrupts. */
-#define CRITICAL_SCHED_LOCK       0x0003f000 /**< 64 calls. */
+#define CRITICAL_PREEMPT_LOCK     0x0003f000 /**< 64 spin regions. */
+#define CRITICAL_SCHED_LOCK       0x00fc0000 /**< 64 calls. */
+
+/* The part of the count that means "this CPU holds the BKL". Preemption is
+ * disabled without it, so its bits do not answer for the lock. */
+#define __CRITICAL_BKL_MASK       (~CRITICAL_PREEMPT_LOCK)
 
 /* Internal helper macros for bit masks transformation. */
 
@@ -125,6 +135,7 @@
 #ifndef __ASSEMBLER__
 
 #include <linux/compiler.h>
+#include <hal/ipl.h>
 #include <kernel/cpu/bkl.h>
 #include <kernel/cpu/cpudata.h>
 
@@ -157,25 +168,82 @@ static inline void __critical_count_sub(unsigned long count) {
 	critical_count() -= count;
 }
 
+/* The count is per-CPU and the caller may be preemptible -- a zero count is
+ * exactly what these two are asked to confirm. Unmasked, cpudata_var() can
+ * land on the core the thread just left. */
 static inline int critical_allows(unsigned int level) {
-	return !(critical_count() & (level | __CRITICAL_HARDER(level)));
+	unsigned int cur;
+	ipl_t ipl;
+
+	ipl = ipl_save();
+	cur = critical_count();
+	ipl_restore(ipl);
+
+	return !(cur & (level | __CRITICAL_HARDER(level)));
 }
 
 static inline int critical_inside(unsigned int level) {
-	return critical_count() & level;
+	unsigned int cur;
+	ipl_t ipl;
+
+	ipl = ipl_save();
+	cur = critical_count();
+	ipl_restore(ipl);
+
+	return cur & level;
 }
 
+/* Raising the count and taking the lock must look like one step to this CPU's
+ * own interrupts, or a handler that lands between them reads a count that
+ * promises a lock nobody holds. Only the outermost entry pays for the mask,
+ * and only across the acquisition -- the wait runs at the caller's interrupt
+ * level, with the count still zero, which a handler reads correctly. */
 static inline void critical_enter(unsigned int level) {
-	__critical_count_add(__CRITICAL_COUNT(level));
-	if (critical_count() == __CRITICAL_COUNT(level)) {
-		bkl_lock();
+	unsigned int count = __CRITICAL_COUNT(level);
+	unsigned int cur;
+	ipl_t ipl;
+
+	/* cpudata_var() is `ask which CPU, then address that CPU's copy`; a
+	 * zero-count thread can be preempted between the two, onto another CPU.
+	 * Masking interrupts is the fix: the handler is the only way into the
+	 * scheduler from here. */
+	ipl = ipl_save();
+	cur = critical_count();
+
+	if (cur & __CRITICAL_BKL_MASK) {
+		/* Nested, so this CPU holds the lock and cannot be preempted out of
+		 * it. The mask above makes the read that said so this CPU's own; the
+		 * count needs no protection once non-zero. */
+		bkl_assert_owned(cur, count, __builtin_return_address(0));
+		__critical_count_add(count);
+		ipl_restore(ipl);
+		return;
 	}
+
+	while (!bkl_trylock()) {
+		ipl_restore(ipl);
+		bkl_wait();
+		ipl = ipl_save();
+	}
+	__critical_count_add(count);
+	ipl_restore(ipl);
 }
 
 static inline void critical_leave(unsigned int level) {
-	if (critical_count() == __CRITICAL_COUNT(level))
-		bkl_unlock();
-	__critical_count_sub(__CRITICAL_COUNT(level));
+	unsigned int count = __CRITICAL_COUNT(level);
+	unsigned int cur = critical_count();
+	ipl_t ipl;
+
+	if ((cur & __CRITICAL_BKL_MASK) != count) {
+		bkl_assert_owned(cur, count, __builtin_return_address(0));
+		__critical_count_sub(count);
+		return;
+	}
+
+	ipl = ipl_save();
+	__critical_count_sub(count);
+	bkl_unlock();
+	ipl_restore(ipl);
 }
 
 static inline int critical_pending(struct critical_dispatcher *d) {
@@ -204,6 +272,7 @@ __END_DECLS
 #if ~0 != \
 	  __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_LOCK)        \
 	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_HANDLER)     \
+	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_PREEMPT_LOCK)    \
 	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SCHED_LOCK)
 # error "CRITICAL_XXX must contain a single contiguous block of bits"
 #endif

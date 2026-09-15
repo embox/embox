@@ -36,7 +36,15 @@ int thread_local_alloc(struct thread *t, size_t size) {
 }
 
 int thread_local_free(struct thread *t) {
-	sysfree(t->local.storage);
+	/* Freeing without forgetting leaves the pointer live, so a
+	 * second deletion of the same thread frees the same block again. Clear
+	 * it, and say nothing about a thread that has none (sysfree() complains
+	 * about NULL). */
+	if (t->local.storage) {
+		sysfree(t->local.storage);
+		t->local.storage = NULL;
+		t->local.size = 0;
+	}
 
 	return ENOERR;
 }

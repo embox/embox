@@ -7,6 +7,10 @@
  * provide fallbacks: plain RMW with barriers for non-lock-free targets.
  * Correct on single-core; multi-core targets without lock-free RMW are
  * not supported by this kernel.
+ *
+ * Macros are atomic_rmw_-prefixed: unprefixed atomic_load/store/exchange
+ * collide with C11 <stdatomic.h> / C++ <atomic> names and break any C++ TU
+ * that reaches the standard header (e.g. <mutex> via pthread.h).
  */
 
 #ifndef UTIL_ATOMIC_RMW_H_
@@ -23,16 +27,16 @@
 
 #if ATOMIC_RMW_LOCK_FREE
 
-#define atomic_add_fetch(ptr, val, order) __atomic_add_fetch(ptr, val, order)
-#define atomic_sub_fetch(ptr, val, order) __atomic_sub_fetch(ptr, val, order)
-#define atomic_or_fetch(ptr, val, order)  __atomic_or_fetch(ptr, val, order)
-#define atomic_and_fetch(ptr, val, order) __atomic_and_fetch(ptr, val, order)
-#define atomic_exchange(ptr, val, order)  __atomic_exchange_n(ptr, val, order)
-#define atomic_load(ptr, order)           __atomic_load_n(ptr, order)
-#define atomic_store(ptr, val, order)     __atomic_store_n(ptr, val, order)
+#define atomic_rmw_add_fetch(ptr, val, order) __atomic_add_fetch(ptr, val, order)
+#define atomic_rmw_sub_fetch(ptr, val, order) __atomic_sub_fetch(ptr, val, order)
+#define atomic_rmw_or_fetch(ptr, val, order)  __atomic_or_fetch(ptr, val, order)
+#define atomic_rmw_and_fetch(ptr, val, order) __atomic_and_fetch(ptr, val, order)
+#define atomic_rmw_exchange(ptr, val, order)  __atomic_exchange_n(ptr, val, order)
+#define atomic_rmw_load(ptr, order)           __atomic_load_n(ptr, order)
+#define atomic_rmw_store(ptr, val, order)     __atomic_store_n(ptr, val, order)
 
 /** Acquire on success, relaxed on failure. */
-#define atomic_try_lock(ptr, unlocked, locked)                                \
+#define atomic_rmw_try_lock(ptr, unlocked, locked)                                \
 	({                                                                        \
 		__typeof__(*(ptr)) __expected = (unlocked);                           \
 		__atomic_compare_exchange_n(ptr, &__expected, locked, 0,              \
@@ -44,15 +48,15 @@
 /* The barrier is what is left of the memory order: the compiler is stopped
  * from moving the access, and a machine that cannot run two of these at once
  * has nothing else to reorder against. */
-#define atomic_add_fetch(ptr, val, order) \
+#define atomic_rmw_add_fetch(ptr, val, order) \
 	({ __barrier(); *(ptr) += (val); __barrier(); *(ptr); })
-#define atomic_sub_fetch(ptr, val, order) \
+#define atomic_rmw_sub_fetch(ptr, val, order) \
 	({ __barrier(); *(ptr) -= (val); __barrier(); *(ptr); })
-#define atomic_or_fetch(ptr, val, order) \
+#define atomic_rmw_or_fetch(ptr, val, order) \
 	({ __barrier(); *(ptr) |= (val); __barrier(); *(ptr); })
-#define atomic_and_fetch(ptr, val, order) \
+#define atomic_rmw_and_fetch(ptr, val, order) \
 	({ __barrier(); *(ptr) &= (val); __barrier(); *(ptr); })
-#define atomic_exchange(ptr, val, order)                                      \
+#define atomic_rmw_exchange(ptr, val, order)                                      \
 	({                                                                        \
 		__typeof__(*(ptr)) __old;                                             \
 		__barrier();                                                          \
@@ -65,19 +69,19 @@
 /* Acquire on a load is "nothing after this may be hoisted above it", release
  * on a store is "nothing before it may sink below": one barrier each, on the
  * side the order names. */
-#define atomic_load(ptr, order)                                               \
+#define atomic_rmw_load(ptr, order)                                               \
 	({                                                                        \
 		__typeof__(*(ptr)) __v = *(volatile __typeof__(*(ptr)) *)(ptr);        \
 		__barrier();                                                          \
 		__v;                                                                  \
 	})
-#define atomic_store(ptr, val, order)                                         \
+#define atomic_rmw_store(ptr, val, order)                                         \
 	do {                                                                      \
 		__barrier();                                                          \
 		*(volatile __typeof__(*(ptr)) *)(ptr) = (val);                        \
 	} while (0)
 
-#define atomic_try_lock(ptr, unlocked, locked)                                \
+#define atomic_rmw_try_lock(ptr, unlocked, locked)                                \
 	({                                                                        \
 		int __got;                                                            \
 		__barrier();                                                          \

@@ -40,7 +40,7 @@ static ipl_t mount_table_enter(void) {
 	ipl_t ipl = ipl_save();
 
 	if (!__spin_trylock(&mount_table_lock)) {
-		atomic_add_fetch(&mount_table_contended, 1, __ATOMIC_RELAXED);
+		atomic_rmw_add_fetch(&mount_table_contended, 1, __ATOMIC_RELAXED);
 		__spin_lock(&mount_table_lock);
 	}
 

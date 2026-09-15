@@ -10,6 +10,10 @@ module none extends affinity {
 }
 
 module smp extends affinity {
+	/* CPUs a new schedee may run on, as a bit
+	 * mask. 0 = any (upstream). 1 = the boot CPU only. */
+	option number default_mask = 0
+
 	source "smp.h"
 	source "smp.c"
 

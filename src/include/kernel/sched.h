@@ -54,6 +54,19 @@ enum schedee_type {
 struct schedee {
 	runq_item_t       runq_link;
 
+	/**
+	 * The priority level this schedee was actually put into, which is not
+	 * always the one schedee_priority_get() reports.
+	 *
+	 * Priority inheritance rewrites current_priority in place --
+	 * schedee_priority_inherit() is an assignment, with no dequeue and no
+	 * enqueue -- to a schedee that may be sitting in the run queue at its old
+	 * level. runq_remove() then computes the level from the new priority, tests
+	 * the wrong list for emptiness and clears the wrong bit, and the priority
+	 * map stops describing the lists. Not a race; it needs one CPU.
+	 */
+	int               runq_prio;
+
 	spinlock_t        lock; /**< Protects wait state and others. */
 
 	enum schedee_type type; /** < Thread or lthread */
@@ -73,6 +86,28 @@ struct schedee {
 	unsigned int active;  /**< Running on a CPU. TODO SMP-only. */
 	unsigned int ready;   /**< Managed by the scheduler. */
 	unsigned int waiting; /**< Waiting for an event. */
+
+	/**
+	 * No CPU will touch this schedee again.
+	 *
+	 * Not the same question as `active`, which answers "running on a CPU" and
+	 * is cleared partway through __sched_deactivate() -- before that function
+	 * has finished with s->lock. Whoever frees the memory needs the later
+	 * answer, and this is it: set on the last line of __sched_deactivate(),
+	 * cleared when the schedee is activated.
+	 */
+	volatile unsigned int released;
+
+	/**
+	 * The owner is done with this schedee.
+	 *
+	 * Not the same question as `released`, which answers "has the CPU let go
+	 * of it" and gates freeing the memory. This one gates scheduling: a thread
+	 * that has called thread_exit() must not be woken, and must not be put back
+	 * on the runqueue on its way out of __schedule(). Set before `waiting`, so
+	 * no wakeup can slip in between.
+	 */
+	volatile unsigned int finished;
 
 	struct affinity         affinity;
 	struct sched_timing     sched_timing;
@@ -148,6 +183,9 @@ extern void sched_wait_prepare(void);
 extern void sched_wait_cleanup(void);
 
 extern int sched_wakeup(struct schedee *);
+
+/** Never schedule this schedee again. */
+extern void sched_finished(struct schedee *s);
 
 /* XXX schedee will not be ever in runq or active - schedee is dead,
  * but with allocated resources on its stack */

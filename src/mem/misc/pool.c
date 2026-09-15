@@ -16,34 +16,56 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <hal/ipl.h>
+#include <kernel/spinlock.h>
 #include <util/member.h>
 
+/* One lock for every pool in the image, rather than one per pool: struct
+ * pool is laid down by POOL_DEF() in read-only initialised data all over the
+ * tree, and giving each its own lock would change that layout everywhere.
+ * Pool operations are short and rare enough that the contention is not
+ * measurable. */
+static spinlock_t pool_lock = SPIN_STATIC_UNLOCKED;
+
 void * pool_alloc(struct pool *pl) {
-	void *obj;
+	void *obj = NULL;
+	ipl_t ipl;
 
 	assert(pl != NULL);
 
-	if (!slist_empty(&pl->free_blocks)) {
-		return (void *)slist_remove_first_link(&pl->free_blocks);
+	ipl = ipl_save();
+	__spin_lock(&pool_lock);
+	{
+		if (!slist_empty(&pl->free_blocks)) {
+			obj = (void *)slist_remove_first_link(&pl->free_blocks);
+		}
+		else if (pl->bound_free != pl->memory + pl->pool_size) {
+			obj = pl->bound_free;
+			pl->bound_free += pl->obj_size;
+			assert(pl->bound_free <= pl->memory + pl->pool_size);
+		}
 	}
+	__spin_unlock(&pool_lock);
+	ipl_restore(ipl);
 
-	if (pl->bound_free != pl->memory + pl->pool_size) {
-		obj = pl->bound_free;
-		pl->bound_free += pl->obj_size;
-		assert(pl->bound_free <= pl->memory + pl->pool_size);
-		return obj;
-	}
-
-	return NULL;
+	return obj;
 }
 
 void pool_free(struct pool *pl, void *obj) {
+	ipl_t ipl;
+
 	assert(pl != NULL);
 	assert(obj != NULL);
 	assert(pool_belong(pl, obj));
 
-	obj = slist_link_init((struct slist_link *)obj);
-	slist_add_first_link(obj, &pl->free_blocks);
+	ipl = ipl_save();
+	__spin_lock(&pool_lock);
+	{
+		obj = slist_link_init((struct slist_link *)obj);
+		slist_add_first_link(obj, &pl->free_blocks);
+	}
+	__spin_unlock(&pool_lock);
+	ipl_restore(ipl);
 }
 
 int pool_belong(const struct pool *pl, const void *obj) {

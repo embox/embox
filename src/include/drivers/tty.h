@@ -14,8 +14,10 @@
 
 #include <asm/termbits.h>
 #include <framework/mod/options.h>
+#include <hal/ipl.h>
 #include <kernel/irq_lock.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/spinlock.h>
 #include <kernel/thread/sync/mutex.h>
 #include <lib/libds/ring.h>
 
@@ -40,6 +42,11 @@ struct tty {
 	/* serialize operations on tty, also used in pty */
 	struct mutex lock;
 
+	/* The rings below have a thread side and an interrupt side, and the mutex
+	 * above only covers the first. This covers both. Innermost: nothing held
+	 * under it blocks or enters a critical level. */
+	spinlock_t ring_lock;
+
 	struct ring rx_ring;
 
 	/* flag (MSB) and char (LSB) */
@@ -57,6 +64,23 @@ struct tty {
 	/* process group (TODO: lonely process now) */
 	pid_t pgrp;
 };
+
+/* Every access to a ring in `struct tty` goes between
+ * these two, on the interrupt side as well as the thread side. Interrupts are
+ * masked rather than preemption disabled, because one of the two callers is an
+ * interrupt handler -- the same reasoning as pool_alloc(). */
+static inline ipl_t tty_ring_lock(struct tty *t) {
+	ipl_t ipl = ipl_save();
+
+	__spin_lock(&t->ring_lock);
+
+	return ipl;
+}
+
+static inline void tty_ring_unlock(struct tty *t, ipl_t ipl) {
+	__spin_unlock(&t->ring_lock);
+	ipl_restore(ipl);
+}
 
 struct tty_ops {
 	void (*setup_term)(struct tty *tty);

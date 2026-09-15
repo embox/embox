@@ -6,6 +6,9 @@
  */
 
 
+#include <errno.h>
+
+#include <kernel/printk.h>
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/task_argv.h>
@@ -32,7 +35,20 @@ static int task_argv_exec(const struct task *task, const char *path, char *const
 
 	task_argv = task_resource_argv(task);
 	task_argv->argc = argv_to_argc(argv);
-	assert(task_argv->argc <= ARGS_QUANTITY);
+	if (task_argv->argc > ARGS_QUANTITY) {
+		/* Refuse, do not panic: an exec with an argument vector this
+		 * kernel cannot hold is the caller's problem, not a reason to
+		 * stop the machine. The numbers are in the message because
+		 * "assertion failed" says nothing about which exec it was. */
+		printk("exec: argv rejected: %d arguments for \"%s\" (limit %d);"
+		       " argv %p [0]=%p [1]=%p [2]=%p\n",
+		    task_argv->argc, path, ARGS_QUANTITY, (void *)argv,
+		    (void *)argv[0], (void *)argv[1], (void *)argv[2]);
+		task_argv->argc = 0;
+		task_argv->argv[0] = NULL;
+		task_argv->path[0] = '\0';
+		return -ENAMETOOLONG;
+	}
 
 	for (i = 0; i < task_argv->argc; i++) {
 		strncpy(task_argv->argv_buff[i], argv[i], sizeof(*task_argv->argv_buff));
