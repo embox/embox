@@ -25,6 +25,12 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 
 	lookup->item = node_path.node->i_dentry;
 
+	if (lookup->item) {
+		/* Only vfs_create() sets flags, so a mounted root has none; chdir()
+		 * checks them. */
+		lookup->item->flags = node_path.node->i_mode;
+	}
+
 	return 0;
 }
 
