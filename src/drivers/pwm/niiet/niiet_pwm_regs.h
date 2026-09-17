@@ -71,6 +71,10 @@ struct niiet_tmr_regs {
 #define TMR_CTRL_DIV_4     2
 #define TMR_CTRL_DIV_8     3
 
+#define TMR_CTRL_CLR_SHIFT  2
+
+#define TMR_CTRL_CLR       (1 << TMR_CTRL_CLR_SHIFT)
+
 #define TMR_CTRL_MODE_SHIFT 4
 #define TMR_CTRL_MODE_MASK  0x3
 #define TMR_CTRL_MODE(mode)  \
