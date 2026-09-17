@@ -26,3 +26,8 @@ TEST_CASE("Test for fma() with NaN") {
     test_assert(isnan(fma(2.0, NAN, 1.0)));
     test_assert(isnan(fma(2.0, 3.0, NAN)));
 }
+
+TEST_CASE("Test for fma() with infinity multiplied by zero") {
+    test_assert(isnan(fma(INFINITY, 0.0, 3.0)));
+    test_assert(isnan(fma(0.0, INFINITY, 3.0)));
+}
