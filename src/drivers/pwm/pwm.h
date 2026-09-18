@@ -10,6 +10,7 @@
 #define DRIVERS_PWM_PWM_H_
 
 #include <stdint.h>
+
 #include <sys/cdefs.h>
 
 #include <util/macro.h>
@@ -50,6 +51,8 @@ struct dma_buffer {
 	uint32_t      bd_flags;
 };
 
+struct dma_dev;
+
 struct pwm_device {
 	const struct pwm_desc        *pwmd_desc;
 	int                           pwmd_id;
@@ -63,6 +66,7 @@ struct pwm_device {
 	int                           pwmd_mask;
 	int                          *pwmd_duty; /* per chan */
 	struct dma_buffer            *pwmd_dma_buf;
+	struct dma_dev              **pwmd_dma_dev;
 };
 
 __BEGIN_DECLS
@@ -108,12 +112,14 @@ __END_DECLS
 	ARRAY_SPREAD_ADD(__pwm_desc_registry,  MACRO_CONCAT(pwm_desc_, id)); \
 	const struct pwm_desc *PWM_DESC_GLOBAL_PTR(id) = &MACRO_CONCAT(pwm_desc_, id); \
 	static struct dma_buffer MACRO_CONCAT(_pwm_chan_dma_buf_,id)[max_chan] = {NULL}; \
+	static struct dma_dev *MACRO_CONCAT(_pwm_chan_dma_dev_,id)[max_chan] = {NULL}; \
 	static int MACRO_CONCAT(_pwm_chan_duty_buf_,id)[max_chan] = {0}; \
 	static struct pwm_device MACRO_CONCAT(pwm_dev_, id) = \
 						{ \
 							.pwmd_desc = &MACRO_CONCAT(pwm_desc_, id),  \
 							.pwmd_duty = &MACRO_CONCAT(_pwm_chan_duty_buf_,id)[0], \
 							.pwmd_dma_buf = &MACRO_CONCAT(_pwm_chan_dma_buf_,id)[0], \
+							.pwmd_dma_dev = (void*)MACRO_CONCAT(_pwm_chan_dma_dev_,id), \
 							.pwmd_dma = dmas, \
 						} ; \
 	ARRAY_SPREAD_DECLARE(const struct pwm_device *, __pwm_device_registry); \
