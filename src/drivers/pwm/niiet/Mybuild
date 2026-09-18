@@ -8,7 +8,7 @@ module niiet_pwm_drv {
 	source "niiet_pwm_drv.c"
 
 	depends embox.driver.pwm.pwm_dev
-	depends embox.driver.dma.niiet_dma_drv
+	depends embox.driver.dma.dma_new
 
 	@NoRuntime depends embox.driver.clk.core
 }

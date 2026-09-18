@@ -13,7 +13,7 @@
 
 #include <drivers/pwm.h> /* only for struct pin_description  */
 
-#define NIIET_PWM_CHAN_MAX    (4)
+#define NIIET_PWM_CHAN_MAX        (4)
 #define NIIET_PWM_DMA_BUF_SIZE    (32)
 
 #define NIIET_PWM_DMA_NUM_OFF     (0)
@@ -31,6 +31,8 @@
 #define NIIET_PWM_DMA_CHAN(desc)   \
 				((desc >> NIIET_PWM_DMA_CHAN_OFF) & 0xFF)
 
+struct dma_dev ;
+
 struct niiet_pwm_priv {
 	const struct pin_description *pin_desc;
 	const uintptr_t               base_addr;
@@ -39,7 +41,7 @@ struct niiet_pwm_priv {
 	uint32_t                      comp_mask;
 	int                           idx;
 
-	//void *                        dma_handle[NIIET_PWM_CHAN_MAX];
+	struct dma_dev               *dma_dev[NIIET_PWM_CHAN_MAX];
 	uint32_t                      dma_buffer[NIIET_PWM_CHAN_MAX][NIIET_PWM_DMA_BUF_SIZE];
 
 };
