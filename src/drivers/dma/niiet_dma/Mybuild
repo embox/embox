@@ -2,6 +2,7 @@ package embox.driver.dma
 
 module niiet_dma_drv {
 	option string log_level="LOG_ERR"
+	option number base_addr = 0x50000000
 
 	source "niiet_dma_drv.c"
 
