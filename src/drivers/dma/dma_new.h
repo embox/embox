@@ -71,6 +71,7 @@ struct dma_dev {
 
 extern struct dma_dev *dma_dev_by_id(int id);
 
+extern int dma_init(struct dma_dev *dev);
 extern int dma_config(struct dma_dev *dev, int ch, struct dma_config *conf);
 extern int dma_transfer(struct dma_dev *dev, int ch, struct dma_req *req);
 extern int dma_activate(struct dma_dev *dev, uint32_t ch_mask);

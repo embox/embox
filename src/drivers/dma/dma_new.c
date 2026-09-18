@@ -71,3 +71,17 @@ int dma_get_type(struct dma_dev *dev, char *type) {
 
 	return res;
 }
+
+int dma_init(struct dma_dev *dev) {
+    int res;
+
+    if (!dev || !dev->dd_ops) {
+		return -EINVAL;
+	}
+
+    if (dev->dd_ops->do_init) {
+        res = dev->dd_ops->do_init(dev);
+    }
+
+	return res;
+}

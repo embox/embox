@@ -37,7 +37,7 @@ static int dma_subsystem_init(void) {
 		if (!dev->dd_ops) {
 			continue;
 		}
-		if (dev->dd_ops->do_init) {
+		if (!dev->dd_ops->do_init) {
 			continue;
 		}
 		if (dev->dd_ops->do_init(dev)) {
