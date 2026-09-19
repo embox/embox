@@ -60,8 +60,8 @@ static int rootfs_mount(void) {
 
 	dvfs_update_root();
 
-	if (-1 == dvfs_mount(dev, "/", (char *) fs_type, 0)) {
-		return -errno;
+	if ((err = dvfs_mount(dev, "/", (char *) fs_type, 0))) {
+		return err;
 	}
 
 	array_spread_foreach(auto_mnt, auto_mount_tab) {

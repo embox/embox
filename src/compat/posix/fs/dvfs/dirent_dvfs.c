@@ -31,8 +31,13 @@ DIR *opendir(const char *path) {
 	struct lookup l = {0, 0};
 	int err;
 
-	if ((err = dvfs_lookup(path, &l)) || l.item == NULL) {
+	if ((err = dvfs_lookup(path, &l))) {
 		SET_ERRNO(-err);
+		return NULL;
+	}
+
+	if (l.item == NULL) {
+		SET_ERRNO(ENOENT);
 		return NULL;
 	}
 
@@ -72,6 +77,7 @@ int closedir(DIR *dir) {
 
 struct dirent *readdir(DIR *dir) {
 	struct lookup l;
+	int err;
 
 	if (!dir) {
 		SET_ERRNO(EBADF);
@@ -82,8 +88,8 @@ struct dirent *readdir(DIR *dir) {
 		.parent = dir->dir_dentry,
 	};
 
-	if (dvfs_iterate(&l, &dir->ctx)) {
-		SET_ERRNO(EAGAIN);
+	if ((err = dvfs_iterate(&l, &dir->ctx))) {
+		SET_ERRNO(-err);
 		return NULL;
 	}
 

@@ -15,6 +15,7 @@
 #include <fs/kfile.h>
 #include <fs/dvfs.h>
 
+#include <util/atomic_rmw.h>
 #include <util/math.h>
 
 /**
@@ -51,13 +52,11 @@ int kclose(struct file_desc *desc) {
  * @param count Length of the data
  *
  * @return Bytes written or negative error code
- * @retval       0 Ok
  * @retval -ENOSYS Function is not implemented in file system driver
  */
 int kwrite(struct file_desc *desc, char *buf, int count) {
-	int res = 0; /* Assign to avoid compiler warning when use -O2 */
-	int retcode = count;
 	struct inode *inode;
+	int res;
 
 	if (!desc) {
 		return -EINVAL;
@@ -66,31 +65,23 @@ int kwrite(struct file_desc *desc, char *buf, int count) {
 	inode = desc->f_inode;
 	assert(inode);
 
-	if (!(inode->i_mode & DVFS_NO_LSEEK)
-	    && ((inode->i_size - desc->f_pos) < count)) {
-		if (inode->i_ops && inode->i_ops->ino_truncate) {
-			res = inode->i_ops->ino_truncate(desc->f_inode, desc->f_pos + count);
-			if (res) {
-				retcode = -EFBIG;
-			}
-		}
-		else {
-			retcode = -EFBIG;
-		}
+	if (!desc->f_ops || !desc->f_ops->write) {
+		return -ENOSYS;
 	}
 
-	if (desc->f_ops && desc->f_ops->write) {
-		res = desc->f_ops->write(desc, buf, count);
-	}
-	else {
-		retcode = -ENOSYS;
-	}
-
+	res = desc->f_ops->write(desc, buf, count);
 	if (res > 0) {
 		desc->f_pos += res;
+		/* The size goes up after the data, so another core never reads a size
+		 * covering unwritten blocks. Drivers keeping the size do it already. */
+		if (!(inode->i_mode & DVFS_NO_LSEEK)
+		    && desc->f_pos > (off_t) inode->i_size) {
+			inode->i_size = desc->f_pos;
+		}
 	}
 
-	return retcode;
+	/* What the driver wrote, which may be short of COUNT. */
+	return res;
 }
 
 /**
@@ -100,20 +91,30 @@ int kwrite(struct file_desc *desc, char *buf, int count) {
  * @param count Length of the data
  *
  * @return Bytes read or negative error code
- * @retval       0 Ok
  * @retval -ENOSYS Function is not implemented in file system driver
  */
 int kread(struct file_desc *desc, char *buf, int count) {
+	off_t size, pos;
 	int res;
-	int sz;
 
 	if (!desc) {
 		return -1;
 	}
 
-	sz = min(count, desc->f_inode->i_size - desc->f_pos);
+	/* Read the size once and clamp in signed arithmetic: f_pos may be past
+	 * the end, and a write on another core may change the size. */
+	size = (off_t) atomic_rmw_load(&desc->f_inode->i_size, __ATOMIC_RELAXED);
+	pos = desc->f_pos;
+	if (!(desc->f_inode->i_mode & DVFS_NO_LSEEK)) {
+		if (pos >= size) {
+			return 0;
+		}
+		if ((off_t) count > size - pos) {
+			count = (int) (size - pos);
+		}
+	}
 
-	if (sz <= 0) {
+	if (count <= 0) {
 		return 0;
 	}
 
@@ -137,13 +138,16 @@ int kfstat(struct file_desc *desc, struct stat *sb) {
 	*sb = (struct stat){
 	    .st_size = desc->f_inode->i_size,
 	    .st_mode = desc->f_inode->i_mode,
-	    .st_uid = 0,
-	    .st_gid = 0,
+	    .st_ino = desc->f_inode->i_no,
+	    .st_uid = desc->f_inode->i_owner_id,
+	    .st_gid = desc->f_inode->i_group_id,
+	    .st_mtime = desc->f_inode->i_mtime,
+	    .st_ctime = desc->f_inode->i_ctime,
 	};
 
 	sb->st_blocks = sb->st_size;
 
-	if (desc->f_inode->i_sb->bdev) {
+	if (desc->f_inode->i_sb && desc->f_inode->i_sb->bdev) {
 		block_size = block_dev_block_size(desc->f_inode->i_sb->bdev);
 		sb->st_blocks /= block_size;
 		sb->st_blocks += ((sb->st_blocks % block_size) != 0);
@@ -153,5 +157,8 @@ int kfstat(struct file_desc *desc, struct stat *sb) {
 }
 
 int kioctl(struct file_desc *fp, int request, void *data) {
+	if (!fp->f_ops || !fp->f_ops->ioctl) {
+		return -ENOTTY;
+	}
 	return fp->f_ops->ioctl(fp, request, data);
 }

@@ -11,5 +11,7 @@
 
 
 int mknod(const char *pathname, mode_t mode, dev_t dev) {
-	return 0;
+	/* Nothing makes device nodes under DVFS: devfs lists the devices that
+	 * exist. */
+	return SET_ERRNO(ENOSYS);
 }

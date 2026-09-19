@@ -132,7 +132,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 
 	desc = dvfs_alloc_file();
 	if (desc == NULL) {
-		return err2ptr(ENOMEM);
+		return err2ptr(ENFILE);
 	}
 
 	d = lookup->item;
@@ -385,6 +385,19 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 
 	res = sb->sb_iops->ino_iterate(next_inode, next_dentry->name,
 	    lookup->parent->d_inode, ctx);
+	while (res == -ENOMEM && dvfs_fs_dentry_try_free(sb)) {
+		/* The driver's own pool is empty, and cached dentries of this volume
+		 * hold entries of it. -ENOMEM is not the end of the directory. */
+		res = sb->sb_iops->ino_iterate(next_inode, next_dentry->name,
+		    lookup->parent->d_inode, ctx);
+	}
+	if (res == -ENOMEM) {
+		dentry_ref_dec(next_dentry);
+		dvfs_destroy_dentry(next_dentry);
+		dvfs_destroy_inode(next_inode);
+		lookup->item = NULL;
+		return -ENOMEM;
+	}
 	if (res) {
 		/* iterate virtual */
 		dentry_ref_dec(next_dentry);
