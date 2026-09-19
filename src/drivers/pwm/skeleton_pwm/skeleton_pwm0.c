@@ -25,6 +25,7 @@
 
 #define USE_BCONF        OPTION_GET(BOOLEAN, use_bconf)
 #define USE_DMA          OPTION_GET(BOOLEAN, use_dma)
+#define TIMER_FREQ        OPTION_GET(NUMBER, timer_freq)
 
 #if USE_BCONF
 #include <config/board_config.h>
@@ -76,6 +77,7 @@ static struct skeleton_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
     .base_addr = PWM_BASE_ADDR,
     .clk_name  = PWM_CLK_NAME(),
     .idx       = PWM_DEV_ID,
+    .freq      = TIMER_FREQ,
 };
 
 PWM_DEV_DEF(PWM_DEV_ID, &skeleton_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,

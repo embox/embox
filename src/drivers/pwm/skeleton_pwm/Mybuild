@@ -1,6 +1,8 @@
 package embox.driver.pwm
 
 module skeleton_pwm_drv {
+	option string log_level = "LOG_ERR"
+
 	source "skeleton_pwm_drv.c"
 
 	depends embox.driver.pwm.pwm_dev
@@ -9,6 +11,7 @@ module skeleton_pwm_drv {
 module skeleton_pwm0 {
 	option boolean use_bconf=false
 	option boolean use_dma=false
+	option number timer_freq = 10000000
 
 	source "skeleton_pwm0.c"
 
@@ -18,9 +21,29 @@ module skeleton_pwm0 {
 module skeleton_pwm1 {
 	option boolean use_bconf=false
 	option boolean use_dma=false
+	option number timer_freq = 10000000
 
 	source "skeleton_pwm1.c"
 
 	depends skeleton_pwm_drv
 }
 
+module skeleton_pwm2 {
+	option boolean use_bconf=false
+	option boolean use_dma=false
+	option number timer_freq = 10000000
+
+	source "skeleton_pwm2.c"
+
+	depends skeleton_pwm_drv
+}
+
+module skeleton_pwm3 {
+	option boolean use_bconf=false
+	option boolean use_dma=false
+	option number timer_freq = 10000000
+
+	source "skeleton_pwm3.c"
+
+	depends skeleton_pwm_drv
+}
