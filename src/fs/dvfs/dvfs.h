@@ -105,11 +105,11 @@ extern int dvfs_create_new(const char *name, struct lookup *lookup, int flags);
  * as dvfs_remove() does. 0 or -errno. */
 extern int dvfs_unlink(const char *path);  /* not a directory */
 extern int dvfs_rmdir(const char *path);   /* an empty directory */
+extern int dvfs_rename(const char *from, const char *to);
 
 /* The name of an open dentry goes away: off the parent's list, DYING, freed
  * by the last reference. Under the lock. */
 extern void dentry_unlink_dying(struct dentry *d);
-extern int dvfs_rename(struct dentry *from, struct dentry *to);
 
 /* dcache-related stuff */
 extern struct dentry *dvfs_cache_lookup(const char *path, struct dentry *base);
