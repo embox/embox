@@ -33,7 +33,7 @@ static void dvfs_prune_children(struct dentry *dir) {
 		freed = 0;
 		dlist_foreach_entry(child, &dir->children, children_lnk) {
 			if (child->usage_count == 0 && dlist_empty(&child->children)
-			    && !(child->flags & DVFS_MOUNT_POINT)) {
+			    && !(child->flags & DVFS_MOUNT_POINT) && !child->d_covered) {
 				if (0 == dvfs_destroy_dentry(child)) {
 					freed = 1;
 					break;

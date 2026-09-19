@@ -27,6 +27,10 @@ struct dentry {
 	struct super_block *d_sb;
 
 	struct dentry     *parent;
+	/* On a mount point: the dentry of the directory the mount hides. It is
+	 * held (one reference) for as long as the mount stands, and put back into
+	 * the tree by umount. NULL everywhere else. */
+	struct dentry     *d_covered;
 	struct dlist_head children; /* Sub-elements of directory */
 	struct dlist_head children_lnk;
 

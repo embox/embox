@@ -14,6 +14,7 @@
 #include <fs/dentry.h>
 #include <fs/dvfs.h>
 #include <fs/super_block.h>
+#include <util/atomic_rmw.h>
 #include <util/err.h>
 #include <util/log.h>
 
@@ -220,129 +221,218 @@ extern int set_rootfs_sb(struct super_block *sb);
  *
  * @return Negative error value
  * @retval       0 Ok
- * @retval -ENOENT Mount point or device not found
+ * @retval -ENOENT Mount point not found
+ * @retval -ENODEV No such file system type, or it would not mount the device
+ * @retval  -EBUSY Already a mount point (the root included)
+ *
+ * The mount hides the directory it covers: that dentry goes off its parent's
+ * list, a new one for the mounted root takes its place, and the new one keeps
+ * the old one in d_covered with a reference, for umount to put it back.
  */
 int dvfs_mount(const char *source, const char *dest, const char *fs_type,
     int flags) {
 	struct lookup lookup = {};
-	struct super_block *sb;
-	struct dentry *d = NULL;
+	struct super_block *sb = NULL;
+	struct dentry *covered, *d;
 	int err;
 
 	assert(dest);
 	assert(fs_type);
 
-	if (NULL == (sb = super_block_alloc(fs_type, source))) {
-		return -ENOMEM;
+	if (NULL == fs_driver_find(fs_type)) {
+		return -ENODEV;
 	}
+
+	dvfs_lock();
 
 	if (!strcmp(dest, "/")) {
+		if (dvfs_root()->d_sb != NULL) {
+			err = -EBUSY;
+			goto out;
+		}
+		if (NULL == (sb = super_block_alloc(fs_type, source))) {
+			err = -ENODEV;
+			goto out;
+		}
 		set_rootfs_sb(sb);
 		dvfs_update_root();
-	}
-	else {
-		dvfs_lookup(dest, &lookup);
-
-		if (lookup.item == NULL) {
-			err = -ENOENT;
-			goto err_free_all;
-		}
-
-		if (lookup.item->flags & DVFS_MOUNT_POINT) {
-			err = -EBUSY;
-			goto err_free_all;
-		}
-
-		if (!(lookup.item->flags & S_IFDIR)) {
-			err = -EINVAL;
-			goto err_free_all;
-		}
-
-		dentry_disconnect(lookup.item);
-
-		d = dvfs_alloc_dentry();
-		dentry_ref_inc(d);
-
-		d->flags |= VFS_DIR_VIRTUAL;
-		dentry_fill(sb, sb->sb_root, d, lookup.parent);
-		strcpy(d->name, lookup.item->name);
-
-		d->flags |= S_IFDIR | DVFS_MOUNT_POINT;
-
-		dentry_ref_dec(lookup.item);
+		err = 0;
+		goto out;
 	}
 
-	return 0;
-err_free_all:
-	if (lookup.item != NULL) {
-		dentry_ref_dec(lookup.item);
+	if ((err = dvfs_lookup_at(NULL, dest, &lookup, NULL))) {
+		goto out;
 	}
 
-	if (d != NULL) {
-		dvfs_destroy_inode(d->d_inode);
-		dentry_reconnect(d->parent, d->name);
-		dentry_ref_dec(d);
-		dvfs_destroy_dentry(d);
+	covered = lookup.item;
+	if (covered == NULL) {
+		err = -ENOENT;
+		goto out_put;
 	}
 
-	if (sb) {
+	if (!S_ISDIR(covered->flags)) {
+		err = -ENOTDIR;
+		goto out_put;
+	}
+
+	if (covered->flags & (DVFS_MOUNT_POINT | DVFS_DYING)) {
+		err = -EBUSY;
+		goto out_put;
+	}
+
+	if (NULL == (sb = super_block_alloc(fs_type, source))) {
+		err = -ENODEV;
+		goto out_put;
+	}
+
+	d = dvfs_alloc_dentry();
+	if (d == NULL) {
 		super_block_free(sb);
+		err = -ENOMEM;
+		goto out_put;
 	}
 
+	/* Hide the covered directory, put the mounted root in its place. */
+	dvfs_cache_del(covered);
+	dlist_del_init(&covered->children_lnk);
+
+	dentry_fill(sb, sb->sb_root, d, covered->parent);
+	strcpy(d->name, covered->name);
+	d->flags = S_IFDIR | VFS_DIR_VIRTUAL | DVFS_MOUNT_POINT;
+	/* The mount's own pin, given back by umount. */
+	d->usage_count = 1;
+	/* The lookup's reference on the covered dentry becomes the mount's. */
+	d->d_covered = covered;
+	lookup.item = NULL;
+
+	err = 0;
+out_put:
+	dvfs_lookup_put(&lookup);
+out:
+	dvfs_unlock();
 	return err;
 }
 
-/**
- * @brief Recoursive dentry freeing
- *
- * @param d Dentry to be freed
- *
- * @return Negative error code or zero if succed
- */
-static int _dentry_destroy(struct dentry *parent) {
-	struct dentry *child;
-	int err;
-	dlist_foreach_entry(child, &parent->children, children_lnk) {
-		if ((err = _dentry_destroy(child)))
-			return err;
+/* Anybody other than the mount point still holding a dentry of SB? Dying
+ * dentries are off the tree but still on the list of all dentries. */
+static int dvfs_sb_busy(struct super_block *sb, struct dentry *mpoint,
+    int mpoint_refs) {
+	extern struct dlist_head dentry_dlist;
+	struct dentry *d;
+
+	if (mpoint->usage_count > mpoint_refs) {
+		return 1;
 	}
 
-	return dvfs_destroy_dentry(parent);
+	dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
+		if (d != mpoint && d->d_sb == sb && d->usage_count > 0) {
+			return 1;
+		}
+		/* A mount inside this one: its covered dentry is ours and held, so
+		 * the check above has seen it already. */
+	}
+
+	return 0;
 }
 
 /**
  * @brief Perform unmount operation
  *
- * @param mpoint Dentry of FS root
+ * @param mpoint Dentry of FS root, held by the caller
  *
  * @return Negative error code or zero if succeed
- * @retval 0 Success
- * @retval -ENOBUSY Some files in FS tree are being used, can't unmount
+ * @retval 0 Success; the caller's reference is the last one and frees it
+ * @retval -EBUSY Some files in FS tree are being used, can't unmount
+ * @retval -EINVAL Not a mount point
+ *
+ * The busy check and the teardown are one hold of the lock, which every new
+ * reference goes through. The superblock goes last.
  */
 int dvfs_umount(struct dentry *mpoint) {
-	int err;
 	struct super_block *sb;
+	struct dentry *covered;
+	int err;
+
+	dvfs_lock();
+
+	if (mpoint == dvfs_root()) {
+		err = -EBUSY;
+		goto out;
+	}
+
+	if (!(mpoint->flags & DVFS_MOUNT_POINT) || mpoint->d_covered == NULL) {
+		err = -EINVAL;
+		goto out;
+	}
 
 	sb = mpoint->d_sb;
 
+	/* The cached dentries of SB go first, leaves before their parents. */
+	while (dvfs_fs_dentry_try_free(sb)) {
+	}
+
+	/* The mount's own pin plus the caller's. */
+	if (dvfs_sb_busy(sb, mpoint, 2)) {
+		atomic_rmw_add_fetch(&dvfs_umount_busy, 1, __ATOMIC_RELAXED);
+		err = -EBUSY;
+		goto out;
+	}
+
 	if (sb->sb_ops && sb->sb_ops->umount_begin) {
-		if ((err = sb->sb_ops->umount_begin(sb)))
-			return err;
+		if ((err = sb->sb_ops->umount_begin(sb))) {
+			goto out;
+		}
 	}
 
-	/* TODO what if mount point was renamed? */
-	dentry_reconnect(mpoint->parent, mpoint->name);
-	dentry_ref_dec(mpoint);
+	covered = mpoint->d_covered;
+	mpoint->d_covered = NULL;
 
-	if ((err = super_block_free(sb))) {
-		return err;
+	/* Take the mounted root off the tree and give the covered directory its
+	 * place back. */
+	dlist_del_init(&mpoint->children_lnk);
+	dvfs_cache_del(mpoint);
+	dlist_add_prev(&covered->children_lnk, &covered->parent->children);
+
+	/* The root inode belongs to the superblock and goes with it. */
+	mpoint->d_inode = NULL;
+	mpoint->flags &= ~DVFS_MOUNT_POINT;
+	mpoint->flags |= DVFS_DYING;
+	mpoint->usage_count--; /* the mount's pin; the caller's is the last */
+
+	err = super_block_free(sb);
+	if (err) {
+		log_error("super_block_free: %d", err);
+		err = 0;
 	}
 
-	if ((err = _dentry_destroy(mpoint))) {
-		return err;
+	dentry_ref_dec(covered);
+out:
+	dvfs_unlock();
+	return err;
+}
+
+int dvfs_umount_path(const char *path) {
+	struct lookup lu;
+	int err;
+
+	dvfs_lock();
+
+	if ((err = dvfs_lookup_at(NULL, path, &lu, NULL))) {
+		goto out;
 	}
 
-	return 0;
+	if (lu.item == NULL) {
+		err = -ENOENT;
+	} else if (!(lu.item->flags & DVFS_MOUNT_POINT)) {
+		err = -EINVAL;
+	} else {
+		err = dvfs_umount(lu.item);
+	}
+
+	dvfs_lookup_put(&lu);
+out:
+	dvfs_unlock();
+	return err;
 }
 
 static struct dentry *iterate_virtual(struct lookup *lookup,
@@ -359,6 +449,12 @@ static struct dentry *iterate_virtual(struct lookup *lookup,
 		next_dentry = mcast_out(l, struct dentry, children_lnk);
 
 		if (!(next_dentry->flags & VFS_DIR_VIRTUAL)) {
+			continue;
+		}
+		/* A mount over a directory the parent's file system has: the
+		 * driver's walk already listed that name. */
+		if (next_dentry->d_covered
+		    && !(next_dentry->d_covered->flags & VFS_DIR_VIRTUAL)) {
 			continue;
 		}
 

@@ -31,7 +31,6 @@
 #define DVFS_CHILD_VIRTUAL 0x02000000
 #define DVFS_MOUNT_POINT   0x04000000
 #define DVFS_NO_LSEEK      0x08000000
-#define DVFS_DISCONNECTED  0x10000000
 /* The name is gone from the tree (unlink, rename over it) but somebody still
  * holds the dentry. It is off its parent's list, keeps its reference on the
  * parent, and is freed by whoever drops the last reference. */
@@ -49,9 +48,9 @@ struct block_dev;
 /* LOCKING
  *
  * dvfs_lock() guards the name tree: the list of all dentries, children lists,
- * usage_count, the dentry flags, the root and every task's working directory;
- * reclaim runs under it. It is a recursive sleeping mutex: driver inode and
- * superblock ops run under it and sleep.
+ * usage_count, the dentry flags, d_covered, the root and every task's working
+ * directory; reclaim and mount/umount run under it. It is a recursive
+ * sleeping mutex: driver inode and superblock ops run under it and sleep.
  *
  * Order: dvfs_lock -> driver lock (fat_lock) -> block device
  *                  -> idesc table lock, pool spinlocks
@@ -63,8 +62,9 @@ struct block_dev;
  *
  * usage_count changes only under the lock. A dentry is held by each child
  * linked under it, each descriptor and DIR on it, each task whose working
- * directory it is, and a lookup's result. An unreferenced dentry stays as
- * cache, reclaimed as a leaf under the lock when a pool runs out.
+ * directory it is, a mount covering it, and a lookup's result. An
+ * unreferenced dentry stays as cache, reclaimed as a leaf under the lock when
+ * a pool runs out.
  */
 extern void dvfs_lock(void);
 extern void dvfs_unlock(void);
@@ -74,6 +74,7 @@ extern void dvfs_lock_assert(const char *where);
 extern unsigned long vfs_tree_contended;  /* dvfs_lock() had to wait */
 extern unsigned long dvfs_unlocked_tree;  /* dvfs_lock_assert() misses */
 extern unsigned long dvfs_reclaimed;      /* cached dentries reclaimed */
+extern unsigned long dvfs_umount_busy;    /* umounts refused as busy */
 
 extern struct dentry *dvfs_alloc_dentry(void);
 extern int            dvfs_destroy_dentry(struct dentry *dentry);
@@ -119,6 +120,7 @@ extern int dvfs_cache_add(struct dentry *dentry);
 extern struct block_dev *bdev_by_path(const char *source);
 extern int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags);
 extern int dvfs_umount(struct dentry *d);
+extern int dvfs_umount_path(const char *path);
 
 extern int dentry_fill(struct super_block *, struct inode *,
                        struct dentry *d, struct dentry *parent);
@@ -126,7 +128,5 @@ extern void dentry_upd_flags(struct dentry *dentry);
 extern int dentry_full_path(struct dentry *dentry, char *buf);
 extern int dentry_ref_inc(struct dentry *dentry);
 extern int dentry_ref_dec(struct dentry *dentry);
-extern int dentry_disconnect(struct dentry *dentry);
-extern int dentry_reconnect(struct dentry *parent, const char *name);
 
 #endif

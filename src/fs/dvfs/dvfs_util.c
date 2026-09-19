@@ -39,6 +39,7 @@ static int dvfs_lock_early;
 unsigned long vfs_tree_contended;
 unsigned long dvfs_unlocked_tree;
 unsigned long dvfs_reclaimed;
+unsigned long dvfs_umount_busy;
 unsigned long inode_free_deferred;
 unsigned long inode_ref_refused;
 
@@ -178,6 +179,7 @@ static int dentry_reclaimable(struct dentry *d) {
 	    && d->usage_count == 0
 	    && dlist_empty(&d->children)
 	    && d != global_root
+	    && d->d_covered == NULL
 	    && !(d->flags & (DVFS_MOUNT_POINT | DVFS_DYING));
 }
 
@@ -446,8 +448,8 @@ extern struct super_block *rootfs_sb(void);
 
 /* @brief Create the global root and give it the root superblock once mounted
  *
- * The root is never replaced, since every working directory and lookup holds
- * it.
+ * The root is never replaced, since every working directory, lookup and mount
+ * holds it; a second mount on "/" is refused in dvfs_mount().
  */
 int dvfs_update_root(void) {
 	struct super_block *sb;
@@ -521,34 +523,4 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
 	}
 
 	return NULL;
-}
-
-/**
- * @brief Remove dentry from file tree, but leave it
- * in dentry cache
- */
-int dentry_disconnect(struct dentry *dentry) {
-	dentry->flags |= DVFS_DISCONNECTED;
-	dvfs_cache_del(dentry);
-	dlist_del(&dentry->children_lnk);
-	return 0;
-}
-
-/**
- * @brief Return dentry to file tree
- */
-int dentry_reconnect(struct dentry *parent, const char *name) {
-	struct dentry *dentry = NULL;
-
-	dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
-		if (!(dentry->flags & DVFS_DISCONNECTED)) {
-			continue;
-		}
-
-		if (dentry->parent == parent && !strcmp(dentry->name, name)) {
-			dlist_head_init(&dentry->children_lnk);
-			dlist_add_prev(&dentry->children_lnk, &parent->children);
-		}
-	}
-	return 0;
 }
