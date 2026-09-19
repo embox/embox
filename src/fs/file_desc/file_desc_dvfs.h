@@ -44,6 +44,8 @@ struct file_desc {
 	off_t f_pos;
 	/* The generation of f_inode when this was opened; see dvfs_file_valid() */
 	unsigned int f_gen;
+	/* What flock(2) this descriptor holds: 0, LOCK_SH or LOCK_EX */
+	int f_flock;
 
 	const struct file_operations *f_ops;
 };

@@ -35,6 +35,7 @@ module core extends embox.fs.fs_api {
 	source "inode.c"
 	source "dvfs_remove.c"
 	source "dvfs_rename.c"
+	source "dvfs_flock.c"
 
 	@NoRuntime depends embox.fs.dvfs.super_block
 	@NoRuntime depends embox.fs.fs_driver

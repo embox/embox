@@ -107,6 +107,10 @@ extern int dvfs_unlink(const char *path);  /* not a directory */
 extern int dvfs_rmdir(const char *path);   /* an empty directory */
 extern int dvfs_rename(const char *from, const char *to);
 
+/* flock(2) on an open file; dvfs_flock_release() is what closing does. */
+extern int dvfs_flock(struct file_desc *desc, int operation);
+extern void dvfs_flock_release(struct file_desc *desc);
+
 /* The name of an open dentry goes away: off the parent's list, DYING, freed
  * by the last reference. Under the lock. */
 extern void dentry_unlink_dying(struct dentry *d);

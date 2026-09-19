@@ -14,6 +14,7 @@
 struct dentry;
 struct super_block;
 struct inode_operations;
+struct file_desc;
 
 struct inode {
 	int      i_no;
@@ -37,6 +38,11 @@ struct inode {
 	/* Which allocation of this pool slot the inode is. A descriptor records
 	 * it at open and checks it on every use; see dvfs_file_valid(). */
 	unsigned int i_gen;
+
+	/* flock(2), under dvfs_lock(): the descriptor holding it exclusively,
+	 * and how many hold it shared. See dvfs_flock.c. */
+	struct file_desc *i_flock_ex;
+	int i_flock_sh;
 };
 
 /* Counters, named as oldfs names them so the suites read either. */

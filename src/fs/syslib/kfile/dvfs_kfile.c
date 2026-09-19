@@ -34,6 +34,9 @@ int kclose(struct file_desc *desc) {
 		assert(desc->f_ops);
 	}
 
+	/* flock(2) locks belong to the open file, and go with it */
+	dvfs_flock_release(desc);
+
 	/* The driver is told only about a file it still has. */
 	if (desc->f_ops && desc->f_ops->close && desc->f_inode
 	    && 0 == dvfs_file_valid(desc)) {
