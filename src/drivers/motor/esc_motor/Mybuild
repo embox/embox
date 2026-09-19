@@ -1,0 +1,60 @@
+package embox.driver.motor.esc_motor
+
+module esc_motor_drv {
+	option string log_level="LOG_ERR"
+
+	source "esc_motor_drv.c"
+
+	depends embox.driver.motor.motor_dev
+
+	depends embox.driver.pwm.pwm_dev
+}
+
+
+module esc_motor1 {
+	option string log_level="LOG_ERR"
+
+	option number pwm_id
+	option number pwm_chan
+
+	source "esc_motor1.c"
+
+	depends embox.driver.motor.esc_motor.esc_motor_drv
+}
+
+
+module esc_motor2 {
+	option string log_level="LOG_ERR"
+
+	option number pwm_id
+	option number pwm_chan
+
+	source "esc_motor2.c"
+
+	depends embox.driver.motor.esc_motor.esc_motor_drv
+}
+
+
+module esc_motor3 {
+	option string log_level="LOG_ERR"
+
+	option number pwm_id
+	option number pwm_chan
+
+	source "esc_motor3.c"
+
+	depends embox.driver.motor.esc_motor.esc_motor_drv
+}
+
+
+module esc_motor4 {
+	option string log_level="LOG_ERR"
+
+	option number pwm_id
+	option number pwm_chan
+
+	source "esc_motor4.c"
+
+	depends embox.driver.motor.esc_motor.esc_motor_drv
+}
+

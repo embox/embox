@@ -1,11 +1,16 @@
 package embox.driver.pwm
 
 module niiet_pwm_drv {
+	option string log_level="LOG_ERR"
+
 	option number vg1t_version = 0
 
 	source "niiet_pwm_drv.c"
 
 	depends embox.driver.pwm.pwm_dev
+	depends embox.driver.dma.dma_new
+
+	@NoRuntime depends embox.driver.clk.core
 }
 
 module niiet_pwm0 {

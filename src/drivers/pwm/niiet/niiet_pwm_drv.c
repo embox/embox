@@ -6,6 +6,8 @@
  * @date 13.08.2022
  */
 
+#include <util/log.h>
+
 #include <stdint.h>
 #include <stddef.h>
 #include <errno.h>
@@ -18,11 +20,13 @@
 #include <drivers/pwm.h>
 #include <drivers/pin_description.h>
 #include <drivers/gpio.h>
+#include <drivers/dma.h>
+//#include <drivers/niiet_dma.h>
+#include <drivers/clk.h>
 
 #include "niiet_pwm_priv.h"
 #include "niiet_pwm_regs.h"
 
-extern int clk_enable(char *clk_name);
 
 #if VG1T_VERSION == 0 /*vg015*/
 static inline uint32_t niiet_pwm_get_clk_div(struct niiet_pwm_priv *priv) {
@@ -73,6 +77,9 @@ static inline void niiet_pwm_set_period_reg(struct niiet_tmr_regs *regs, int p) 
 static inline void niiet_pwm_outen(struct niiet_tmr_regs *regs, int chan) {
 }
 
+static inline void niiet_trm_set_dma(struct niiet_tmr_regs *regs, int ch, int d)  {
+}
+
 #else /* VG1T_VERSION != 0 */
 
 static inline uint32_t niiet_pwm_get_clk_div(struct niiet_pwm_priv *priv) {
@@ -104,6 +111,18 @@ static inline void niiet_pwm_outen(struct niiet_tmr_regs *regs, int chan) {
     regs->CTRL |= TMR_CTRL_OUTEN(chan);
 }
 
+static inline void niiet_trm_set_dma(struct niiet_tmr_regs *regs, int ch, int d) {
+    int bit;
+    if (d == NIIET_TMR_DMA_RX) {
+        bit = TMR_CTRL_DMARXSTOP_SHIFT;
+        regs->DMA_RXIM |= 0x1;
+    } else {
+        bit = TMR_CTRL_DMATXSTOP_SHIFT;
+        regs->DMA_TXIM |= 0x1;
+    }
+    regs->CTRL |= (1 << bit);
+}
+
 #endif /* VG1T_VERSION == 0*/
 
 static inline void niiet_pwm_init_regs(struct pwm_device *dev) {
@@ -122,31 +141,45 @@ static inline void niiet_pwm_init_regs(struct pwm_device *dev) {
 }
 
 static int niiet_pwm_init(struct pwm_device *dev) {
-    struct niiet_pwm_priv *priv;
+	struct niiet_pwm_priv *priv;
+	int i;
 
-    int i;
+	priv = dev->pwmd_priv;
 
-    priv = dev->pwmd_priv;
+	niiet_pwm_tmr_en(priv);
+	niiet_pwm_init_regs(dev);
 
-    niiet_pwm_tmr_en(priv);
+	for (i = 0; i < NIIET_PWM_CHAN_MAX; i++) {
+		if (dev->pwmd_desc->pwmd_avail_chan_mask & (1 << i)) {
+			const struct pin_description *pin;
 
-    niiet_pwm_init_regs(dev);
+			pin = &priv->pin_desc[i];
+			gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin),
+			    GPIO_MODE_ALT_SET(pin->pd_func));
 
-    for (i = 0; i < NIIET_PWM_CHAN_MAX; i ++) {
-        if (dev->pwmd_desc->pwmd_avail_chan_mask & (1 << i)) {
-            const struct pin_description *pin;
+			niiet_pwm_outen((void *)dev->pwmd_desc->pwmd_base_addr, i);
+		}
+		if (dev->pwmd_dma && NIIET_PWM_DMA_EN(dev->pwmd_dma[i])) {
+            struct dma_config conf;
 
-            pin = &priv->pin_desc[i];
-            gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin), GPIO_MODE_ALT_SET(pin->pd_func));
-
-            niiet_pwm_outen((void *)dev->pwmd_desc->pwmd_base_addr, i);
+            dev->pwmd_dma_dev[i] = dma_dev_by_id(NIIET_PWM_DMA_NUM(dev->pwmd_dma[i]));
+            if (dev->pwmd_dma_dev[i]) {
+                dma_init(dev->pwmd_dma_dev[i]);
+			    dma_config(dev->pwmd_dma_dev[i], NIIET_PWM_DMA_CHAN(dev->pwmd_dma[i]), &conf);
+			    pwm_dma_config(dev, i, priv->dma_buffer[i], NIIET_PWM_DMA_BUF_SIZE);
+            } else {
+                log_error("Couldn't find DMA(%d)", NIIET_PWM_DMA_NUM(dev->pwmd_dma[i]));
+            }
+		} else {
+            dev->pwmd_dma_dev[i] = NULL;
         }
-    }
+	}
 
-    dev->pwmd_base_freq = (SYS_CLOCK / niiet_pwm_check_clk_div(priv));
-    dev->pwmd_max_period = (uint64_t)(priv->comp_mask * (NSEC_PER_SEC / dev->pwmd_base_freq)) ;
+	dev->pwmd_base_freq = (SYS_CLOCK / niiet_pwm_check_clk_div(priv));
+	dev->pwmd_max_period = (uint64_t)(priv->comp_mask
+	                                  * (NSEC_PER_SEC / dev->pwmd_base_freq));
 
-    return 0;
+	return 0;
 }
 
 static int niiet_pwm_enable(struct pwm_device *dev, uint32_t chan_mask) {
@@ -157,12 +190,21 @@ static int niiet_pwm_enable(struct pwm_device *dev, uint32_t chan_mask) {
 
     regs = (void *)dev->pwmd_desc->pwmd_base_addr;
 
-    //capcom_reg = &regs->CAPCOM[chan_num];
-    //cap_ctrl = TMR_CAPCOM_CTRL_OUTMODE(TMR_CAPCOM_CTRL_OUTMODE_RESET_SET);
-
     ctrl = regs->CTRL;
     ctrl &= ~TMR_CTRL_MODE(TMR_CTRL_MODE_MASK);
     ctrl |= TMR_CTRL_MODE(TMR_CTRL_MODE_UP);
+
+    for (int i = 0; i < NIIET_PWM_CHAN_MAX; i++) {
+        if (!((1 << i) & chan_mask)) {
+            continue;
+        }
+		if (dev->pwmd_dma_dev[i]) {
+            ctrl |= TMR_CTRL_CLR;
+
+            dma_activate(dev->pwmd_dma_dev[i], NIIET_PWM_DMA_CHAN(dev->pwmd_dma[i]));
+		}
+	}
+
     regs->CTRL = ctrl;
 
     return 0;
@@ -175,9 +217,6 @@ static void niiet_pwm_disable(struct pwm_device *dev, uint32_t chan_mask) {
     assert(dev);
 
     regs = (void *)dev->pwmd_desc->pwmd_base_addr;
-
-    //capcom_reg = &regs->CAPCOM[chan_num];
-    //cap_ctrl = TMR_CAPCOM_CTRL_OUTMODE(TMR_CAPCOM_CTRL_OUTMODE_RESET_SET);
 
     ctrl = regs->CTRL;
     ctrl &= ~TMR_CTRL_MODE(TMR_CTRL_MODE_MASK);
@@ -213,10 +252,50 @@ static int niiet_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty) {
     return 0;
 }
 
+static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
+    int duty_ns[], int size) {
+	struct niiet_tmr_regs *regs;
+	struct niiet_capcom_reg *capcom_reg;
+	uint32_t cap_ctrl;
+	struct dma_req req = {0};
+    char dma_type[32];
+
+	assert(dev);
+
+	if (!dev->pwmd_dma_dev[chan_num]) {
+		return 0;
+	}
+
+	regs = (void *)dev->pwmd_desc->pwmd_base_addr;
+	capcom_reg = &regs->CAPCOM[chan_num];
+	cap_ctrl = TMR_CAPCOM_CTRL_OUTMODE(TMR_CAPCOM_CTRL_OUTMODE_RESET_SET);
+	capcom_reg->CAPCOM_CTRL = cap_ctrl;
+
+    //capcom_reg->CAPCOM_VAL = 0;
+    //capcom_reg->CAPCOM_VAL1 = duty_ns[0];
+    niiet_trm_set_dma(regs, chan_num, NIIET_TMR_DMA_TX);
+
+    snprintf(dma_type, sizeof(dma_type), DMA_TYPE_TMR "%d", dev->pwmd_id);
+
+	req.dr_src = (uintptr_t)(void *)duty_ns;
+	req.dr_src_width = 4;
+	req.dr_src_inc = 4;
+	req.dr_src_type = dma_get_type(dev->pwmd_dma_dev[chan_num], DMA_TYPE_MEM);
+	req.dr_dest = (uintptr_t)(void *)&capcom_reg->CAPCOM_VAL;
+	req.dr_dest_width = 4;
+	req.dr_dest_inc = 0;
+	req.dr_dest_type = dma_get_type(dev->pwmd_dma_dev[chan_num], dma_type);
+	req.dr_size = size * 4;
+	dma_transfer(dev->pwmd_dma_dev[chan_num], NIIET_PWM_DMA_CHAN(dev->pwmd_dma[chan_num]), &req);
+
+	return 0;
+}
+
 struct pwm_ops niiet_pwm_ops = {
     .pwmo_init   = niiet_pwm_init,
     .pwmo_set_period = niiet_pwm_set_period,
     .pwmo_set_duty = niiet_pwm_set_duty,
+    .pwmo_set_duty_array = niiet_pwm_set_duty_array,
     .pwmo_enable = niiet_pwm_enable,
     .pwmo_disable = niiet_pwm_disable
 };

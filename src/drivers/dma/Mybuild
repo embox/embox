@@ -10,3 +10,11 @@ abstract module dma_api {
 
 module no_dma extends dma_api {
 }
+
+module dma_new {
+	source "dma_new.c"
+	source "dma_new_repo.c"
+
+	@IncludeExport(path="drivers/", target_name="dma.h")
+	source "dma_new.h"
+}

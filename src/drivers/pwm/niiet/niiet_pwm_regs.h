@@ -71,6 +71,10 @@ struct niiet_tmr_regs {
 #define TMR_CTRL_DIV_4     2
 #define TMR_CTRL_DIV_8     3
 
+#define TMR_CTRL_CLR_SHIFT  2
+
+#define TMR_CTRL_CLR       (1 << TMR_CTRL_CLR_SHIFT)
+
 #define TMR_CTRL_MODE_SHIFT 4
 #define TMR_CTRL_MODE_MASK  0x3
 #define TMR_CTRL_MODE(mode)  \
@@ -82,6 +86,9 @@ struct niiet_tmr_regs {
 #define TMR_CTRL_OUTEN_MASK  0xF
 #define TMR_CTRL_OUTEN(chan)  \
 					(((1 << chan) & TMR_CTRL_OUTEN_MASK) << TMR_CTRL_OUTEN_SHIFT)
+
+#define TMR_CTRL_DMARXSTOP_SHIFT     7
+#define TMR_CTRL_DMATXSTOP_SHIFT     6
 
 #define TMR_CAPCOM_CTRL_SCCI (1 << 10) /* Synchronized Capture/Compare Input */
 #define TMR_CAPCOM_CTRL_CAP  (1 << 8)  /* Capture Mode Enable */

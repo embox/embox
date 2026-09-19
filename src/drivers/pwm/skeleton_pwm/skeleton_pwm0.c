@@ -10,20 +10,22 @@
 
 #include <util/macro.h>
 
-
-
 #include <drivers/pwm.h>
 #include <drivers/pin_description.h>
 
 #include <framework/mod/options.h>
 
+#include "skeleton_pwm_priv.h"
 
 #define PWM_DEV_ID                0
+
 #define PWM_DEV_PRIV_STRUCT_NAME  MACRO_CONCAT(pwm_dev_priv, PWM_DEV_ID)
 
 #define CONF_PWM                  MACRO_CONCAT(CONF_PWM,PWM_DEV_ID)
 
 #define USE_BCONF        OPTION_GET(BOOLEAN, use_bconf)
+#define USE_DMA          OPTION_GET(BOOLEAN, use_dma)
+#define TIMER_FREQ        OPTION_GET(NUMBER, timer_freq)
 
 #if USE_BCONF
 #include <config/board_config.h>
@@ -49,26 +51,37 @@ static const struct pin_description pwm_pin_desc = {
 #define PWM_PORT          0
 #define PWM_PIN           0
 #define PWM_FUNC          0
-#define PWM_CLK_NAME()   "PWM0_CLK"
+#define PWM_CLK_NAME()    MACRO_STRING(MACRO_CONCAT(MACRO_CONCAT(PWM,PWM_DEV_ID),_CLK))
 #define PWM_CHANNEL_NR()  0
 #define PTR_PIN_DESC      (NULL)
-#endif
 
-struct skeleton_pwm_priv {
-	const struct pin_description *pin_desc;
-	const uintptr_t               base_addr;
-	const char                   *clk_name;
-	const int                     channel;
+#if USE_DMA
+static uint32_t skeleton_dmas[SKELETON_PWM_CHAN_MAX] = {
+    1
 };
+#define PWM_DMAS    (&skeleton_dmas[0])
+
+#else
+#define PWM_DMAS    (NULL)
+#endif /* USE_DMA */
+
+#endif /* USE_BCONF*/
+
+#define CHAN_AVAIL_MASK \
+         (1 << 0 )
 
 extern struct pwm_ops skeleton_pwm_ops;
 
 static struct skeleton_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
     .pin_desc  = PTR_PIN_DESC,
     .base_addr = PWM_BASE_ADDR,
+    .clk_name  = PWM_CLK_NAME(),
+    .idx       = PWM_DEV_ID,
+    .freq      = TIMER_FREQ,
 };
 
 PWM_DEV_DEF(PWM_DEV_ID, &skeleton_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
                         PTR_PIN_DESC, PWM_BASE_ADDR,
                         1 << 0 /* 0 chan avail */,
-                        1 /* max chan */);
+                        SKELETON_PWM_CHAN_MAX /* max chan */,
+                        PWM_DMAS);

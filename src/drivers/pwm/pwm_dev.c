@@ -89,6 +89,18 @@ static inline int pwm_ns_to_dev(struct pwm_device *pwm, int ns) {
 	return (uint64_t)pwm->pwmd_base_freq * ns / NSEC_PER_SEC ;
 }
 
+int pwm_dma_config(struct pwm_device *pwm, int chan_num,
+						uint32_t buf[], int data_len) {
+	if (pwm == NULL) {
+		return -EINVAL;
+	}
+
+	pwm->pwmd_dma_buf[chan_num].db_virt_addr = buf;
+	pwm->pwmd_dma_buf[chan_num].db_size = data_len;
+
+	return 0;
+}
+
 int pwm_set_frequency(struct pwm_device *pwm, int hz) {
 	int err;
 
@@ -105,7 +117,6 @@ int pwm_set_frequency(struct pwm_device *pwm, int hz) {
 	}
 
     err = pwm->pwmd_ops->pwmo_set_period(pwm, pwm_hz_to_dev(pwm, hz));
-	//err = pwm->pwmd_ops->pwmo_set_period(pwm, period_ns);
 	if (err) {
 		return err;
 	}
@@ -131,7 +142,6 @@ int pwm_set_period(struct pwm_device *pwm, int period_ns) {
 	}
 
     err = pwm->pwmd_ops->pwmo_set_period(pwm, pwm_ns_to_dev(pwm, period_ns));
-	//err = pwm->pwmd_ops->pwmo_set_period(pwm, period_ns);
 	if (err) {
 		return err;
 	}
@@ -141,7 +151,7 @@ int pwm_set_period(struct pwm_device *pwm, int period_ns) {
 	return 0;
 }
 
-int pwm_set_duty(struct pwm_device *pwm, int chan_num, int duty_ns)  {
+int pwm_set_duty(struct pwm_device *pwm, int chan_num, int duty_ns) {
 	int err;
 
 	if (pwm == NULL) {
@@ -159,13 +169,50 @@ int pwm_set_duty(struct pwm_device *pwm, int chan_num, int duty_ns)  {
 		return -EINVAL;
 	}
 
-    err = pwm->pwmd_ops->pwmo_set_duty(pwm, chan_num, pwm_ns_to_dev(pwm, duty_ns));
-	//err = pwm->pwmd_ops->pwmo_set_duty(pwm, chan_num, duty_ns);
+	err = pwm->pwmd_ops->pwmo_set_duty(pwm, chan_num, pwm_ns_to_dev(pwm, duty_ns));
 	if (err) {
 		return err;
 	}
 
 	pwm->pwmd_duty[chan_num] = duty_ns;
+
+	return 0;
+}
+
+int pwm_set_duty_array(struct pwm_device *pwm, int chan_num, int duty_ns[],
+    int size) {
+	int err;
+	int *dma_buf;
+	int i;
+
+	if (pwm == NULL) {
+		return -EINVAL;
+	}
+
+	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_set_duty == NULL) {
+		return -ENOSUPP;
+	}
+
+	if (pwm_dev_max_chan(pwm) < chan_num) {
+		return -EINVAL;
+	}
+
+	if (pwm->pwmd_dma_buf[chan_num].db_size < size) {
+		log_error("not enough dma buf (%d) need(%d)", pwm->pwmd_dma_buf[chan_num].db_size, size);
+		return -EINVAL;
+	}
+
+	dma_buf = pwm->pwmd_dma_buf[chan_num].db_virt_addr;
+
+	for (i = 0; i < size; i++) {
+		dma_buf[i] = pwm_ns_to_dev(pwm, duty_ns[i]);
+	}
+
+	pwm->pwmd_dma_buf[chan_num].db_act_len = size;
+	err = pwm->pwmd_ops->pwmo_set_duty_array(pwm, chan_num, dma_buf, size);
+	if (err) {
+		return err;
+	}
 
 	return 0;
 }

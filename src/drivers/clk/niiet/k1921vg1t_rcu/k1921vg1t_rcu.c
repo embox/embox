@@ -27,6 +27,7 @@
 #define CLK_NAME_SPI      "CLK_SPI"
 #define CLK_NAME_I2C      "CLK_I2C"
 #define CLK_NAME_TMR      "CLK_TMR"
+#define CLK_NAME_DMA      "CLK_DMA"
 #define CLK_NAME_USBD     "CLK_USBD"
 #define CLK_NAME_CAN      "CLK_CAN"
 #define CLK_NAME_CANFD    "CLK_CANFD"
@@ -86,6 +87,20 @@ struct rcu_reg {
     uint32_t 	RCU_PLLSTAT_reg;
 };
 
+#define RCU_APB0_DMA_OFFSET          0
+#define RCU_APB0_RTC_OFFSET          1
+#define RCU_APB0_WDT_OFFSET          2
+#define RCU_APB0_TRNG_OFFSET         3
+#define RCU_APB0_EMC_OFFSET          4
+#define RCU_APB0_SDRAM_OFFSET        5
+#define RCU_APB0_ETH_OFFSET          6
+
+
+#define RCU_CGCFGAPB0_DMA0EN         (1 << (RCU_APB0_DMA_OFFSET + 0))
+#define RCU_CGCFGAPB0_DMA_EN(nr)     (1 << (RCU_APB0_DMA_OFFSET + nr))
+#define RCU_CGCFGAPB0_ETH0EN         (1 << (RCU_APB0_ETH_OFFSET + 0))
+#define RCU_CGCFGAPB0_ETH_EN(nr)     (1 << (RCU_APB0_ETH_OFFSET + nr))
+
 #define RCU_CGCFGAPB1_TMR_OFFSET     16
 #define RCU_CGCFGAPB1_TMR0EN         (1 << (RCU_CGCFGAPB1_TMR_OFFSET + 0))
 #define RCU_CGCFGAPB1_TMR1EN         (1 << (RCU_CGCFGAPB1_TMR_OFFSET + 1))
@@ -136,6 +151,12 @@ struct rcu_reg {
 #define RCU_CGCFGAPB2_SPI6EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 6))
 #define RCU_CGCFGAPB2_SPI7EN         (1 << (RCU_CGCFGAPB2_SPI_OFFSET + 7))
 #define RCU_CGCFGAPB2_SPI_EN(nr)     (1 << (RCU_CGCFGAPB2_SPI_OFFSET + nr))
+
+
+#define RCU_RSTDISAPB0_DMA0EN         (1 << (RCU_APB0_DMA_OFFSET + 0))
+#define RCU_RSTDISAPB0_DMA_EN(num)    (1 << (RCU_APB0_DMA_OFFSET + num))
+#define RCU_RSTDISAPB0_ETH0EN         (1 << (RCU_APB0_ETH_OFFSET + 0))
+#define RCU_RSTDISAPB0_ETH_EN(num)    (1 << (RCU_APB0_ETH_OFFSET + num))
 
 #define RCU_RSTDISAPB1_TMR_OFFSET     16
 #define RCU_RSTDISAPB1_TMR0EN         (1 << (RCU_RSTDISAPB1_TMR_OFFSET + 0))
@@ -372,6 +393,11 @@ void niiet_tmr_set_rcu(int num) {
 	RCU->RCU_RSTDISAPB1_reg |= RCU_RSTDISAPB1_TMR_EN(num);
 }
 
+void niiet_dma_set_rcu(int num) {
+	RCU->RCU_CGCFGAPB0_reg |= RCU_CGCFGAPB0_DMA_EN(num);
+	RCU->RCU_RSTDISAPB0_reg |= RCU_RSTDISAPB0_DMA_EN(num);
+}
+
 void niiet_usbd_set_rcu(int num) {
 	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_USBDEN(num);
 	//RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_USBHEN(num);
@@ -442,6 +468,11 @@ int clk_enable(char *clk_name) {
 	if (0 == strncmp(clk_name, CLK_NAME_CAN, sizeof(CLK_NAME_CAN) - 1)) {
 		num = 0;
 		niiet_can_set_rcu(num);
+		return 0;
+	}
+	if (0 == strncmp(clk_name, CLK_NAME_DMA, sizeof(CLK_NAME_DMA) - 1)) {
+		num = 0;
+		niiet_dma_set_rcu(num);
 		return 0;
 	}
 
