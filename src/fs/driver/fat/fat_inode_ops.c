@@ -34,11 +34,16 @@ static int fat_iterate_unlocked(struct inode *next, char *name, struct inode *pa
 	assert(parent->i_sb);
 
 	dirinfo = inode_priv(parent);
-	dirinfo->currententry = (uintptr_t) ctx->fs_ctx;
 
-	if (dirinfo->currententry == 0) {
+	/* The position (cluster, sector, entry) is the reader's, kept in ctx:
+	 * the directory's dirinfo is moved by every reader, lookup and create. */
+	if (ctx->fs_ctx == NULL) {
 		/* Need to get directory data from drive */
 		fat_reset_dir(dirinfo);
+	} else {
+		dirinfo->currentcluster = ctx->fs_pos[0];
+		dirinfo->currentsector = ctx->fs_pos[1];
+		dirinfo->currententry = ctx->fs_pos[2];
 	}
 
 	read_dir_buf(dirinfo);
@@ -77,7 +82,10 @@ static int fat_iterate_unlocked(struct inode *next, char *name, struct inode *pa
 		strncpy(name, tmp_name, NAME_MAX);
 		name[NAME_MAX - 1] = '\0';
 
-		ctx->fs_ctx = (void *) ((uintptr_t) dirinfo->currententry);
+		ctx->fs_pos[0] = dirinfo->currentcluster;
+		ctx->fs_pos[1] = dirinfo->currentsector;
+		ctx->fs_pos[2] = dirinfo->currententry;
+		ctx->fs_ctx = (void *) 1;
 		return 0;
 	}
 	case DFS_EOF:
@@ -161,7 +169,7 @@ static int fat_delete_unlocked(struct inode *dir, struct inode *node) {
 	fi = inode_priv(node);
 
 	if (S_ISDIR(node->i_mode) && !fat_dir_empty(fi)) {
-		return -EPERM;
+		return -ENOTEMPTY;
 	}
 
 	if (fat_unlike_file(fi, (uint8_t *) fat_sector_buff)) {
