@@ -9,6 +9,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 
 #include <fs/inode.h>
 #include <fs/super_block.h>
@@ -215,10 +216,41 @@ static int fat_delete(struct inode *dir, struct inode *node) {
 	return res;
 }
 
+/* Same volume, any directory: the VFS checks the rest (types, targets,
+ * EXDEV) and replaces an existing target before asking. */
+static int fat_rename(struct inode *node, struct inode *new_parent,
+    const char *new_name) {
+	struct fat_file_info *fi;
+	struct dirinfo *newdi;
+	int res;
+
+	fat_lock();
+
+	fi = inode_priv(node);
+	newdi = inode_priv(new_parent);
+	if (!fi || !newdi) {
+		fat_unlock();
+		return -ENOENT;
+	}
+
+	if (fat_entries_per_name(new_name) > 1
+	    && strlen(new_name) >= NAME_MAX) {
+		fat_unlock();
+		return -ENAMETOOLONG;
+	}
+
+	res = fat_rename_file(fi, newdi, new_name);
+
+	fat_unlock();
+
+	return res == DFS_OK ? 0 : -EIO;
+}
+
 struct inode_operations fat_iops = {
 	.ino_create   = fat_create,
 	.ino_lookup   = fat_ilookup,
 	.ino_remove   = fat_delete,
 	.ino_iterate  = fat_iterate,
 	.ino_truncate = fat_truncate,
+	.ino_rename   = fat_rename,
 };
