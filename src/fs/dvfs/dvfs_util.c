@@ -39,6 +39,10 @@ static int dvfs_lock_early;
 unsigned long vfs_tree_contended;
 unsigned long dvfs_unlocked_tree;
 unsigned long dvfs_reclaimed;
+unsigned long inode_free_deferred;
+unsigned long inode_ref_refused;
+
+static unsigned int dvfs_inode_gen;
 
 void dvfs_lock(void) {
 	if (schedee_get_current() == NULL) {
@@ -105,6 +109,7 @@ struct inode *dvfs_alloc_inode(struct super_block *sb) {
 		.i_no = -1,
 		.i_sb = sb,
 		.i_ops = sb->sb_iops,
+		.i_gen = ++dvfs_inode_gen,
 	};
 
 	return inode;
@@ -173,7 +178,7 @@ static int dentry_reclaimable(struct dentry *d) {
 	    && d->usage_count == 0
 	    && dlist_empty(&d->children)
 	    && d != global_root
-	    && !(d->flags & DVFS_MOUNT_POINT);
+	    && !(d->flags & (DVFS_MOUNT_POINT | DVFS_DYING));
 }
 
 /**
@@ -252,6 +257,8 @@ static void dentry_destroy_locked(struct dentry *dentry) {
 
 	parent = dentry->parent;
 	if (parent && parent != dentry) {
+		/* A dying dentry is already off the list; dlist_del_init() of it
+		 * changes nothing. */
 		dlist_del_init(&dentry->children_lnk);
 		dvfs_cache_del(dentry);
 	}
@@ -396,8 +403,8 @@ int dentry_ref_inc(struct dentry *dentry) {
 	return res;
 }
 
-/* Drops one reference; an unheld dentry stays as cache for reclaim. Returns
- * the count left. */
+/* Drops one reference. The last one frees a DYING dentry; a cached one stays
+ * for reclaim. Returns the count left. */
 int dentry_ref_dec(struct dentry *dentry) {
 	int res;
 
@@ -408,9 +415,30 @@ int dentry_ref_dec(struct dentry *dentry) {
 			dentry->usage_count - 1);
 	assert(dentry->usage_count > 0);
 	res = --dentry->usage_count;
+	if (res == 0 && (dentry->flags & DVFS_DYING)) {
+		if (dentry->d_inode && dentry->d_inode->i_dying) {
+			/* An unlinked file, freed by its last holder */
+			atomic_rmw_add_fetch(&inode_free_deferred, 1, __ATOMIC_RELAXED);
+		}
+		dentry_destroy_locked(dentry);
+	}
 	dvfs_unlock();
 
 	return res;
+}
+
+void dentry_unlink_dying(struct dentry *d) {
+	dvfs_lock_assert("dentry_unlink_dying");
+	assert(d->usage_count > 0);
+
+	d->flags |= DVFS_DYING;
+	if (d->d_inode) {
+		d->d_inode->i_dying = 1;
+	}
+	dvfs_cache_del(d);
+	/* Off the list, so no lookup finds the name again; the reference on the
+	 * parent stays until the dentry is freed. */
+	dlist_del_init(&d->children_lnk);
 }
 
 /* Root-related stuff */

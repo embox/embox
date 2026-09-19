@@ -119,6 +119,11 @@ int dvfs_path_walk(struct cwk_segment *segment, struct dentry *parent,
 		break;
 
 	case CWK_NORMAL:
+		if (parent->flags & DVFS_DYING) {
+			/* A removed directory has no names left, and its driver data may
+			 * be gone with it: never ask the driver about it. */
+			return -ENOENT;
+		}
 		if (parent->d_sb == NULL) {
 			/* A virtual directory has nothing beyond what is in memory */
 			memcpy(buff, segment->begin, segment->size);

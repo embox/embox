@@ -32,6 +32,7 @@ extern struct dentry *local_lookup(struct dentry *parent, char *name);
  * @retval       0 Ok, lookup->item is the new dentry, referenced
  * @retval -ENOMEM New dentry can't be allocated
  * @retval -EEXIST The name is already in the directory
+ * @retval -ENOENT The directory itself has been removed
  *
  * Called with dvfs_lock and lookup->parent held, in the same hold of the lock
  * as the dvfs_lookup_at() that found the name missing.
@@ -47,6 +48,10 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	assert(lookup->parent);
 	assert(lookup->parent->flags & S_IFDIR);
 	dvfs_lock_assert("dvfs_create_new");
+
+	if (lookup->parent->flags & DVFS_DYING) {
+		return -ENOENT;
+	}
 
 	while (*name == '/') {
 		name++;
@@ -172,6 +177,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	*desc = (struct file_desc){
 	    .f_dentry = lookup->item,
 	    .f_inode = i_no,
+	    .f_gen = i_no ? i_no->i_gen : 0,
 	    .f_ops = d->d_sb ? d->d_sb->sb_fops : NULL,
 	    .f_idesc = {.idesc_ops = &idesc_file_ops},
 	};
@@ -373,6 +379,11 @@ static int dvfs_iterate_locked(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct inode *next_inode;
 	struct dentry *next_dentry, *cached;
 	int res;
+
+	if (lookup->parent->flags & DVFS_DYING) {
+		lookup->item = NULL;
+		return 0;
+	}
 
 	if (lookup->parent->flags & VFS_DIR_VIRTUAL && !lookup->parent->d_sb) {
 		/* A virtual directory: what it has is what is in memory */

@@ -34,11 +34,13 @@ int kclose(struct file_desc *desc) {
 		assert(desc->f_ops);
 	}
 
-	if (desc->f_ops && desc->f_ops->close && desc->f_inode) {
+	/* The driver is told only about a file it still has. */
+	if (desc->f_ops && desc->f_ops->close && desc->f_inode
+	    && 0 == dvfs_file_valid(desc)) {
 		desc->f_ops->close(desc);
 	}
 
-	/* The dentry stays as cache: another core may have just found it */
+	/* Frees a dentry whose name was removed while this was open */
 	dentry_ref_dec(desc->f_dentry);
 
 	dvfs_destroy_file(desc);
@@ -53,6 +55,7 @@ int kclose(struct file_desc *desc) {
  *
  * @return Bytes written or negative error code
  * @retval -ENOSYS Function is not implemented in file system driver
+ * @retval  -EBADF The file was removed while this was open
  */
 int kwrite(struct file_desc *desc, char *buf, int count) {
 	struct inode *inode;
@@ -64,6 +67,10 @@ int kwrite(struct file_desc *desc, char *buf, int count) {
 
 	inode = desc->f_inode;
 	assert(inode);
+
+	if ((res = dvfs_file_valid(desc))) {
+		return res;
+	}
 
 	if (!desc->f_ops || !desc->f_ops->write) {
 		return -ENOSYS;
@@ -92,6 +99,7 @@ int kwrite(struct file_desc *desc, char *buf, int count) {
  *
  * @return Bytes read or negative error code
  * @retval -ENOSYS Function is not implemented in file system driver
+ * @retval  -EBADF The file was removed while this was open
  */
 int kread(struct file_desc *desc, char *buf, int count) {
 	off_t size, pos;
@@ -99,6 +107,10 @@ int kread(struct file_desc *desc, char *buf, int count) {
 
 	if (!desc) {
 		return -1;
+	}
+
+	if ((res = dvfs_file_valid(desc))) {
+		return res;
 	}
 
 	/* Read the size once and clamp in signed arithmetic: f_pos may be past
@@ -134,6 +146,11 @@ int kread(struct file_desc *desc, char *buf, int count) {
 
 int kfstat(struct file_desc *desc, struct stat *sb) {
 	size_t block_size;
+	int res;
+
+	if ((res = dvfs_file_valid(desc))) {
+		return res;
+	}
 
 	if (desc->f_inode == NULL) {
 		/* A virtual directory made under another virtual one has no inode */
@@ -163,6 +180,11 @@ int kfstat(struct file_desc *desc, struct stat *sb) {
 }
 
 int kioctl(struct file_desc *fp, int request, void *data) {
+	int res;
+
+	if ((res = dvfs_file_valid(fp))) {
+		return res;
+	}
 	if (!fp->f_ops || !fp->f_ops->ioctl) {
 		return -ENOTTY;
 	}

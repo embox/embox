@@ -32,6 +32,10 @@
 #define DVFS_MOUNT_POINT   0x04000000
 #define DVFS_NO_LSEEK      0x08000000
 #define DVFS_DISCONNECTED  0x10000000
+/* The name is gone from the tree (unlink, rename over it) but somebody still
+ * holds the dentry. It is off its parent's list, keeps its reference on the
+ * parent, and is freed by whoever drops the last reference. */
+#define DVFS_DYING         0x20000000
 
 struct dentry;
 struct file_desc;
@@ -95,6 +99,15 @@ extern void dvfs_lookup_put(struct lookup *lookup);
 
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
 extern int dvfs_create_new(const char *name, struct lookup *lookup, int flags);
+
+/* Whole operations: each resolves its path and acts in one hold of the lock,
+ * as dvfs_remove() does. 0 or -errno. */
+extern int dvfs_unlink(const char *path);  /* not a directory */
+extern int dvfs_rmdir(const char *path);   /* an empty directory */
+
+/* The name of an open dentry goes away: off the parent's list, DYING, freed
+ * by the last reference. Under the lock. */
+extern void dentry_unlink_dying(struct dentry *d);
 extern int dvfs_rename(struct dentry *from, struct dentry *to);
 
 /* dcache-related stuff */

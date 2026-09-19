@@ -30,6 +30,10 @@ int ftruncate(int fd, off_t length) {
 		return SET_ERRNO(EINVAL);
 	}
 
+	if ((ret = dvfs_file_valid(file))) {
+		return SET_ERRNO(-ret);
+	}
+
 	if (!file->f_inode || !file->f_inode->i_ops
 	    || !file->f_inode->i_ops->ino_truncate) {
 		return SET_ERRNO(EINVAL);
