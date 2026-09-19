@@ -23,6 +23,11 @@ module core extends embox.fs.fs_api {
 
 	option boolean use_dcache=false
 
+	/* Fill freed dentries and inodes with 0x5a and assert on a poisoned one
+	 * in a directory's list, so a use after free faults where it happens.
+	 * For test images. */
+	option boolean poison_free=false
+
 	source "dvfs.c"
 
 	source "dvfs_dentry.c"
@@ -40,6 +45,8 @@ module core extends embox.fs.fs_api {
 	@NoRuntime depends embox.fs.rootfs_dvfs
 
 	depends embox.driver.block_dev
+	/* The tree lock (dvfs_lock) */
+	depends embox.kernel.thread.mutex
 
 	depends embox.fs.dvfs.cache_strategy
 	depends embox.fs.dvfs.compat

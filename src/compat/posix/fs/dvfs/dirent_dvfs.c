@@ -22,7 +22,7 @@
 POOL_DEF(dir_pool, DIR, MAX_DIR_QUANTITY);
 
 static inline void fill_dirent(struct dirent *dirent, struct dentry *dentry) {
-	dirent->d_ino = dentry->d_inode->i_no;
+	dirent->d_ino = dentry->d_inode ? dentry->d_inode->i_no : 0;
 	memcpy(dirent->d_name, dentry->name, NAME_MAX);
 }
 
@@ -53,6 +53,7 @@ DIR *opendir(const char *path) {
 		return NULL;
 	}
 
+	/* The DIR keeps the lookup's reference until closedir(). */
 	*d = (DIR) {
 		.dir_dentry = l.item,
 	};
@@ -99,8 +100,9 @@ struct dirent *readdir(DIR *dir) {
 
 	fill_dirent(&dir->dirent, l.item);
 
+	/* The entry stays in the tree as cache for reclaim: another core may
+	 * have just found it and not yet taken it. */
 	dentry_ref_dec(l.item);
-	dvfs_destroy_dentry(l.item);
 
 	return &dir->dirent;
 }

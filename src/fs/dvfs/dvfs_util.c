@@ -11,21 +11,71 @@
 
 #include <fs/dvfs.h>
 #include <framework/mod/options.h>
+#include <kernel/sched/current.h>
+#include <kernel/thread/sync/mutex.h>
 #include <mem/misc/pool.h>
 #include <lib/libds/dlist.h>
+#include <util/atomic_rmw.h>
 #include <util/log.h>
 
 #define INODE_POOL_SIZE OPTION_GET(NUMBER, inode_pool_size)
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 #define FILE_POOL_SIZE OPTION_GET(NUMBER, file_pool_size)
+#define POISON_FREE OPTION_GET(BOOLEAN, poison_free)
 
 POOL_DEF(inode_pool, struct inode, INODE_POOL_SIZE);
 POOL_DEF(dentry_pool, struct dentry, DENTRY_POOL_SIZE);
 POOL_DEF(file_pool, struct file_desc, FILE_POOL_SIZE);
 
+/* The tree lock; see LOCKING in dvfs.h. Recursive: paths through the drivers
+ * come back into the tree (a reclaim inside an allocation inside a lookup, a
+ * put inside a destroy). */
+static struct mutex dvfs_tree_mutex = RMUTEX_INIT_STATIC;
+
+/* Before the first thread the mutex cannot be taken and nobody races;
+ * task_vfs_init makes the root then, so the lock only counts its depth. */
+static int dvfs_lock_early;
+
+unsigned long vfs_tree_contended;
+unsigned long dvfs_unlocked_tree;
+unsigned long dvfs_reclaimed;
+
+void dvfs_lock(void) {
+	if (schedee_get_current() == NULL) {
+		dvfs_lock_early++;
+		return;
+	}
+	if (0 != mutex_trylock(&dvfs_tree_mutex)) {
+		atomic_rmw_add_fetch(&vfs_tree_contended, 1, __ATOMIC_RELAXED);
+		mutex_lock(&dvfs_tree_mutex);
+	}
+}
+
+void dvfs_unlock(void) {
+	if (dvfs_lock_early > 0) {
+		dvfs_lock_early--;
+		return;
+	}
+	mutex_unlock(&dvfs_tree_mutex);
+}
+
+void dvfs_lock_assert(const char *where) {
+	struct schedee *self = schedee_get_current();
+
+	if (dvfs_lock_early > 0 || (self && dvfs_tree_mutex.holder == self)) {
+		return;
+	}
+	if (dvfs_unlocked_tree == 0) {
+		log_error("UNLOCKED TREE: %s reached the name tree without dvfs_lock",
+		    where);
+	}
+	dvfs_unlocked_tree++;
+}
+
 #define FREE_DENTRY_ANY    0
 #define FREE_DENTRY_INODE  1
 static int dvfs_free_dentry(int with_ino);
+static void dentry_destroy_locked(struct dentry *dentry);
 
 /* Default FS-nondependent operations */
 /* @brief Alloc inode and set it superblock and inode_operations
@@ -39,16 +89,17 @@ struct inode *dvfs_alloc_inode(struct super_block *sb) {
 	if (!sb)
 		return NULL;
 
+	dvfs_lock_assert("dvfs_alloc_inode");
+
 	inode = pool_alloc(&inode_pool);
 	if (!inode) {
 		if (!dvfs_free_dentry(FREE_DENTRY_INODE)) {
 			inode = pool_alloc(&inode_pool);
-		} else {
+		}
+		if (!inode) {
 			return NULL;
 		}
 	}
-
-	assert(inode);
 
 	*inode = (struct inode) {
 		.i_no = -1,
@@ -65,6 +116,9 @@ struct inode *dvfs_alloc_inode(struct super_block *sb) {
  * @retval 0 Ok
  */
 int dvfs_default_destroy_inode(struct inode *inode) {
+	if (POISON_FREE) {
+		memset(inode, 0x5a, sizeof(*inode));
+	}
 	pool_free(&inode_pool, inode);
 	return 0;
 }
@@ -96,7 +150,7 @@ extern int dvfs_default_destroy_inode(struct inode *);
 int dvfs_destroy_inode(struct inode *inode) {
 	assert(inode);
 
-	if (inode->i_dentry)
+	if (inode->i_dentry && inode->i_dentry->d_inode == inode)
 		inode->i_dentry->d_inode = NULL;
 
 	if (inode->i_sb && inode->i_sb->sb_ops &&
@@ -110,23 +164,42 @@ int dvfs_destroy_inode(struct inode *inode) {
 */
 DLIST_DEFINE(dentry_dlist);
 
+static struct dentry *global_root = NULL;
+
+/* Reclaim may take D only if it is in the tree (a dentry being built has no
+ * parent yet), unheld, childless and not kept by the tree's structure. */
+static int dentry_reclaimable(struct dentry *d) {
+	return d->parent != NULL
+	    && d->usage_count == 0
+	    && dlist_empty(&d->children)
+	    && d != global_root
+	    && !(d->flags & DVFS_MOUNT_POINT);
+}
+
 /**
- * @brief Free entries with zero usage count (i. e. cached entries)
+ * @brief Free a cached dentry: nobody holds it and nothing is under it.
  *
  * @param mode  FREE_DENTRY_ANY	   Find any dentry to delete
  *              FREE_DENTRY_INODE  Find dentry with inodes
  *
  * @return 0      if succeeded
  *         -EBUSY if no free dentry found
+ *
+ * Runs inside an allocation, possibly in the middle of a path walk; the walk
+ * holds every dentry it stands on (see dvfs_path_walk()), so none is taken.
  */
 static int dvfs_free_dentry(int mode) {
 	struct dentry *dentry;
+
+	dvfs_lock_assert("dvfs_free_dentry");
+
 	dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
 		if (mode == FREE_DENTRY_INODE && dentry->d_inode == NULL)
 			continue;
 
-		if (dentry->usage_count == 0) {
-			dvfs_destroy_dentry(dentry);
+		if (dentry_reclaimable(dentry)) {
+			dentry_destroy_locked(dentry);
+			atomic_rmw_add_fetch(&dvfs_reclaimed, 1, __ATOMIC_RELAXED);
 			return 0;
 		}
 	}
@@ -140,11 +213,16 @@ static int dvfs_free_dentry(int mode) {
  * @retval NULL Pool is full
  */
 struct dentry *dvfs_alloc_dentry(void) {
-	struct dentry *dentry = pool_alloc(&dentry_pool);
+	struct dentry *dentry;
+
+	dvfs_lock_assert("dvfs_alloc_dentry");
+
+	dentry = pool_alloc(&dentry_pool);
 	if (!dentry) {
-		if (!dvfs_free_dentry(0)) {
+		if (!dvfs_free_dentry(FREE_DENTRY_ANY)) {
 			dentry = pool_alloc(&dentry_pool);
-		} else {
+		}
+		if (!dentry) {
 			return NULL;
 		}
 	}
@@ -154,36 +232,61 @@ struct dentry *dvfs_alloc_dentry(void) {
 	dlist_head_init(&dentry->d_lnk);
 	dlist_add_next(&dentry->d_lnk, &dentry_dlist);
 	dlist_init(&dentry->children);
+	dlist_head_init(&dentry->children_lnk);
 
 	return dentry;
 }
 
 extern int dvfs_cache_del(struct dentry *dentry);
+
+/* Frees an unheld dentry and the reference its place kept on the parent */
+static void dentry_destroy_locked(struct dentry *dentry) {
+	struct dentry *parent;
+
+	assert(dentry->usage_count == 0);
+	assert(dentry != global_root);
+
+	if (dentry->d_inode) {
+		dvfs_destroy_inode(dentry->d_inode);
+	}
+
+	parent = dentry->parent;
+	if (parent && parent != dentry) {
+		dlist_del_init(&dentry->children_lnk);
+		dvfs_cache_del(dentry);
+	}
+
+	dlist_del(&dentry->d_lnk);
+
+	if (POISON_FREE) {
+		memset(dentry, 0x5a, sizeof(*dentry));
+	}
+	pool_free(&dentry_pool, dentry);
+
+	if (parent && parent != dentry) {
+		dentry_ref_dec(parent);
+	}
+}
+
 /**
  * @brief Remove dentry from pool
+ *
+ * @retval 0      Freed
+ * @retval -EBUSY Somebody holds it
  */
 int dvfs_destroy_dentry(struct dentry *dentry) {
+	int res = -EBUSY;
+
+	dvfs_lock();
 	log_debug("destroy %p", dentry);
 	assert(dentry->usage_count >= 0);
-	if (dentry->usage_count == 0) {
-		if (dentry->d_inode) {
-			dvfs_destroy_inode(dentry->d_inode);
-		}
-
-		if (dentry->parent) {
-			/* Dentry was integrated to VFS tree */
-			dentry_ref_dec(dentry->parent);
-			dlist_del(&dentry->children_lnk);
-			dvfs_cache_del(dentry);
-		}
-
-		dlist_del(&dentry->d_lnk);
-
-		pool_free(&dentry_pool, dentry);
-		return 0;
-	} else {
-		return -EBUSY;
+	if (dentry->usage_count == 0 && dentry != global_root) {
+		dentry_destroy_locked(dentry);
+		res = 0;
 	}
+	dvfs_unlock();
+
+	return res;
 }
 
 /*
@@ -195,10 +298,12 @@ int dvfs_fs_dentry_try_free(struct super_block *sb) {
 	struct dentry *dentry;
 
 	assert(sb);
+	dvfs_lock_assert("dvfs_fs_dentry_try_free");
 
 	dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
-		if (sb == dentry->d_sb && dentry->usage_count == 0) {
-			dvfs_destroy_dentry(dentry);
+		if (sb == dentry->d_sb && dentry_reclaimable(dentry)) {
+			dentry_destroy_locked(dentry);
+			atomic_rmw_add_fetch(&dvfs_reclaimed, 1, __ATOMIC_RELAXED);
 			return 1;
 		}
 	}
@@ -257,6 +362,8 @@ int inode_fill(struct super_block *sb, struct inode *inode,
  */
 int dentry_fill(struct super_block *sb, struct inode *inode,
                       struct dentry *dentry, struct dentry *parent) {
+	dvfs_lock_assert("dentry_fill");
+
 	dentry->d_inode     = inode;
 	dentry->d_sb        = sb;
 	dentry->parent      = parent;
@@ -276,61 +383,71 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 }
 
 int dentry_ref_inc(struct dentry *dentry) {
+	int res;
+
 	assert(dentry);
+	dvfs_lock();
 	log_debug("dentry inc %p %s (%d->%d)",
 			dentry, dentry->name, dentry->usage_count,
 			dentry->usage_count + 1);
-	return ++dentry->usage_count;
+	res = ++dentry->usage_count;
+	dvfs_unlock();
+
+	return res;
 }
 
+/* Drops one reference; an unheld dentry stays as cache for reclaim. Returns
+ * the count left. */
 int dentry_ref_dec(struct dentry *dentry) {
+	int res;
+
+	assert(dentry);
+	dvfs_lock();
 	log_debug("dentry dec %p %s (%d->%d)",
 			dentry, dentry->name, dentry->usage_count,
 			dentry->usage_count - 1);
-	assert(dentry);
 	assert(dentry->usage_count > 0);
-	return --dentry->usage_count;
+	res = --dentry->usage_count;
+	dvfs_unlock();
+
+	return res;
 }
 
 /* Root-related stuff */
-static struct dentry *global_root = NULL;
 extern struct super_block *rootfs_sb(void);
-/* @brief Updating task resources realted to file system or
- *        initialize them if they are empty
+
+/* @brief Create the global root and give it the root superblock once mounted
+ *
+ * The root is never replaced, since every working directory and lookup holds
+ * it.
  */
 int dvfs_update_root(void) {
 	struct super_block *sb;
 	struct inode *inode;
+
+	dvfs_lock();
+
 	if (global_root == NULL) {
 		global_root = dvfs_alloc_dentry();
-		dentry_ref_inc(global_root);
+		assert(global_root);
+		global_root->usage_count = 1;
+		global_root->parent = global_root;
+		strcpy(global_root->name, "/");
+		global_root->flags = S_IFDIR | VFS_DIR_VIRTUAL | DVFS_MOUNT_POINT;
 	}
-
-	assert(global_root);
 
 	sb = rootfs_sb();
 
-	if (sb == NULL) {
-		return 0;
+	if (sb != NULL && global_root->d_sb == NULL) {
+		inode = sb->sb_root;
+		assert(inode);
+
+		global_root->d_sb = sb;
+		global_root->d_inode = inode;
+		inode->i_dentry = global_root;
 	}
 
-	inode = sb->sb_root;
-	assert(inode);
-
-	*global_root = (struct dentry) {
-		.d_sb        = sb,
-		.d_inode     = inode,
-		.parent      = global_root,
-		.name        = "/",
-		.flags       = S_IFDIR | VFS_DIR_VIRTUAL | DVFS_MOUNT_POINT,
-		.usage_count = 1,
-		.d_lnk       = global_root->d_lnk
-	};
-
-	inode->i_dentry = global_root;
-
-	dlist_init(&global_root->children);
-	dlist_init(&global_root->children_lnk);
+	dvfs_unlock();
 
 	return 0;
 }
@@ -359,10 +476,16 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
 	struct dentry *d;
 	struct dlist_head *l;
 
+	dvfs_lock_assert("local_lookup");
+
 	dlist_foreach(l, &parent->children) {
 		if (l == &parent->children)
 			continue;
 		d = mcast_out(l, struct dentry, children_lnk);
+
+		if (POISON_FREE) {
+			assert(d->flags != 0x5a5a5a5a);
+		}
 
 		if (!strcmp(d->name, name)) {
 			return d;

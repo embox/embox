@@ -38,6 +38,11 @@ struct lookup {
 	struct dentry *parent;
 };
 
+/* Resolves a path from the root or the task's working directory.
+ * lookup->item, if not NULL, is referenced (put it with dentry_ref_dec());
+ * lookup->parent is not. 0 with item == NULL: only the last component is
+ * missing; -ENOENT: an earlier one is. Inside the VFS use dvfs_lookup_at()
+ * under dvfs_lock() (fs/dvfs.h). */
 extern int dvfs_lookup(const char *path, struct lookup *lookup);
 extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
 extern struct dentry *dvfs_root(void);

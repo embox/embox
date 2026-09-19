@@ -42,6 +42,35 @@ struct inode_operations;
 struct dir_ctx;
 struct block_dev;
 
+/* LOCKING
+ *
+ * dvfs_lock() guards the name tree: the list of all dentries, children lists,
+ * usage_count, the dentry flags, the root and every task's working directory;
+ * reclaim runs under it. It is a recursive sleeping mutex: driver inode and
+ * superblock ops run under it and sleep.
+ *
+ * Order: dvfs_lock -> driver lock (fat_lock) -> block device
+ *                  -> idesc table lock, pool spinlocks
+ * A driver never calls back into the VFS. Never take dvfs_lock with a driver
+ * lock held, nor from interrupt context. File data (kread/kwrite/lseek) is
+ * not under it: a descriptor only pins its dentry.
+ *
+ * REFERENCES
+ *
+ * usage_count changes only under the lock. A dentry is held by each child
+ * linked under it, each descriptor and DIR on it, each task whose working
+ * directory it is, and a lookup's result. An unreferenced dentry stays as
+ * cache, reclaimed as a leaf under the lock when a pool runs out.
+ */
+extern void dvfs_lock(void);
+extern void dvfs_unlock(void);
+/* Counts (and names, once) a place that reached the tree without the lock. */
+extern void dvfs_lock_assert(const char *where);
+
+extern unsigned long vfs_tree_contended;  /* dvfs_lock() had to wait */
+extern unsigned long dvfs_unlocked_tree;  /* dvfs_lock_assert() misses */
+extern unsigned long dvfs_reclaimed;      /* cached dentries reclaimed */
+
 extern struct dentry *dvfs_alloc_dentry(void);
 extern int            dvfs_destroy_dentry(struct dentry *dentry);
 extern int            dvfs_fs_dentry_try_free(struct super_block *sb);
@@ -49,6 +78,20 @@ extern int            dvfs_fs_dentry_try_free(struct super_block *sb);
 extern struct dentry *dvfs_root(void);
 extern int dvfs_remove(const char *path);
 struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag);
+
+/* Resolve PATH starting at BASE (NULL: the root for an absolute path, the
+ * task's working directory for a relative one). Called with dvfs_lock held.
+ *
+ * On 0:   lookup->parent is referenced; lookup->item is referenced, or NULL
+ *         when the last component does not exist -- then LAST, if given
+ *         (NAME_MAX bytes), gets that component's name.
+ * On error nothing is referenced: -ENOENT (an earlier component is
+ *         missing), -ENOTDIR, -ENAMETOOLONG, -ENOMEM.
+ *
+ * Release with dvfs_lookup_put(). */
+extern int dvfs_lookup_at(struct dentry *base, const char *path,
+    struct lookup *lookup, char *last);
+extern void dvfs_lookup_put(struct lookup *lookup);
 
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
 extern int dvfs_create_new(const char *name, struct lookup *lookup, int flags);

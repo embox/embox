@@ -27,19 +27,19 @@
  * @retval -1 Descriptor fields are inconsistent
  */
 int kclose(struct file_desc *desc) {
-	if (!desc || !desc->f_inode || !desc->f_dentry)
+	if (!desc || !desc->f_dentry)
 		return -1;
 
 	if (!(desc->f_dentry->flags & VFS_DIR_VIRTUAL)) {
 		assert(desc->f_ops);
 	}
 
-	if (desc->f_ops && desc->f_ops->close) {
+	if (desc->f_ops && desc->f_ops->close && desc->f_inode) {
 		desc->f_ops->close(desc);
 	}
 
-	if (!dentry_ref_dec(desc->f_dentry))
-		dvfs_destroy_dentry(desc->f_dentry);
+	/* The dentry stays as cache: another core may have just found it */
+	dentry_ref_dec(desc->f_dentry);
 
 	dvfs_destroy_file(desc);
 	return 0;
@@ -134,6 +134,12 @@ int kread(struct file_desc *desc, char *buf, int count) {
 
 int kfstat(struct file_desc *desc, struct stat *sb) {
 	size_t block_size;
+
+	if (desc->f_inode == NULL) {
+		/* A virtual directory made under another virtual one has no inode */
+		*sb = (struct stat){ .st_mode = S_IFDIR | S_IRWXA };
+		return 0;
+	}
 
 	*sb = (struct stat){
 	    .st_size = desc->f_inode->i_size,
