@@ -8,14 +8,29 @@
 #ifndef DRIVERS_INTERRUPT_GIC_GICV3_H_
 #define DRIVERS_INTERRUPT_GIC_GICV3_H_
 
+#include <stdint.h>
+
+#include <hal/cpu.h>
+
 #include "gic_base.h"
 #include "gicv2.h"
 
 /* clang-format off */
 
 /* Each Redistributor defines two 64KB frames in the physical address map */
+#define GICR_FRAME_SZ      0x10000
+#define GICR_STRIDE        (2 * GICR_FRAME_SZ) /* RD_base + SGI_base */
+
+/* The GICR_* registers below address the redistributor of the calling CPU:
+ * a constant with one CPU, a lookup with several */
+#ifdef SMP
+extern uintptr_t gicv3_rd_base(void);
+#define RD_BASE            gicv3_rd_base()  /* For controlling the overall behavior of the Redistributor */
+#define SGI_BASE           (gicv3_rd_base() + GICR_FRAME_SZ) /* For controlling and generating PPIs and SGIs */
+#else
 #define RD_BASE            GICR_BASE  /* For controlling the overall behavior of the Redistributor */
-#define SGI_BASE           (GICR_BASE + 0x10000) /* For controlling and generating PPIs and SGIs */
+#define SGI_BASE           (GICR_BASE + GICR_FRAME_SZ) /* For controlling and generating PPIs and SGIs */
+#endif
 
 #define GICD_TYPER2        (GICD_BASE + 0x000C) /* Interrupt controller Type Register 2 */
 #define GICD_STATUSR       (GICD_BASE + 0x0010) /* Error Reporting Status Register, optional */
@@ -30,6 +45,7 @@
 #define GICR_TYPER         (RD_BASE + 0x0008) /* Redistributor Type Register */
 #define GICR_STATUSR       (RD_BASE + 0x0010) /* RError Reporting Status Register */
 #define GICR_WAKER         (RD_BASE + 0x0014) /* Redistributor Wake Register */
+#define GICR_PWRR          (RD_BASE + 0x0024) /* Power Register, GIC-600/700 only */
 #define GICR_MPAMIDR       (RD_BASE + 0x0018) /* Report maximum PARTID and PMG Register */
 #define GICR_PARTIDR       (RD_BASE + 0x001C) /* Set PARTID and PMG Register */
 #define GICR_PROPBASER     (RD_BASE + 0x0070) /* Redistributor Properties Base Address Register */
@@ -58,6 +74,7 @@
 
 #define GICR_WAKER_PS      (1U << 1) /* Indicates whether the Redistributor can assert the WakeRequest signal */
 #define GICR_WAKER_CA      (1U << 2) /* Indicates whether the connected PE is quiescent */
+#define GICR_PWRR_RDPD     (1U << 0) /* Redistributor is powered down (GIC-600) */
 
 #define GICR_CTLR_RWP      (1U << 3) /* Register Write Pending */
 

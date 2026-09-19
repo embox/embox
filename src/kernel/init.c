@@ -24,10 +24,18 @@ static int init(void);
 extern int system_start(void);
 extern int system_abs_time_init(void);
 
+/* Turns translation on where an architecture needs it before the first
+ * spinlock. Weak, and empty on the ports that do not. */
+void __attribute__((weak)) arch_mmu_early_on(void) {
+}
+
 /**
  * The setup of the system, the run level and execution of the idle function.
  */
 void kernel_start(void) {
+	/* First: everything below this line can take a lock */
+	arch_mmu_early_on();
+
 	kernel_init();
 
 	kgdb_start(init);

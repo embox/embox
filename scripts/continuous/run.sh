@@ -32,7 +32,7 @@ packetdrill_run() {
 	default_run
 }
 
-x86_smp_run() {
+smp_run() {
 	TIMEOUT=120
 	default_run
 }
@@ -55,7 +55,8 @@ atml2run=(
 	['project/opencv/arm-qemu']=default_run
 	['project/qt4/arm_qemu_fb_small']=default_run
 	['platform/stm32/f4/stm32f4-discovery']=true
-	['x86/smp']=x86_smp_run
+	['x86/smp']=smp_run
+	['aarch64/smp']=smp_run
 	['x86/test/fs']="$(dirname "$0")/fs/run.sh $ATML"
 	['x86/test/net']="$(dirname "$0")/net/run.sh $ATML"
 	['x86/test/qt-vnc']="$(dirname "$0")/qt/run.sh $ATML"

@@ -22,4 +22,11 @@
 #define GICC_BASE OPTION_GET(NUMBER, gicc_base)
 #endif
 
+/* A gicv3 option: GICv1/v2 have no redistributors */
+#if OPTION_DEFINED(NUMBER, gic600_pwrr)
+#define GIC600_PWRR OPTION_GET(NUMBER, gic600_pwrr)
+#else
+#define GIC600_PWRR 0
+#endif
+
 #endif /* DRIVERS_INTERRUPT_GIC_GIC_UTIL_H_ */

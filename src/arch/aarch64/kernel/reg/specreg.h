@@ -150,7 +150,7 @@
 #define SPSR_ELn_F                       (1U << 6) /* FIQ mask bit */
 
 #define SPSR_ELn_M                       /* Mode that an exception was taken from */
-#define SPSR_ELn_M_MASK                  0xb11111U
+#define SPSR_ELn_M_MASK                  0b11111U
 #define SPSR_ELn_M_SHIFT                 0
 
 #endif /* AARCH64_REG_SPECREG_H_ */

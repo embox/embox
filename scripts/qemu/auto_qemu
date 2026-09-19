@@ -259,7 +259,9 @@ guess_machine() {
 get_user_undef_guess AUTOQEMU_MACHINE guess_machine
 
 guess_cpuhartnum() {
-	cpu_num=$(cat "$MODS_CONF" | gcc -P -E - | sed -n 's/.*embox\.arch\.[^\.]*\.kernel\.cpu([^)]*cpu_count=\([0-9]\+\)).*/\1/p')
+	# Two spellings: x86 and riscv keep the module at
+	# embox.arch.<arch>.kernel.cpu, aarch64 at embox.arch.aarch64.cpu
+	cpu_num=$(cat "$MODS_CONF" | gcc -P -E - | sed -n 's/.*embox\.arch\.[^\.]*\.\(kernel\.\)\?cpu([^)]*cpu_count=\([0-9]\+\)).*/\2/p')
 	if [ -n "$cpu_num" ]; then
 		echo "-smp $cpu_num"
 	fi

@@ -3,9 +3,20 @@ package embox.arch.aarch64
 module mmu extends embox.mem.vmem {
 	source "mmu.c"
 	source "mmu.h"
+	source "mmu_early.c"
 
 	option number granule = 4 /* size of pages, in kiB, can be 4, 16 or 64 */
 	option string log_level="LOG_INFO"
+
+	/* Cacheable table walks, and no flush of a written descriptor. A board
+	 * handed over with dirty lines the walker would read as page tables sets
+	 * 0 and 1 instead: a Non-cacheable walk does not snoop this cache. */
+	option number walk_cacheable = 1
+	option number pte_dcache_flush = 0
+
+	/* Turn translation on from kernel_start(), before the first spinlock;
+	 * vmem_init() later replaces the map this makes */
+	option number early_on = 0
 
 	depends embox.mem.vmem_alloc
 	depends embox.mem.vmem_depends

@@ -86,6 +86,21 @@ extern int irqctrl_get_intid(void);
  */
 extern int irqctrl_set_level(unsigned int irq, int level);
 
+/**
+ * Initialize the part of the interrupt controller that belongs to the calling
+ * CPU. The global half is done once, by irqctrl_init() on the boot CPU.
+ */
+extern void irqctrl_init_cpu(void);
+
+/**
+ * Raise @a irq on another CPU.
+ *
+ * @param cpu_id logical id of the target; dropped if it has not yet run
+ *               irqctrl_init_cpu()
+ * @param irq    a software-generated interrupt number (0..15)
+ */
+extern void irqctrl_send_ipi(unsigned int cpu_id, unsigned int irq);
+
 struct irqctrl {
 	const char *name;
 	int (*init)(void);
