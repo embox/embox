@@ -247,6 +247,21 @@
 #define ID_AA64MMFR0_EL1_PAR_44b               0b0100 /* 44 bits, 16 TB */
 #define ID_AA64MMFR0_EL1_PAR_48b               0b0101 /* 48 bits, 256 TB */
 
+#define ID_AA64MMFR0_EL1_TGRAN16               /* 16 kB granule supported */
+#define ID_AA64MMFR0_EL1_TGRAN16_MASK          0b1111UL
+#define ID_AA64MMFR0_EL1_TGRAN16_SHIFT         20
+#define ID_AA64MMFR0_EL1_TGRAN16_NONE          0b0000
+
+#define ID_AA64MMFR0_EL1_TGRAN64               /* 64 kB granule supported */
+#define ID_AA64MMFR0_EL1_TGRAN64_MASK          0b1111UL
+#define ID_AA64MMFR0_EL1_TGRAN64_SHIFT         24
+#define ID_AA64MMFR0_EL1_TGRAN64_NONE          0b1111
+
+#define ID_AA64MMFR0_EL1_TGRAN4                /* 4 kB granule supported */
+#define ID_AA64MMFR0_EL1_TGRAN4_MASK           0b1111UL
+#define ID_AA64MMFR0_EL1_TGRAN4_SHIFT          28
+#define ID_AA64MMFR0_EL1_TGRAN4_NONE           0b1111
+
 /** [RO] AArch64 Memory Model Feature Register 1 */
 #define ID_AA64MMFR1_EL1                       ID_AA64MMFR1_EL1
 #define __ARCH_REG_LOAD__ID_AA64MMFR1_EL1()    __MRS_SYS(ID_AA64MMFR1_EL1)
@@ -317,6 +332,22 @@
 /** [RO] Main ID Register */
 #define MIDR_EL1                               MIDR_EL1
 #define __ARCH_REG_LOAD__MIDR_EL1()            __MRS_SYS(MIDR_EL1)
+
+#define MIDR_EL1_REVISION                      /* Minor revision, the p of rNpM */
+#define MIDR_EL1_REVISION_MASK                 0xfUL
+#define MIDR_EL1_REVISION_SHIFT                0
+
+#define MIDR_EL1_PARTNUM                       /* Primary part number */
+#define MIDR_EL1_PARTNUM_MASK                  0xfffUL
+#define MIDR_EL1_PARTNUM_SHIFT                 4
+
+#define MIDR_EL1_VARIANT                       /* Major revision, the r of rNpM */
+#define MIDR_EL1_VARIANT_MASK                  0xfUL
+#define MIDR_EL1_VARIANT_SHIFT                 20
+
+#define MIDR_EL1_IMPLEMENTER                   /* JEP106 code of the implementer */
+#define MIDR_EL1_IMPLEMENTER_MASK              0xffUL
+#define MIDR_EL1_IMPLEMENTER_SHIFT             24
 
 /** [RO] Multiprocessor Affinity Register */
 #define MPIDR_EL1                              MPIDR_EL1
