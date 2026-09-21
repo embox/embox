@@ -23,6 +23,10 @@ module mmu extends embox.mem.vmem {
 	depends embox.mem.vmem_header
 }
 
+module mmuinfo extends embox.arch.mmuinfo {
+	source "mmuinfo.c"
+}
+
 module cache extends embox.arch.cache {
 	source "cache.c"
 }

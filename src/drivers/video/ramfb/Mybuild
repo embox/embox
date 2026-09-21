@@ -10,6 +10,7 @@ module ramfb {
 	source "ramfb.c"
 
 	depends embox.driver.periph_memory
+	@NoRuntime depends embox.mem.vmem_header
 	@NoRuntime depends fb
 	depends fb_devfs
 	@NoRuntime depends embox.compat.libc.all

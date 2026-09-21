@@ -19,6 +19,7 @@
 #include <framework/mod/options.h>
 #include <hal/reg.h>
 #include <kernel/printk.h>
+#include <mem/vmem.h>
 
 #define FW_CFG_BASE     OPTION_GET(NUMBER, base_addr)
 #define RAMFB_WIDTH     OPTION_GET(NUMBER, fb_xres)
@@ -68,7 +69,7 @@ struct fw_cfg_file {
 } __attribute__((packed));
 
 static uint32_t ramfb_mem[RAMFB_WIDTH * RAMFB_HEIGHT]
-    __attribute__((aligned(64)));
+    __attribute__((aligned(MMU_PAGE_SIZE)));
 
 static int ramfb_set_var(struct fb_info *info,
     struct fb_var_screeninfo const *var) {
