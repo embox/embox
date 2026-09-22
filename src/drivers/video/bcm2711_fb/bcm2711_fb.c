@@ -51,6 +51,9 @@
 #define MBOX_RESP_OK 0x80000000u
 #define MBOX_TAG_END 0u
 
+#define TAG_GETREV    0x10002u
+#define TAG_GETARMMEM 0x10005u
+#define TAG_GETVCMEM  0x10006u
 #define TAG_GETDISP 0x40003u
 #define TAG_SETDISP 0x48003u
 #define TAG_SETVBUF 0x48004u
@@ -135,6 +138,62 @@ static int mbox_send(uint32_t *buf, size_t bytes) {
 		return -EIO;
 	}
 	return 0;
+}
+
+/* The revision word encodes the model, the stepping and the RAM size; the
+ * two memory tags say how much DRAM the ARM was given and where the
+ * VideoCore kept its own, which is what the RAM region has to stay clear of.
+ * The linker map is pinned to one SKU, so a board swap changes all three
+ * without changing anything in the tree. A tag the firmware does not know is
+ * skipped in silence. */
+static void mbox_report_board(void) {
+	uint32_t buf[8] __attribute__((aligned(16)));
+	uint32_t rev;
+	unsigned mib;
+
+	memset(buf, 0, sizeof(buf));
+	buf[0] = sizeof(buf);
+	buf[1] = MBOX_REQUEST;
+	buf[2] = TAG_GETREV;
+	buf[3] = 4;
+	buf[4] = 0;
+	buf[6] = MBOX_TAG_END;
+	if (mbox_send(buf, sizeof(buf)) == 0) {
+		rev = buf[5];
+		/* New-style revision: bits 20-22 are 256 MiB << code. Old-style
+		 * codes do not set bit 23. */
+		mib = (rev & (1u << 23)) ? (256u << ((rev >> 20) & 7u)) : 0u;
+		if (mib) {
+			printk("bcm2711_fb: board revision %08x, %u MiB\n", rev, mib);
+		}
+		else {
+			printk("bcm2711_fb: board revision %08x\n", rev);
+		}
+	}
+
+	memset(buf, 0, sizeof(buf));
+	buf[0] = sizeof(buf);
+	buf[1] = MBOX_REQUEST;
+	buf[2] = TAG_GETARMMEM;
+	buf[3] = 8;
+	buf[4] = 0;
+	buf[7] = MBOX_TAG_END;
+	if (mbox_send(buf, sizeof(buf)) == 0) {
+		printk("bcm2711_fb: ARM memory %08x + %08x (%u MiB)\n", buf[5], buf[6],
+				buf[6] >> 20);
+	}
+
+	memset(buf, 0, sizeof(buf));
+	buf[0] = sizeof(buf);
+	buf[1] = MBOX_REQUEST;
+	buf[2] = TAG_GETVCMEM;
+	buf[3] = 8;
+	buf[4] = 0;
+	buf[7] = MBOX_TAG_END;
+	if (mbox_send(buf, sizeof(buf)) == 0) {
+		printk("bcm2711_fb: VC memory  %08x + %08x (%u MiB)\n", buf[5], buf[6],
+				buf[6] >> 20);
+	}
 }
 
 static int mbox_get_disp(uint32_t *x, uint32_t *y) {
@@ -251,6 +310,8 @@ static int bcm2711_fb_init(void) {
 	uint32_t *px;
 	unsigned n;
 	int tries;
+
+	mbox_report_board();
 
 	if (mbox_get_disp(&x, &y) < 0 || x == 0 || y == 0) {
 		x = FB_FALLBACK_W;

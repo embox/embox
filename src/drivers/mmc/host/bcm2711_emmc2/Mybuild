@@ -1,0 +1,58 @@
+package embox.driver.mmc.host
+
+module bcm2711_emmc2 {
+	option string log_level = "LOG_ERR"
+
+	/* 0xFE340000 = EMMC2 on real hardware, the microSD slot. QEMU's raspi4b
+	 * puts the card on the legacy controller at 0xFE300000 instead; see the
+	 * note at the top of the driver before aiming at that on a real board. */
+	option number base_addr = 0xFE340000
+
+	/* Used only when neither CAPABILITIES nor the mailbox reports one. */
+	option number fallback_clock = 100000000
+
+	/* Four data lines instead of one (ACMD6 plus HOST_CONTROL.DTW). Off,
+	 * because one bit at default speed is the configuration this driver has
+	 * been run in. Negotiated after identification and verified by
+	 * re-reading block 0, falling back to one bit if it differs. */
+	option number bus_width_4 = 0
+
+	/* High speed: CMD6 to the card, HOST_CONTROL.HISPD to the host, SDCLK
+	 * to 50 MHz. Same read-back check as above; the two are independent. */
+	option number high_speed = 0
+
+	/* Read-ahead window in blocks. The block layer asks for one block at a
+	 * time and cannot be told otherwise from here, so a CMD17 becomes a
+	 * CMD18 covering this many blocks and the rest are served from RAM.
+	 * 0 or 1 disables it. */
+	option number readahead = 16
+
+	/* Write combining: consecutive single-block writes gathered into one
+	 * CMD25, for the same reason. 0 or 1 disables it; see the note at
+	 * emmc2_wb_flush for what a gathered write changes. */
+	option number write_combine = 16
+
+	/* SDMA for transfers into this driver's own buffers. Off, and off is
+	 * the only configuration run on hardware. An address the controller
+	 * cannot reach, or one not whole-cache-line aligned, falls back to PIO;
+	 * the first DMA transfer is compared against the same blocks read by
+	 * PIO and DMA is disabled for the rest of the boot if they differ. */
+	option number use_dma = 0
+
+	/* Bus address = physical + this. 0xC0000000 on real BCM2711, per the
+	 * emmc2bus dma-ranges; an emulator that does not model that bus wants
+	 * 0. Checked at runtime against a PIO read either way. */
+	option number dma_bus_base = 0xC0000000
+
+	source "bcm2711_emmc2.c"
+	source "sdhci_std.h"
+
+	depends embox.driver.mmc.mmc_core
+	depends embox.driver.block_dev
+	depends embox.driver.block.partition
+	depends embox.driver.periph_memory
+	/* One controller, more than one thread that wants it: the request path
+	 * is serialised on a mutex. See the comment at emmc2_mutex. */
+	depends embox.kernel.thread.mutex
+	depends embox.kernel.time.kernel_time
+}
