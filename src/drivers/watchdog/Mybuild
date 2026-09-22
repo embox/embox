@@ -5,3 +5,19 @@ module at91_wdtc {
 }
 
 
+/* The PM block is both the watchdog and the only way to reset the SoC, so
+ * this module implements platform_shutdown() too. */
+module bcm2835_wdt extends platform.platform_shutdown {
+	option string log_level = "LOG_ERR"
+
+	/* 0xFE100000 on BCM2711 (Pi 4), 0x3F100000 on BCM2836/BCM2837
+	 * (Pi 2 and Pi 3), 0x20100000 on BCM2835 (Pi 1). */
+	option number base_addr = 0xFE100000
+
+	/* What watchdog_enable() arms; anything above 15990 ms is clamped. */
+	option number timeout_ms = 15000
+
+	source "bcm2835_wdt.c"
+
+	depends embox.driver.periph_memory
+}
