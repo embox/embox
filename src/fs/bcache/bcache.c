@@ -17,6 +17,8 @@
 
 #include <fs/bcache.h>
 
+#include <util/log.h>
+
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(bcache_init);
 
@@ -62,6 +64,46 @@ struct buffer_head *bcache_getblk_locked(struct block_dev *bdev, int block, size
 
 	assert(0); /* UNREACHABLE */
 	return NULL;
+}
+
+/* Drops BDEV's cached blocks. The cache is keyed by the struct pointer, which
+ * the pool hands to the next device; dirty blocks are written back, since the
+ * medium may outlive the struct. */
+void bcache_forget_dev(struct block_dev *bdev) {
+	struct buffer_head *bh = NULL;
+	struct hashtable_item *ht_item;
+
+	assert(bdev);
+
+	mutex_lock(&bcache_mutex);
+	dlist_foreach_entry(bh, &bh_list, bh_next) {
+		if (bh->bdev != bdev) {
+			continue;
+		}
+		/* A locked buffer is in use: unhooking it frees memory being read */
+		if (buffer_locked(bh)) {
+			log_error("bcache: block %d of a device being destroyed is "
+			          "locked -- left in the cache",
+			    bh->block);
+			continue;
+		}
+
+		bcache_buffer_lock(bh);
+		{
+			if (buffer_dirty(bh) && bdev->driver && bdev->driver->bdo_write) {
+				bdev->driver->bdo_write(bdev, bh->data, bh->blocksize,
+				    bh->block);
+			}
+			dlist_del(&bh->bh_next);
+			ht_item = hashtable_del(bcache, bh);
+		}
+		bcache_buffer_unlock(bh);
+
+		sysfree(bh->data);
+		pool_free(&bcach_ht_item_pool, ht_item);
+		pool_free(&buffer_head_pool, bh);
+	}
+	mutex_unlock(&bcache_mutex);
 }
 
 static void free_more_memory(size_t size) {

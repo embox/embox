@@ -17,7 +17,9 @@ module devfs_dvfs extends devfs {
 	source "devfs_common.c"
 	source "devfs_drv.c"
 
-	source "devfs_notify_stub.c"
+	/* Under DVFS a name looked up once stays in the tree, so a freed device
+	 * module has to take its dentry with it. */
+	source "devfs_notify_dvfs.c"
 
 	depends embox.device.char_dev
 }

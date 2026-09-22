@@ -115,6 +115,293 @@ static int check_file(const char *path, size_t len, size_t chunk) {
 	return pattern_first_diff(readback, pattern, len);
 }
 
+/* ------------------------------------------------------------------ *
+ * The volume read from the device rather than the driver: only the bytes
+ * tell a correct volume from a correct cache. */
+
+struct volume {
+	unsigned bytepersec, secperclus, reserved, numfats, rootentries;
+	unsigned secperfat, numsecs, rootsecs, dataarea, clusters, bits;
+	unsigned rootstart;      /* first root SECTOR (FAT12/16) */
+	unsigned rootclus;       /* root CLUSTER (FAT32) */
+	const uint8_t *sysid;
+	uint8_t sec[512];
+};
+
+static struct block_dev *fat_bdev(void) {
+	return block_dev_find("ramdisk_fat");
+}
+
+/* Fill a whole block device with one byte. See setup_suite for why. */
+static void poison_media(const char *dev, size_t bytes, uint8_t fill) {
+	struct block_dev *bdev = block_dev_find(dev + sizeof("/dev/") - 1);
+	uint8_t buf[512];
+	size_t off;
+
+	if (bdev == NULL) {
+		printk("fat_ops: %s not found, media left as it was\n", dev);
+		return;
+	}
+	memset(buf, fill, sizeof(buf));
+	for (off = 0; off + sizeof(buf) <= bytes; off += sizeof(buf)) {
+		if ((int)sizeof(buf) != block_dev_write(bdev, (char *)buf, sizeof(buf),
+		        off / bdev->block_size)) {
+			printk("fat_ops: could not poison %s at offset %u\n", dev,
+			    (unsigned)off);
+			return;
+		}
+	}
+}
+
+/* Parse the boot sector. Returns 0, or -1 if the device cannot be read. */
+static int volume_read(struct block_dev *bdev, struct volume *v) {
+	uint32_t fatsize32;
+
+	if (bdev == NULL) {
+		printk("fat_ops: volume_read: no device\n");
+		return -1;
+	}
+	memset(v, 0, sizeof(*v));
+	if ((int)sizeof(v->sec)
+	    != block_dev_read(bdev, (char *)v->sec, sizeof(v->sec), 0)) {
+		printk("fat_ops: volume_read: sector 0 of %s could not be read\n",
+		    block_dev_name(bdev));
+		return -1;
+	}
+
+	v->bytepersec  = v->sec[11] | (v->sec[12] << 8);
+	v->secperclus  = v->sec[13];
+	v->reserved    = v->sec[14] | (v->sec[15] << 8);
+	v->numfats     = v->sec[16];
+	v->rootentries = v->sec[17] | (v->sec[18] << 8);
+	v->numsecs     = v->sec[19] | (v->sec[20] << 8);
+	v->secperfat   = v->sec[22] | (v->sec[23] << 8);
+	if (v->numsecs == 0) {
+		v->numsecs = v->sec[32] | (v->sec[33] << 8)
+		             | (v->sec[34] << 16) | (v->sec[35] << 24);
+	}
+	fatsize32 = v->sec[36] | (v->sec[37] << 8)
+	            | (v->sec[38] << 16) | (v->sec[39] << 24);
+	v->rootclus = v->sec[44] | (v->sec[45] << 8)
+	              | (v->sec[46] << 16) | (v->sec[47] << 24);
+
+	if (v->bytepersec == 0 || v->secperclus == 0) {
+		printk("fat_ops: volume_read: %s has no boot sector -- first bytes "
+		       "%02x %02x %02x %02x, %u B/sec, %u sec/clus\n",
+		    block_dev_name(bdev), v->sec[0], v->sec[1], v->sec[2], v->sec[3],
+		    v->bytepersec, v->secperclus);
+		return -1;
+	}
+	v->rootsecs = (v->rootentries * 32 + v->bytepersec - 1) / v->bytepersec;
+	v->rootstart = v->reserved
+	               + v->numfats * (v->secperfat ? v->secperfat : fatsize32);
+	v->dataarea = v->rootstart + v->rootsecs;
+	if (v->numsecs <= v->dataarea) {
+		printk("fat_ops: volume_read: %s says %u sectors but its data starts "
+		       "at %u (%u reserved, %u FAT(s) of %u, %u root sectors)\n",
+		    block_dev_name(bdev), v->numsecs, v->dataarea, v->reserved,
+		    v->numfats, v->secperfat, v->rootsecs);
+		return -1;
+	}
+	v->clusters = (v->numsecs - v->dataarea) / v->secperclus;
+	v->bits = (v->clusters < 4085) ? 12 : (v->clusters < 65525) ? 16 : 32;
+	v->sysid = (v->bits == 32) ? &v->sec[82] : &v->sec[54];
+	if (!v->secperfat) {
+		v->secperfat = fatsize32;
+	}
+	return 0;
+}
+
+static void volume_print(const struct volume *v, const char *what) {
+	printk("fat_ops: %s: %u sectors of %u, %u/clus, %u reserved, %u FAT(s) "
+	       "of %u, %u root entries at sector %u, data at %u, %u clusters -> "
+	       "FAT%u, system \"%.8s\"\n",
+	    what, v->numsecs, v->bytepersec, v->secperclus, v->reserved,
+	    v->numfats, v->secperfat, v->rootentries, v->rootstart, v->dataarea,
+	    v->clusters, v->bits, (const char *)v->sysid);
+}
+
+/* The root directory read off the device: tells a write that never landed
+ * from a walk that stopped early. Prints each anomaly; returns the number of
+ * live 8.3 entries. */
+static int root_dump(struct block_dev *bdev, const struct volume *v,
+    int expect) {
+	uint8_t buf[512];
+	unsigned s, e;
+	int live = 0, deleted = 0, lfn = 0;
+	int first_free = -1, after_free = 0;
+
+	if (bdev == NULL || v->rootentries == 0) {
+		return -1;
+	}
+
+	for (s = 0; s < v->rootsecs; s++) {
+		if ((int)sizeof(buf) != block_dev_read(bdev, (char *)buf, sizeof(buf),
+		        (v->rootstart + s) * (v->bytepersec / bdev->block_size))) {
+			printk("fat_ops: root sector %u could not be read\n",
+			    v->rootstart + s);
+			return -1;
+		}
+		for (e = 0; e < sizeof(buf) / 32; e++) {
+			const uint8_t *d = buf + e * 32;
+			int idx = (int)(s * (sizeof(buf) / 32) + e);
+
+			if (d[0] == 0x00) {
+				if (first_free < 0) {
+					first_free = idx;
+				}
+				continue;
+			}
+			if (first_free >= 0) {
+				after_free++;   /* a live entry past the end-of-directory mark */
+			}
+			if (d[0] == 0xe5) {
+				deleted++;
+				continue;
+			}
+			if ((d[11] & 0x0f) == 0x0f) {
+				lfn++;
+				continue;
+			}
+			live++;
+		}
+	}
+
+	printk("fat_ops: the root area holds %d live entries, %d deleted, %d "
+	       "long-name; first free entry at %d, %d live entries AFTER it "
+	       "(expected %d files)\n",
+	    live, deleted, lfn, first_free, after_free, expect);
+	if (after_free) {
+		printk("fat_ops: entries past the first free slot are unreachable: a "
+		       "walk stops at the first 0x00 entry, so those files are on the "
+		       "media and not in any listing\n");
+	}
+	return live;
+}
+
+/* The boot sector mkfs wrote must describe the volume mkfs made:
+ *   FAT12/16  rootentries != 0, FAT size in the BPB
+ *   FAT32     rootentries == 0, BPB FAT size 0, size in the EBPB, root a chain
+ * Readers take the type from the cluster count. Read from the device. */
+TEST_CASE("the boot sector describes the volume that was made") {
+	struct block_dev *bdev = fat_bdev();
+	struct volume v;
+	uint8_t fat[512];
+
+	test_assert_not_null(bdev);
+	test_assert_zero(volume_read(bdev, &v));
+	volume_print(&v, "boot sector");
+
+	test_assert_equal(0x55, v.sec[510]);
+	test_assert_equal(0xaa, v.sec[511]);
+	test_assert_equal(512u, v.bytepersec);
+	test_assert(v.reserved > 0);
+	test_assert(v.numfats > 0);
+
+	if (v.bits == 32) {
+		test_assert_equal(0u, v.rootentries);
+		/* A zero BPB FAT size tells a reader to take the FAT32 EBPB's. */
+		test_assert_equal(0u, (unsigned)(v.sec[22] | (v.sec[23] << 8)));
+		test_assert(v.secperfat > 0);
+		test_assert(v.rootclus >= 2);
+		test_assert_zero(memcmp(v.sysid, "FAT32   ", 8));
+	}
+	else {
+		/* FAT12/16: a fixed root area, and the FAT size in the BPB. */
+		test_assert(v.rootentries > 0);
+		test_assert(v.sec[22] != 0 || v.sec[23] != 0);
+		test_assert_zero(
+		    memcmp(v.sysid, v.bits == 12 ? "FAT12   " : "FAT16   ", 8));
+	}
+
+	/* Entry 0 is the media descriptor, entry 1 end-of-chain; a zero there lets
+	 * the allocator hand out cluster 0 or 1. On FAT32 the root's cluster must
+	 * be claimed too. */
+	test_assert_equal((int)sizeof(fat),
+	    block_dev_read(bdev, (char *)fat, sizeof(fat),
+	        v.reserved * (v.bytepersec / bdev->block_size)));
+	test_assert_equal(fat[0], 0xf8);
+	test_assert(fat[1] != 0 || fat[2] != 0);
+	if (v.bits == 32) {
+		test_assert(fat[8] != 0 || fat[9] != 0 || fat[10] != 0 || fat[11] != 0);
+	}
+}
+
+/* FAT32 needs at least 65 525 clusters: of 4 sectors of 512 bytes that is
+ * 134 MiB, and 140 keeps off the boundary. Only the formatter is exercised. A
+ * failed assertion longjmps out, so the ramdisk is deleted before the first. */
+TEST_CASE("a volume big enough for FAT32 is formatted as one") {
+	enum { F32_BYTES = 140 * 1024 * 1024 };
+	struct block_dev *bdev;
+	struct volume v;
+	uint8_t fat[512], root[512];
+	int res, made = 0, formatted = -1;
+	unsigned rootsec = 0;
+
+	res = ptr2err(ramdisk_create("/dev/ramdisk_f32", F32_BYTES));
+	if (res != 0) {
+		/* Not a failure: a board with less memory cannot hold a FAT32
+		 * volume. */
+		printk("fat_ops: no %u MiB ramdisk for the FAT32 case (%d) -- skipped\n",
+		    (unsigned)(F32_BYTES / (1024 * 1024)), res);
+		return;
+	}
+	made = 1;
+	memset(&v, 0, sizeof(v));
+	memset(fat, 0, sizeof(fat));
+	memset(root, 0, sizeof(root));
+
+	/* Only the metadata end: 8 MiB covers the reserved sector, both FATs and
+	 * the first data clusters; all 140 MiB would be slow. */
+	poison_media("/dev/ramdisk_f32", 8 * 1024 * 1024, 0xf6);
+
+	formatted = format("/dev/ramdisk_f32", FS_NAME);
+	bdev = block_dev_find("ramdisk_f32");
+	if (formatted != 0 || bdev == NULL) {
+		printk("fat_ops: FAT32 volume: format returned %d, device %sfound\n",
+		    formatted, bdev ? "" : "NOT ");
+	}
+	if (formatted == 0 && bdev != NULL && volume_read(bdev, &v) == 0) {
+		volume_print(&v, "the FAT32 volume");
+		block_dev_read(bdev, (char *)fat, sizeof(fat),
+		    v.reserved * (v.bytepersec / bdev->block_size));
+		if (v.rootclus >= 2) {
+			rootsec = v.dataarea + (v.rootclus - 2) * v.secperclus;
+			block_dev_read(bdev, (char *)root, sizeof(root),
+			    rootsec * (v.bytepersec / bdev->block_size));
+		}
+	}
+
+	if (made) {
+		ramdisk_delete("/dev/ramdisk_f32");
+	}
+
+	/* Nothing below here touches the device. */
+	test_assert_zero(formatted);
+	test_assert(v.clusters >= 65525);
+	test_assert_equal(32u, v.bits);
+
+	/* The FAT32 shape, in full: no root area, the BPB's FAT size zero so a
+	 * reader takes the EBPB's, and a root cluster to start the chain at. */
+	test_assert_equal(0u, v.rootentries);
+	test_assert_equal(0u, (unsigned)(v.sec[22] | (v.sec[23] << 8)));
+	test_assert(v.secperfat > 0);
+	test_assert(v.rootclus >= 2);
+	test_assert_zero(memcmp(v.sysid, "FAT32   ", 8));
+
+	/* Entries 0 and 1 reserved, and the root's own cluster claimed: a zero
+	 * there is a free cluster, handed to the first file written. */
+	test_assert_equal(fat[0], 0xf8);
+	test_assert(fat[1] != 0 || fat[2] != 0 || fat[3] != 0);
+	test_assert(fat[8] != 0 || fat[9] != 0 || fat[10] != 0 || fat[11] != 0);
+
+	/* And empty: the media was 0xf6, so an uncleared root cluster holds
+	 * entries nobody wrote. */
+	test_assert(rootsec != 0);
+	test_assert_zero(root[0]);
+	test_assert_zero(memcmp(root, root + 1, sizeof(root) - 1));
+}
+
 TEST_CASE("a read longer than one sector returns the whole thing") {
 	test_assert_zero(write_file(FILE_A, DATA_SZ, 1));
 
@@ -277,9 +564,17 @@ static int setup_suite(void) {
 
 	res = ptr2err(ramdisk_create(FS_DEV, FS_BYTES));
 	if (res != 0) {
+		printk("fat_ops: setup: ramdisk_create(%s) failed, %d\n", FS_DEV, res);
 		return res;
 	}
+
+	/* Format over non-blank media: ramdisk pages are not cleared, nor are
+	 * cards. 0xf6 is neither a free (0x00) nor a deleted (0xE5) directory
+	 * entry, and is an in-use FAT entry. */
+	poison_media(FS_DEV, FS_BYTES, 0xf6);
+
 	if (0 != (res = format(FS_DEV, FS_NAME))) {
+		printk("fat_ops: setup: format(%s) failed, %d\n", FS_DEV, res);
 		return res;
 	}
 	/* FS_DIR comes from the module's @InitFS entry: the initfs root is
@@ -428,9 +723,44 @@ TEST_CASE("the root directory holds more than one cluster of entries") {
 		close(fd);
 	}
 	if (found != ROOT_FILES) {
+		struct volume v;
+		int j, run;
+
 		printk("fat_ops: %d of %d root files came back after the remount, "
 		       "first one lost is %d\n",
 		    found, ROOT_FILES, missing);
+
+		/* Missing names as runs: a walk that stopped and one that lost
+		 * scattered entries are different defects. */
+		printk("fat_ops: missing:");
+		for (j = 0; j < ROOT_FILES; j = run) {
+			int fd;
+
+			snprintf(path, sizeof(path), FS_DIR "/r%03d.bin", j);
+			fd = open(path, O_RDONLY);
+			if (fd >= 0) {
+				close(fd);
+				run = j + 1;
+				continue;
+			}
+			for (run = j; run < ROOT_FILES; run++) {
+				snprintf(path, sizeof(path), FS_DIR "/r%03d.bin", run);
+				fd = open(path, O_RDONLY);
+				if (fd >= 0) {
+					close(fd);
+					break;
+				}
+			}
+			printk(" %d-%d", j, run - 1);
+		}
+		printk("\n");
+
+		/* Are those names on the media? If so the write worked and the walk
+		 * is wrong; if not, the write never landed. */
+		if (volume_read(fat_bdev(), &v) == 0) {
+			volume_print(&v, "the volume they were written to");
+			root_dump(fat_bdev(), &v, ROOT_FILES);
+		}
 	}
 
 	/* Pool exhaustion and a walk of the wrong sectors look the same here:

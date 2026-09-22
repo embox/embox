@@ -230,7 +230,9 @@ int fat_create_partition(void *dev, int fat_n) {
 	size_t num_sect = block_dev(bdev)->size / bytepersec;
 	assert(bdev->block_size <= FAT_MAX_SECTOR_SIZE);
 	uint32_t secperfat;
-	uint16_t rootentries = 0x0200;             /* 512 for FAT16 */
+	uint16_t rootentries = 0x0200;             /* 512 for FAT12/16 */
+	uint32_t clusters = 0;
+	int fat_type;
 	int reserved;
 	int err;
 	int i;
@@ -260,35 +262,64 @@ int fat_create_partition(void *dev, int fat_n) {
 	};
 
 
-	/* Size the FAT from the cluster count, which depends on the FAT size. */
+	/* Size the FAT from the cluster count, which depends on the FAT size.
+	 * The count also fixes the FAT type: nothing on the volume records it.
+	 * Second pass: FAT32 has no root area, which moves the count. */
 	{
-		uint32_t root_sect = (rootentries * 32 + bytepersec - 1) / bytepersec;
 		uint32_t secperclus = lbr.bpb.secperclus;
 		uint32_t reserved_sect = 1;
 		uint32_t numfats = 2;
+		int pass;
 
-		secperfat = 1;
-		for (i = 0; i < 8; i++) {
-			uint32_t data, clusters, bytes, want;
+		for (pass = 0; pass < 2; pass++) {
+			uint32_t root_sect = (rootentries * 32 + bytepersec - 1)
+			                     / bytepersec;
 
-			data = num_sect - reserved_sect - root_sect - numfats * secperfat;
-			clusters = data / secperclus + 2;
+			secperfat = 1;
+			for (i = 0; i < 8; i++) {
+				uint32_t data, bytes, want;
 
-			if (clusters < 4085) {
-				bytes = (clusters * 3 + 1) / 2;  /* FAT12: 12 bits each */
-			} else if (clusters < 65525) {
-				bytes = clusters * 2;
-			} else {
-				bytes = clusters * 4;
+				data = num_sect - reserved_sect - root_sect
+				       - numfats * secperfat;
+				clusters = data / secperclus + 2;
+
+				if (clusters < 4085) {
+					bytes = (clusters * 3 + 1) / 2;  /* FAT12: 12 bits each */
+				} else if (clusters < 65525) {
+					bytes = clusters * 2;
+				} else {
+					bytes = clusters * 4;
+				}
+
+				want = (bytes + bytepersec - 1) / bytepersec;
+				if (want <= secperfat) {
+					break;
+				}
+				secperfat = want;
 			}
 
-			want = (bytes + bytepersec - 1) / bytepersec;
-			if (want <= secperfat) {
-				break;
+			/* FAT32 must have no root area: drop it and count again. */
+			if (clusters >= 65525 && rootentries != 0) {
+				rootentries = 0;
+				continue;
 			}
-			secperfat = want;
+			break;
 		}
+
+		fat_type = (clusters < 4085) ? 12 : (clusters < 65525) ? 16 : 32;
 	}
+
+	/* The cluster count, not the caller, decides the type. */
+	if (fat_n != 0 && fat_n != fat_type) {
+		log_warning("FAT%d was asked for, but %u clusters of %u sectors each "
+		            "make this volume FAT%d -- writing FAT%d",
+		    fat_n, (unsigned)clusters, (unsigned)lbr.bpb.secperclus,
+		    fat_type, fat_type);
+	}
+
+	/* rootentries may have been zeroed above, after the BPB was built. */
+	lbr.bpb.rootentries_l = (uint8_t)(0x00FF & rootentries);
+	lbr.bpb.rootentries_h = (uint8_t)(0x00FF & (rootentries >> 8));
 
 	if (0xFFFF > num_sect)	{
 		lbr.bpb.sectors_s_l = (uint8_t)(0x00000FF & num_sect);
@@ -300,7 +331,7 @@ int fat_create_partition(void *dev, int fat_n) {
 		lbr.bpb.sectors_l_3 = (uint8_t)(0x00000FF & (num_sect >> 24));
 	}
 
-	switch (fat_n) {
+	switch (fat_type) {
 	case 12:
 	case 16:
 		lbr.bpb.secperfat_l   = (uint8_t)(0x00FF & secperfat),
@@ -316,7 +347,7 @@ int fat_create_partition(void *dev, int fat_n) {
 
 		memcpy(lbr.ebpb.ebpb.label, LABEL, sizeof(lbr.ebpb.ebpb.label));
 		memcpy(lbr.ebpb.ebpb.system,
-		       fat_n == 12 ? SYSTEM12:SYSTEM16,
+		       fat_type == 12 ? SYSTEM12:SYSTEM16,
 		       sizeof(lbr.ebpb.ebpb.system));
 
 		memcpy(lbr.ebpb.ebpb.code, bootcode, sizeof(bootcode));
@@ -1367,19 +1398,31 @@ int fat_root_dir_record(void *bdev) {
 		return -1;
 	}
 
-	/* A FAT root directory holds no entry for itself. */
+	/* A FAT root directory holds no entry for itself. rootdir is a sector on
+	 * FAT12/16 and a cluster on FAT32, where the root cluster is also claimed
+	 * in the FAT or the allocator hands it out. */
 	memset(fat_sector_buff, 0, sizeof(fat_sector_buff));
 
-	root_dir_sz = (fsi.vi.rootentries * sizeof(struct fat_dirent) +
-	               fsi.vi.bytepersec - 1) / fsi.vi.bytepersec;
+	if (fsi.vi.rootentries) {
+		root_dir_sz = (fsi.vi.rootentries * sizeof(struct fat_dirent) +
+		               fsi.vi.bytepersec - 1) / fsi.vi.bytepersec;
+	}
+	else {
+		root_dir_sz = fsi.vi.secperclus;
+	}
 
 	while (root_dir_sz) {
+		uint32_t sect;
+
 		root_dir_sz--;
+		sect = fsi.vi.rootentries
+		           ? fsi.vi.rootdir + root_dir_sz
+		           : fat_sec_by_clus(&fsi, fsi.vi.rootdir) + root_dir_sz;
+
 		if (0 > block_dev_write(bdev,
 		            (char *) fat_sector_buff,
 		            fsi.vi.bytepersec,
-		            (fsi.vi.rootdir + root_dir_sz) * fsi.vi.bytepersec
-		                / dev_blk_size)) {
+		            sect * fsi.vi.bytepersec / dev_blk_size)) {
 			return DFS_ERRMISC;
 		}
 	}
@@ -1388,6 +1431,10 @@ int fat_root_dir_record(void *bdev) {
 	cluster = fat_end_of_chain(&fsi);
 	fat_set_fat(&fsi, fat_sector_buff, 0, (cluster & ~0xffu) | 0xf8u);
 	fat_set_fat(&fsi, fat_sector_buff, 1, cluster);
+
+	if (!fsi.vi.rootentries) {
+		fat_set_fat(&fsi, fat_sector_buff, fsi.vi.rootdir, cluster);
+	}
 
 	return DFS_OK;
 }

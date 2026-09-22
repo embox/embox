@@ -96,6 +96,8 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 		err = -idx;
 		goto err_free_mem;
 	}
+	/* The index this device took, for ramdisk_delete() to give back. */
+	ramdisk->idx = idx;
 
 	ramdisk->bdev = block_dev_create(path, &ramdisk_pio_driver, ramdisk);
 	if (NULL == ramdisk->bdev) {
@@ -140,7 +142,9 @@ int ramdisk_delete(const char *name) {
 	index_free(&ramdisk_idx, ram->idx);
 	pool_free(&ramdisk_pool, ram);
 
-	block_dev_free(bdev);
+	/* Not block_dev_free(), which leaves the /dev node registered: destroy
+	 * deinits it, removes partitions and forgets cached blocks. */
+	block_dev_destroy(bdev);
 
 	return 0;
 }
