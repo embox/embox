@@ -1,0 +1,60 @@
+package embox.driver.net
+
+module bcm2711_genet {
+	option string log_level = "LOG_ERR"
+
+	/* /scb/ethernet@7d580000, and /scb ranges maps 0x7c000000 to
+	 * 0xfc000000, so the ARM view of the block is 0xFD580000. */
+	option number base_addr = 0xFD580000
+
+	/* mdio@e14/ethernet-phy@1 -- the BCM54213PE. */
+	option number phy_addr = 1
+
+	/* GENET's first interrupt line: the device tree gives GIC_SPI 157, and
+	 * an SPI is INTID 32 + n, so 189. (158 -> 190 is INTRL2_1, which carries
+	 * rings 0..15; this driver uses ring 16, on INTRL2_0.) */
+	option number irq_num = 189
+	option number use_irq = 1
+
+	/* 0 on a machine without the block. Reading an unmapped address on this
+	 * SoC aborts rather than returning all ones, so probing for something
+	 * that is not there is fatal rather than informative. */
+	option number enabled = 1
+
+	/* Autonegotiation takes seconds against a real switch; it runs in its
+	 * own thread and costs the boot nothing. */
+	option number aneg_timeout_ms = 8000
+
+	/* 1 = the MAC adds no RGMII transmit delay. phy-mode = "rgmii-rxid"
+	 * describes only what the PHY does; unless the mode says -txid or -id
+	 * the MAC's internal delay stays off, as in bcmgenet. */
+	option number id_mode_dis = 1
+
+	/* The PHY's RGMII receive skew: 0 leave it as the reset left it,
+	 * 1 enable, 2 disable. The skew is needed for "rgmii-rxid" and a
+	 * BMCR_RESET restores whatever the board's straps say. */
+	option number phy_rx_skew = 1
+
+	/* 1 starts the interface in promiscuous mode instead of programming the
+	 * MDF slots for broadcast and the board's own address. */
+	option number promisc = 0
+
+	/* How long the receive backstop sleeps when the ring is empty: poll_ms
+	 * when it is the only receive path, poll_ms_irq when the interrupt is
+	 * carrying the traffic and this is only a safety net. */
+	option number poll_ms = 1
+	option number poll_ms_irq = 200
+
+	source "bcm2711_genet.c"
+	source "genet_regs.h"
+
+	depends embox.driver.periph_memory
+	depends embox.kernel.irq_api
+	depends embox.kernel.thread.core
+	depends embox.kernel.time.kernel_time
+	depends embox.net.core
+	depends embox.net.dev
+	depends embox.net.entry_api
+	depends embox.net.l2.ethernet
+	depends embox.net.skbuff
+}

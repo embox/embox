@@ -1,0 +1,10 @@
+# Read by netmanager. The address is a placeholder; eth0's hardware address
+# comes from the VideoCore OTP, so nothing here sets one.
+
+iface eth0 inet static
+	address 192.168.1.2
+	netmask 255.255.255.0
+
+iface lo inet static
+	address 127.0.0.1
+	netmask 255.0.0.0
