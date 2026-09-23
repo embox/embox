@@ -10,6 +10,7 @@
 #define DRIVERS_MOTOR_H_
 
 #include <stdint.h>
+#include <sys/cdefs.h>
 
 #include <lib/libds/array_spread.h>
 
@@ -38,9 +39,11 @@ struct motor_dev {
 	int                     md_period;
 };
 
+__BEGIN_DECLS
 extern struct motor_dev *motor_dev_by_id(int id);
 
 extern int motor_send_msg(struct motor_dev *dev, struct motor_msg *msg);
+__END_DECLS
 
 #define MOTOR_DEV_DEF(id, ops, priv, pwm_id, pwm_chan) \
 	ARRAY_SPREAD_DECLARE(const struct motor_dev *, __motor_device_registry); \
