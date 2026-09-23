@@ -6,6 +6,9 @@
  * @date 10.01.2020
  */
 
+#include <errno.h>
+#include <string.h>
+
 #include <fs/dentry.h>
 #include <fs/inode.h>
 #include <fs/perm.h>
@@ -66,6 +69,22 @@ int dentry_full_path(struct dentry *dentry, char *buf) {
 	};
 
 	vfs_get_path_by_node(&path, buf);
+
+	return 0;
+}
+
+int dentry_full_path_n(struct dentry *dentry, char *buf, size_t size) {
+	char path[PATH_MAX];
+
+	if (!buf || size == 0) {
+		return -EINVAL;
+	}
+
+	dentry_full_path(dentry, path);
+	if (strlen(path) + 1 > size) {
+		return -ENAMETOOLONG;
+	}
+	strcpy(buf, path);
 
 	return 0;
 }

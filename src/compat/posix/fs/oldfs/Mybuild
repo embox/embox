@@ -7,6 +7,7 @@ static module file_system_oldfs extends file_system {
 	source "dirent_oldfs.c"
 	source "flock_oldfs.c"
 	source "ftruncate_oldfs.c"
+	source "getcwd_oldfs.c"
 	source "mkdir_oldfs.c"
 	source "mknod_oldfs.c"
 	source "mount_oldfs.c" /* not part of posix */

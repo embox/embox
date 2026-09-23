@@ -148,7 +148,8 @@ int kread(struct file_desc *desc, char *buf, int count) {
 }
 
 int kfstat(struct file_desc *desc, struct stat *sb) {
-	size_t block_size;
+	const struct inode *node;
+	size_t block_size = 512;
 	int res;
 
 	if ((res = dvfs_file_valid(desc))) {
@@ -157,27 +158,36 @@ int kfstat(struct file_desc *desc, struct stat *sb) {
 
 	if (desc->f_inode == NULL) {
 		/* A virtual directory made under another virtual one has no inode */
-		*sb = (struct stat){ .st_mode = S_IFDIR | S_IRWXA };
+		*sb = (struct stat){
+		    .st_mode = S_IFDIR | S_IRWXA,
+		    .st_nlink = 1,
+		    .st_blksize = block_size,
+		};
 		return 0;
 	}
+	node = desc->f_inode;
 
-	*sb = (struct stat){
-	    .st_size = desc->f_inode->i_size,
-	    .st_mode = desc->f_inode->i_mode,
-	    .st_ino = desc->f_inode->i_no,
-	    .st_uid = desc->f_inode->i_owner_id,
-	    .st_gid = desc->f_inode->i_group_id,
-	    .st_mtime = desc->f_inode->i_mtime,
-	    .st_ctime = desc->f_inode->i_ctime,
-	};
-
-	sb->st_blocks = sb->st_size;
-
-	if (desc->f_inode->i_sb && desc->f_inode->i_sb->bdev) {
-		block_size = block_dev_block_size(desc->f_inode->i_sb->bdev);
-		sb->st_blocks /= block_size;
-		sb->st_blocks += ((sb->st_blocks % block_size) != 0);
+	if (node->i_sb && node->i_sb->bdev) {
+		block_size = block_dev_block_size(node->i_sb->bdev);
 	}
+
+	/* st_nlink is 1: no driver keeps a link count, and 0 reads as deleted.
+	 * st_atime is the modification time: nothing records access.
+	 * st_blocks is in 512-byte units; st_ino is 0 when the driver has none. */
+	*sb = (struct stat){
+	    .st_dev = node->i_sb ? node->i_sb->sb_dev : 0,
+	    .st_ino = node->i_no > 0 ? (ino_t)node->i_no : 0,
+	    .st_mode = node->i_mode,
+	    .st_nlink = 1,
+	    .st_uid = node->i_owner_id,
+	    .st_gid = node->i_group_id,
+	    .st_size = node->i_size,
+	    .st_blksize = block_size,
+	    .st_blocks = (node->i_size + 511) / 512,
+	    .st_atime = node->i_mtime,
+	    .st_mtime = node->i_mtime,
+	    .st_ctime = node->i_ctime,
+	};
 
 	return 0;
 }

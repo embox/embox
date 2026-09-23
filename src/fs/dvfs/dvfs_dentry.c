@@ -29,44 +29,51 @@
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 
 /**
- * @brief Get full path from global root to given dentry
+ * @brief The absolute path of @a dentry into @a buf of @a size bytes
  *
- * @param dentry
- * @param buf
- *
- * @return
+ * @retval -ENAMETOOLONG The path does not fit; nothing is written past @a buf
  */
-int dentry_full_path(struct dentry *dentry, char *buf) {
-	int cur_len;
-	size_t nlen;
+int dentry_full_path_n(struct dentry *dentry, char *buf, size_t size) {
+	struct dentry *d;
+	size_t total = 0, nlen, at;
 
-	cur_len = 0;
-
-	/* A rename on another core moves names and parents; hold the tree still
-	 * while walking up it. */
-	dvfs_lock();
-	do {
-		nlen = strlen(dentry->name);
-		if (cur_len) {
-			cur_len++;
-			memmove(buf + nlen + 1, buf, cur_len);
-			buf[nlen] = '/';
-		}
-		memcpy(buf, dentry->name, nlen);
-		cur_len += nlen;
-		dentry = dentry->parent;
-	} while (dentry != dvfs_root());
-	dvfs_unlock();
-
-	if (buf[0] != '/') {
-		memmove(buf + 1, buf, cur_len);
-		buf[0] = '/';
-		cur_len++;
+	if (!buf || size == 0) {
+		return -EINVAL;
 	}
 
-	buf[cur_len] = '\0';
+	/* A rename on another core moves names and parents; hold the tree still
+	 * while walking up it -- both walks, so they agree. */
+	dvfs_lock();
+	for (d = dentry; d != dvfs_root(); d = d->parent) {
+		total += strlen(d->name) + 1;
+	}
+	if (total == 0) {
+		total = 1; /* the root itself: "/" */
+	}
+	if (total + 1 > size) {
+		dvfs_unlock();
+		return -ENAMETOOLONG;
+	}
+	at = total;
+	buf[at] = '\0';
+	for (d = dentry; d != dvfs_root(); d = d->parent) {
+		nlen = strlen(d->name);
+		at -= nlen;
+		memcpy(buf + at, d->name, nlen);
+		buf[--at] = '/';
+	}
+	dvfs_unlock();
+
+	if (dentry == dvfs_root()) {
+		buf[0] = '/';
+		buf[1] = '\0';
+	}
 
 	return 0;
+}
+
+int dentry_full_path(struct dentry *dentry, char *buf) {
+	return dentry_full_path_n(dentry, buf, PATH_MAX);
 }
 
 extern struct dentry *local_lookup(struct dentry *parent, char *name);

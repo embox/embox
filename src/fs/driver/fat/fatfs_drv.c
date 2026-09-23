@@ -142,6 +142,7 @@ static int fat_fill_sb_unlocked(struct super_block *sb, const char *source) {
 
 	inode_priv_set(sb->sb_root, di);
 	sb->sb_root->i_ops = &fat_iops;
+	sb->sb_root->i_no = 1; /* see fat_ino_of() */
 
 	return 0;
 

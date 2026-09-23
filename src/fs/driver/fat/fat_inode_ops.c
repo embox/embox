@@ -97,13 +97,34 @@ static int fat_iterate_unlocked(struct inode *next, char *name, struct inode *pa
 }
 
 static int fat_truncate(struct inode *node, off_t length) {
+	struct fat_file_info *fi;
+	int res;
+
 	assert(node);
 
-	inode_size_set(node, length);
+	if (length < 0 || (uint64_t)length > 0xffffffffu) {
+		return -EFBIG; /* a FAT file's length is 32 bits */
+	}
+	if (S_ISDIR(node->i_mode)) {
+		return -EISDIR;
+	}
 
-	/* TODO realloc blocks*/
+	fat_lock();
+	fi = inode_priv(node);
+	if (!fi) {
+		fat_unlock();
+		return -ENOENT;
+	}
+	/* The driver's idea of the length can trail the inode's; the inode is
+	 * what the caller has been reading. */
+	fi->filelen = inode_size(node);
+	res = fat_truncate_file(fi, (uint32_t)length);
+	if (res == 0) {
+		inode_size_set(node, length);
+	}
+	fat_unlock();
 
-	return 0;
+	return res;
 }
 
 /* @brief Create new file or directory
@@ -162,6 +183,7 @@ static int fat_create_unlocked(struct inode *i_new, struct inode *i_dir, int mod
 	if (res < 0) {
 		return res;
 	}
+	i_new->i_no = fat_ino_of(fi);
 
 	return 0;
 }
@@ -253,6 +275,10 @@ static int fat_rename(struct inode *node, struct inode *new_parent,
 	}
 
 	res = fat_rename_file(fi, newdi, new_name);
+	if (res == DFS_OK) {
+		/* The inode number is derived from the entry's position. */
+		node->i_no = fat_ino_of(fi);
+	}
 
 	fat_unlock();
 
