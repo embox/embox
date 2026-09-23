@@ -479,6 +479,10 @@ struct pwm_conf pwms[] = {
 			.clocks = {
 				VAL("",  "CLK_TMR2"),
 			},
+			.dmas = {
+				VAL("OUT3_NUM", 0),
+				VAL("OUT3_CHAN", 2),
+			},
 			.misc = {
 				VAL("COMP_MASK",  0xFFFFFFFF),
 				VAL("TMR_NAME", "TMR2"),
@@ -501,7 +505,7 @@ struct pwm_conf pwms[] = {
 			},
 			.dmas = {
 				VAL("OUT3_NUM", 0),
-				VAL("OUT3_CHAN", 4),
+				VAL("OUT3_CHAN", 3),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR3"),
