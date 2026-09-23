@@ -16,8 +16,8 @@ unsigned long fdesc_dead_inode;
 unsigned long fdesc_stale_gen;
 
 /* A descriptor pins its dentry and the dentry its inode, so a changed
- * generation means a lost pin. A dying inode is refused: the driver let go of
- * the file with its name. */
+ * generation means a lost pin. A dying inode stays usable while the driver
+ * keeps its private data (FAT keeps the clusters until fat_destroy_inode). */
 int dvfs_file_valid(struct file_desc *desc) {
 	struct inode *inode = desc->f_inode;
 
@@ -28,7 +28,7 @@ int dvfs_file_valid(struct file_desc *desc) {
 		atomic_rmw_add_fetch(&fdesc_stale_gen, 1, __ATOMIC_RELAXED);
 		return -EBADF;
 	}
-	if (inode->i_dying) {
+	if (inode->i_dying && inode_priv(inode) == NULL) {
 		atomic_rmw_add_fetch(&fdesc_dead_inode, 1, __ATOMIC_RELAXED);
 		return -EBADF;
 	}

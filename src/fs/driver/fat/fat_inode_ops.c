@@ -175,6 +175,17 @@ static int fat_delete_unlocked(struct inode *dir, struct inode *node) {
 		return -ENOTEMPTY;
 	}
 
+	if (!S_ISDIR(node->i_mode)) {
+		/* Only the name goes here; the clusters go in fat_destroy_inode() on
+		 * the last reference, and the private data stays for dvfs_file_valid().
+		 * A power loss in between leaves a nameless chain for fsck. */
+		if (fat_unlink_entry(fi, (uint8_t *) fat_sector_buff)) {
+			return -1;
+		}
+		fi->removed = 1;
+		return 0;
+	}
+
 	if (fat_unlike_file(fi, (uint8_t *) fat_sector_buff)) {
 		return -1;
 	}

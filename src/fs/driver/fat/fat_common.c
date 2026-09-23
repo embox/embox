@@ -1768,7 +1768,11 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		}
 	}
 
-	/* Update directory entry */
+	/* Update directory entry -- unless the name is gone: the slot it had may
+	 * belong to another file by now. */
+	if (fi->removed) {
+		return result;
+	}
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
 		return DFS_ERRMISC;
 	}
@@ -1923,17 +1927,14 @@ int fat_dir_empty(struct fat_file_info *fi) {
 }
 
 /*
- * Delete a file
- * p_scratch must point to a sector-sized buffer
+ * Takes the file's name out of its directory: the 8.3 entry marked deleted
+ * and its long-name entries with it. The cluster chain is left alone, so a
+ * file removed while open keeps its data until fat_free_chain().
  */
-int fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch) {
-	fat_lock_assert("fat_unlike_file");
-	uint32_t tempclus;
-	struct fat_fs_info *fsi;
+int fat_unlink_entry(struct fat_file_info *fi, uint8_t *p_scratch) {
+	fat_lock_assert("fat_unlink_entry");
+	struct fat_fs_info *fsi = fi->fsi;
 	struct dirinfo *di = fi->fdi;
-
-	fsi = fi->fsi;
-
 
 	fat_dir_clean_long(di, fi);
 
@@ -1944,9 +1945,18 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch) {
 	if (fat_write_sector(fsi, p_scratch, fi->dirsector)) {
 		return DFS_ERRMISC;
 	}
+	return DFS_OK;
+}
 
-	/* The `>= 2` guard keeps a 0 in the chain from overwriting the media
-	 * descriptor. */
+/*
+ * Gives the file's clusters back. The `>= 2` guard keeps a 0 in the chain
+ * from overwriting the media descriptor.
+ */
+void fat_free_chain(struct fat_file_info *fi, uint8_t *p_scratch) {
+	fat_lock_assert("fat_free_chain");
+	struct fat_fs_info *fsi = fi->fsi;
+	uint32_t tempclus;
+
 	while (fi->firstcluster >= 2 && !fat_is_end_of_chain(fsi, fi->firstcluster)) {
 		tempclus = fi->firstcluster;
 		fi->firstcluster = fat_get_fat(fsi, p_scratch, fi->firstcluster);
@@ -1957,6 +1967,19 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch) {
 		          "the chain was broken, stopping there",
 		    (unsigned)fi->firstcluster);
 	}
+}
+
+/*
+ * Delete a file: its name and its clusters, now.
+ * p_scratch must point to a sector-sized buffer
+ */
+int fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch) {
+	fat_lock_assert("fat_unlike_file");
+
+	if (fat_unlink_entry(fi, p_scratch)) {
+		return DFS_ERRMISC;
+	}
+	fat_free_chain(fi, p_scratch);
 	return DFS_OK;
 }
 
@@ -2589,6 +2612,11 @@ int fat_destroy_inode(struct inode *inode) {
 		fat_dirinfo_free(di);
 	} else {
 		fi = inode_priv(inode);
+		/* The last reference to a file unlinked while open: its clusters
+		 * go back here, not at the unlink (fat_delete). */
+		if (fi->removed) {
+			fat_free_chain(fi, (uint8_t *) fat_sector_buff);
+		}
 		fat_file_free(fi);
 	}
 

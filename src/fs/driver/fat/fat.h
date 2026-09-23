@@ -253,6 +253,9 @@ struct fat_file_info {
 
 	uint32_t pointer;
 	uint32_t cluster;			/* current cluster */
+	/* Unlinked while open: the name is gone from the directory, the cluster
+	 * chain is not, and the entry this points at may be another file's. */
+	uint8_t removed;
 };
 
 /*
@@ -298,6 +301,8 @@ extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
                                uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size);
 extern int      fat_root_dir_record(void *bdev);
+extern int      fat_unlink_entry(struct fat_file_info *fi, uint8_t *p_scratch);
+extern void     fat_free_chain(struct fat_file_info *fi, uint8_t *p_scratch);
 extern int      fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, int mode);
 extern int      fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch);
 extern int      fat_rename_file(struct fat_file_info *fi, struct dirinfo *newdi,
