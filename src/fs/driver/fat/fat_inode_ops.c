@@ -118,6 +118,7 @@ static int fat_create_unlocked(struct inode *i_new, struct inode *i_dir, int mod
 	struct fat_fs_info *fsi;
 	struct dirinfo *di;
 	char *name;
+	int res;
 
 	assert(i_dir && i_new);
 
@@ -157,8 +158,9 @@ static int fat_create_unlocked(struct inode *i_new, struct inode *i_dir, int mod
 	fi->fsi     = fsi;
 	fi->mode   |= i_new->i_mode;
 
-	if (0 != fat_create_file(fi, di, name, fi->mode)) {
-		return -EIO;
+	res = fat_create_file(fi, di, name, fi->mode);
+	if (res < 0) {
+		return res;
 	}
 
 	return 0;

@@ -125,7 +125,7 @@ static const char bootcode[130] =
 
 static uint32_t fat_dir_rewind(struct dirinfo *di, int n);
 static uint32_t fat_write_de(struct dirinfo *di, struct fat_dirent *de);
-static uint32_t fat_get_free_entries(struct dirinfo *dir, int n);
+static int fat_get_free_entries(struct dirinfo *dir, int n);
 static int fat_dirent_by_file(struct fat_file_info *fi, struct fat_dirent *de);
 static uint32_t fat_dir_extend(struct dirinfo *di);
 int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
@@ -1312,52 +1312,6 @@ static uint32_t fat_dir_extend(struct dirinfo *di) {
 
 	return DFS_OK;
 }
-/*
- * INTERNAL
- * Find a free directory entry in the directory specified by path
- * This function MAY cause a disk write if it is necessary to extend the
- * directory size.
- * Note - di.p_scratch must be preinitialized to point to a sector scratch buffer
- * de is a scratch structure
- * Returns DFS_ERRMISC if a new entry could not be located or created
- * de is updated with the same return information you would expect
- * from fat_get_next
- */
-static uint32_t fat_get_free_dir_ent(struct dirinfo *di, struct fat_dirent *de) {
-	uint32_t ret;
-	int offset = 0;
-
-	do {
-		ret = fat_get_current(di, de);
-
-		if (ret == DFS_EOF) {
-			return offset;
-		}
-
-		if (ret == DFS_OK) {
-			if (de->name[0] == '\0') {
-				return offset;
-			}
-		}
-
-		offset++;
-		di->currententry++;
-
-		ret = fat_fetch_dir(di);
-		if (ret == DFS_ALLOCNEW) {
-			/* Need to allocate new cluster */
-			if (DFS_OK != (ret = fat_dir_extend(di))) {
-				return -1;
-			}
-
-			return offset;
-		}
-	} while (1);
-
-	/* We shouldn't get here */
-	return DFS_ERRMISC;
-}
-
 static void fat_set_direntry(uint32_t dir_cluster, uint32_t cluster) {
 	struct fat_dirent *de = (struct fat_dirent *) fat_sector_buff;
 
@@ -2066,18 +2020,19 @@ int fat_reset_dir(struct dirinfo *di) {
 
 /* Makes room for NAME in DI -- its long-name entries, written, and the slot
  * for the 8.3 entry after them, which DI is left pointing at -- and puts the
- * 8.3 form of the name in FILENAME. */
+ * 8.3 form of the name in FILENAME. Returns 0 or a negative errno. */
 static int fat_write_name(struct dirinfo *di, const char *name,
     uint8_t filename[12]) {
 	struct fat_dirent de;
+	uint32_t ret;
 	int entries;
-	uint32_t res;
+	int res;
 
 	entries = fat_entries_per_name(name);
 
 	res = fat_get_free_entries(di, entries);
 	if (res < 0) {
-		return -1;
+		return res;
 	}
 
 	fat_dir_rewind(di, res);
@@ -2095,10 +2050,15 @@ static int fat_write_name(struct dirinfo *di, const char *name,
 				de.name[0] |= FAT_LONG_ORDER_LAST;
 			}
 
-			fat_write_de(di, &de);
+			if (fat_write_de(di, &de)) {
+				return -EIO;
+			}
 			di->currententry++;
-			if (DFS_EOF == fat_fetch_dir(di)) {
-				fat_dir_extend(di);
+			/* fat_get_free_entries() has already linked every cluster the
+			 * run needs, so this only moves to the next sector. */
+			ret = fat_fetch_dir(di);
+			if (ret != DFS_OK) {
+				return (ret == DFS_EOF) ? -ENOSPC : -EIO;
 			}
 		}
 	} else {
@@ -2186,10 +2146,10 @@ int fat_rename_file(struct fat_file_info *fi, struct dirinfo *newdi,
 }
 
 /*
- * Create a file or directory. You supply a file_create_param_t
- * structure.
- * Returns various DFS_* error states. If the result is DFS_OK, file
- * was created and can be used.
+ * Create a file or directory. Returns 0 or a negative errno (-ENOSPC: no
+ * cluster, or no room for the name). The cluster is taken and marked
+ * end-of-chain before the name is written, so a full volume leaves no entry
+ * and a directory extension cannot be handed the same cluster.
  */
 int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, int mode) {
 	uint8_t filename[12];
@@ -2197,6 +2157,7 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	struct volinfo *volinfo;
 	uint32_t cluster;
 	struct fat_fs_info *fsi;
+	int res;
 
 	assert(fi);
 	assert(di);
@@ -2217,11 +2178,21 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 
 	di->fi.fsi = fsi;
 
-	if (fat_write_name(di, name, filename)) {
-		return -1;
+	cluster = fat_get_free_fat(fsi, fat_sector_buff);
+	if (cluster == DFS_BAD_CLUS) {
+		return -ENOSPC;
+	}
+	if (DFS_OK != fat_set_fat(fsi, fat_sector_buff, cluster,
+	        fat_end_of_chain(fsi))) {
+		return -EIO;
 	}
 
-	cluster = fat_get_free_fat(fsi, fat_sector_buff);
+	res = fat_write_name(di, name, filename);
+	if (res < 0) {
+		fat_set_fat(fsi, fat_sector_buff, cluster, 0);
+		return res;
+	}
+
 	de = (struct fat_dirent) {
 		.attr = S_ISDIR(mode) ? ATTR_DIRECTORY : 0,
 	};
@@ -2236,16 +2207,15 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	fi->cluster = cluster;
 	fi->firstcluster = cluster;
 
-	fat_write_de(di, &de);
-
-	cluster = fat_end_of_chain(fsi);
-	fat_set_fat(fsi, fat_sector_buff, fi->cluster, cluster);
+	if (fat_write_de(di, &de)) {
+		return -EIO;
+	}
 
 	if (S_ISDIR(mode)) {
 		/* Zero the whole cluster; fat_clear_clus() also leaves the scratch zeroed
 		 * for fat_set_direntry(). */
 		if (0 != fat_clear_clus(fsi, fi->cluster, fat_sector_buff)) {
-			return DFS_ERRMISC;
+			return -EIO;
 		}
 
 		/* create . and ..  files of this catalog */
@@ -2253,11 +2223,11 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 		cluster = fi->volinfo->dataarea +
 				  ((fi->cluster - 2) * fi->volinfo->secperclus);
 		if (fat_write_sector(fsi, fat_sector_buff, cluster)) {
-			return DFS_ERRMISC;
+			return -EIO;
 		}
 	}
 
-	return DFS_OK;
+	return 0;
 }
 
 void fat_write_longname(char *name, struct fat_dirent *di) {
@@ -2411,62 +2381,53 @@ static uint32_t fat_dir_rewind(struct dirinfo *di, int n) {
 	return 0;
 }
 
-static uint32_t fat_get_free_entries(struct dirinfo *dir, int n) {
+/* Finds N consecutive free entries in DIR: the first one's index, counted as
+ * fat_dir_rewind() counts, or -ENOSPC / -EIO. Free: deleted or past the end
+ * marker. A fixed root's end is DFS_EOF from fat_fetch_dir(), so that is
+ * asked first. */
+static int fat_get_free_entries(struct dirinfo *dir, int n) {
 	struct fat_dirent de;
-	uint32_t res;
-	int offt = 0;
-	bool failed;
+	uint32_t ret;
+	int index = 0;
+	int run = 0;
 
 	assert(dir);
+	assert(n > 0);
 
 	fat_reset_dir(dir);
-	read_dir_buf(dir);
-
-	while (true) {
-		failed = false;
-
-		/* Find some free entry */
-		res = fat_get_free_dir_ent(dir, &de);
-		if (res >= 0) {
-			offt += res;
-		} else {
-			while (1);
-		}
-
-		if (res == DFS_EOF) {
-			break;
-		}
-
-		/* Check if following N - 1 entries are free as well */
-		for (int i = 0; i < n - 1; i++) {
-			dir->currententry++;
-			res = fat_fetch_dir(dir);
-			if (res == DFS_ALLOCNEW) {
-				/* Need to allocate new cluster */
-				if (DFS_OK != (res = fat_dir_extend(dir))) {
-					return -1;
-				}
-			}
-			res = fat_get_current(dir, &de);
-			if (res == DFS_OK && de.name[0] != '\0') {
-				failed = true;
-				offt += i + 1;
-				break;
-			}
-
-			if (res == DFS_EOF) {
-				break;
-			}
-		}
-
-		if (failed) {
-			continue;
-		}
-
-		break;
+	if (read_dir_buf(dir)) {
+		return -EIO;
 	}
 
-	return offt;
+	while (1) {
+		ret = fat_fetch_dir(dir);
+		if (ret == DFS_ALLOCNEW) {
+			if (DFS_OK != fat_dir_extend(dir)) {
+				return -ENOSPC;
+			}
+			ret = DFS_OK;
+		}
+		if (ret == DFS_EOF) {
+			return -ENOSPC;
+		}
+		if (ret != DFS_OK) {
+			return -EIO;
+		}
+
+		ret = fat_get_current(dir, &de);
+		if (ret == DFS_EOF || (ret == DFS_OK && de.name[0] == '\0')) {
+			if (++run == n) {
+				return index - (n - 1);
+			}
+		} else if (ret == DFS_OK) {
+			run = 0;
+		} else {
+			return -EIO;
+		}
+
+		index++;
+		dir->currententry++;
+	}
 }
 
 static uint32_t fat_write_de(struct dirinfo *di, struct fat_dirent *de) {

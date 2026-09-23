@@ -785,3 +785,98 @@ TEST_CASE("the root directory holds more than one cluster of entries") {
 		test_assert_zero(remove(path));
 	}
 }
+
+/* The live 8.3 entries of the root, off the media: how many, and whether
+ * each one's first cluster and write date are ones a reader can believe. */
+static int root_live_entries(int *bad_clus, int *bad_date) {
+	struct block_dev *bdev = fat_bdev();
+	struct volume v;
+	uint8_t buf[512];
+	unsigned s, e;
+	int live = 0;
+
+	*bad_clus = *bad_date = 0;
+	if (bdev == NULL || volume_read(bdev, &v) != 0 || v.rootentries == 0) {
+		return -1;
+	}
+	for (s = 0; s < v.rootsecs; s++) {
+		if ((int)sizeof(buf) != block_dev_read(bdev, (char *)buf, sizeof(buf),
+		        (v.rootstart + s) * (v.bytepersec / bdev->block_size))) {
+			return -1;
+		}
+		for (e = 0; e < sizeof(buf) / 32; e++) {
+			const uint8_t *d = buf + e * 32;
+			unsigned clus, date, month, day;
+
+			if (d[0] == 0x00 || d[0] == 0xe5 || (d[11] & 0x0f) == 0x0f
+			    || (d[11] & 0x08)) {   /* free, deleted, long name, label */
+				continue;
+			}
+			live++;
+			clus = d[26] | (d[27] << 8);
+			if (clus != 0 && (clus < 2 || clus >= v.clusters + 2)) {
+				printk("fat_ops: \"%.11s\" starts at cluster %#x, outside "
+				       "the volume's 2..%u\n", (const char *)d, clus,
+				    v.clusters + 1);
+				(*bad_clus)++;
+			}
+			date = d[24] | (d[25] << 8);
+			month = (date >> 5) & 0xf;
+			day = date & 0x1f;
+			if (month < 1 || month > 12 || day < 1) {
+				printk("fat_ops: \"%.11s\" is dated %u-%02u-%02u\n",
+				    (const char *)d, 1980 + (date >> 9), month, day);
+				(*bad_date)++;
+			}
+		}
+	}
+	return live;
+}
+
+/* The entries' dates are checked too. */
+TEST_CASE("a file on a full volume is refused with ENOSPC, and leaves nothing") {
+	int fd, n, bad_clus, bad_date;
+	ssize_t w;
+
+	size_t total = 0;
+
+	pattern_fill(pattern, DATA_SZ, 40);
+	fd = open(FILE_A, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	test_assert(fd >= 0);
+	/* Bounded by the volume: a write past it is going round a closed chain. */
+	do {
+		w = write(fd, pattern, DATA_SZ);
+		if (w > 0) {
+			total += (size_t)w;
+		}
+	} while (w == DATA_SZ && total <= FS_BYTES);
+	test_assert_zero(close(fd));
+	if (total > FS_BYTES) {
+		printk("fat_ops: %u bytes written to a %u-byte volume\n",
+		    (unsigned)total, (unsigned)FS_BYTES);
+	}
+	test_assert(total <= FS_BYTES);
+
+	fd = open(FILE_B, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	if (fd >= 0) {
+		close(fd);
+		printk("fat_ops: a file was created on a full volume\n");
+	}
+	test_assert(fd < 0);
+	test_assert_equal(ENOSPC, errno);
+
+	n = root_live_entries(&bad_clus, &bad_date);
+	test_assert_equal(1, n);
+	test_assert_zero(bad_clus);
+	test_assert_zero(bad_date);
+
+	/* Freed, the volume takes a file again, and a remount sees it. */
+	test_assert_zero(remove(FILE_A));
+	test_assert_zero(write_file(FILE_B, DATA_SZ, 41));
+	test_assert_zero(umount(FS_DIR));
+	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+	pattern_fill(pattern, DATA_SZ, 41);
+	test_assert_equal(-1, check_file(FILE_B, DATA_SZ, 4096));
+	test_assert(0 > open(FILE_A, O_RDONLY));
+	test_assert_zero(remove(FILE_B));
+}
