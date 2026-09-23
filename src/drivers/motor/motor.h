@@ -23,8 +23,19 @@ struct motor_msg {
 	uint32_t  mm_flags;
 };
 
+#define MOTOR_TYPE_DSHOT1200    (4)
+#define MOTOR_TYPE_DSHOT600     (3)
+#define MOTOR_TYPE_DSHOT300     (2)
+#define MOTOR_TYPE_DSHOT150     (1)
+
+struct motor_conf {
+	int mc_type;
+};
+
+
 struct motor_ops {
 	int (*mo_init)(struct motor_dev *dev);
+	int (*mo_conf)(struct motor_dev *dev, struct motor_conf *conf);
 	int (*mo_send_msg)(struct motor_dev *dev, struct motor_msg *msg);
 };
 
@@ -32,6 +43,7 @@ struct motor_dev {
 	const struct motor_ops *md_ops;
 	void                   *md_priv;
 	int                     md_id;
+	struct motor_conf       md_conf;
 
 	struct pwm_device      *md_pwm_dev;
 	int                     md_pwm_id;
@@ -42,6 +54,7 @@ struct motor_dev {
 __BEGIN_DECLS
 extern struct motor_dev *motor_dev_by_id(int id);
 
+extern int motor_conf(struct motor_dev *dev, struct motor_conf *conf);
 extern int motor_send_msg(struct motor_dev *dev, struct motor_msg *msg);
 __END_DECLS
 
