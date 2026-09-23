@@ -402,6 +402,139 @@ TEST_CASE("a volume big enough for FAT32 is formatted as one") {
 	test_assert_zero(memcmp(root, root + 1, sizeof(root) - 1));
 }
 
+/* fat_common.c holds the last FAT sector written until another is written or
+ * the operation ends. It skips FAT12, so a FAT32 volume is mounted inside the
+ * suite's own. Two files grown by turns interleave their chains in shared FAT
+ * sectors; after a remount the bytes and both FAT copies must match. */
+#define F32W_DEV   "/dev/ramdisk_f32w"
+#define F32W_DIR   FS_DIR "/f32"
+#define F32W_CHUNKS 32
+
+static int f32w_check(const char *path, unsigned seed) {
+	int fd, i, bad = -1;
+
+	pattern_fill(pattern, DATA_SZ, seed);
+	fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		return -2;
+	}
+	for (i = 0; i < F32W_CHUNKS && bad < 0; i++) {
+		size_t got = 0;
+
+		while (got < DATA_SZ) {
+			ssize_t n = read(fd, readback + got, DATA_SZ - got);
+
+			if (n <= 0) {
+				break;
+			}
+			got += (size_t)n;
+		}
+		if (got != DATA_SZ) {
+			bad = -2 - i;
+			break;
+		}
+		if (pattern_first_diff(readback, pattern, DATA_SZ) >= 0) {
+			bad = i;
+		}
+	}
+	close(fd);
+	return bad;
+}
+
+/* 1 if the first `n` sectors of the two FATs are the same, 0 if not. */
+static int f32w_fats_agree(const struct volume *v, unsigned n) {
+	struct block_dev *bdev = block_dev_find("ramdisk_f32w");
+	static uint8_t a[512], b[512];
+	unsigned per = v->bytepersec / bdev->block_size, i;
+
+	for (i = 0; i < n && i < v->secperfat; i++) {
+		block_dev_read(bdev, (char *)a, sizeof(a), (v->reserved + i) * per);
+		block_dev_read(bdev, (char *)b, sizeof(b),
+		    (v->reserved + v->secperfat + i) * per);
+		if (memcmp(a, b, sizeof(a)) != 0) {
+			printk("fat_ops: FAT sector %u differs between the copies\n", i);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+TEST_CASE("a FAT32 file grown a cluster at a time survives a remount, both FAT copies alike") {
+	enum { F32_BYTES = 140 * 1024 * 1024 };
+	struct volume v;
+	int fa = -1, fb = -1, i, res, made = 0, mounted = 0;
+	int ok_write = 1, bad_a, bad_b, agree_before, agree_after = 0;
+
+	res = ptr2err(ramdisk_create(F32W_DEV, F32_BYTES));
+	if (res != 0) {
+		printk("fat_ops: no %u MiB ramdisk for the FAT32 write-back case "
+		       "(%d) -- skipped\n", (unsigned)(F32_BYTES / (1024 * 1024)), res);
+		return;
+	}
+	made = 1;
+	poison_media(F32W_DEV, 8 * 1024 * 1024, 0xf6);
+	res = format(F32W_DEV, FS_NAME);
+	if (res == 0) {
+		mkdir(F32W_DIR, 0777);
+		res = mount(F32W_DEV, F32W_DIR, FS_NAME, 0, NULL);
+		mounted = res == 0;
+	}
+
+	if (mounted) {
+		fa = open(F32W_DIR "/a.bin", O_WRONLY | O_CREAT | O_TRUNC, 0666);
+		fb = open(F32W_DIR "/b.bin", O_WRONLY | O_CREAT | O_TRUNC, 0666);
+		for (i = 0; i < F32W_CHUNKS && fa >= 0 && fb >= 0; i++) {
+			pattern_fill(pattern, DATA_SZ, 40);
+			ok_write &= write(fa, pattern, DATA_SZ) == DATA_SZ;
+			pattern_fill(pattern, DATA_SZ, 41);
+			ok_write &= write(fb, pattern, DATA_SZ) == DATA_SZ;
+		}
+		if (fa >= 0) {
+			close(fa);
+		}
+		if (fb >= 0) {
+			close(fb);
+		}
+		umount(F32W_DIR);
+		mounted = 0 == mount(F32W_DEV, F32W_DIR, FS_NAME, 0, NULL);
+	}
+
+	bad_a = mounted ? f32w_check(F32W_DIR "/a.bin", 40) : -9;
+	bad_b = mounted ? f32w_check(F32W_DIR "/b.bin", 41) : -9;
+	memset(&v, 0, sizeof(v));
+	volume_read(block_dev_find("ramdisk_f32w"), &v);
+	agree_before = v.secperfat ? f32w_fats_agree(&v, 16) : 0;
+
+	if (mounted) {
+		remove(F32W_DIR "/a.bin");
+		remove(F32W_DIR "/b.bin");
+		umount(F32W_DIR);
+		mounted = 0;
+		agree_after = f32w_fats_agree(&v, 16);
+	}
+	rmdir(F32W_DIR);
+	if (made) {
+		ramdisk_delete(F32W_DEV);
+	}
+
+	printk("fat_ops: FAT32 write-back: %u-bit volume, 2 x %u KiB written %s, "
+	       "read back after remount %s/%s, FATs alike %s/%s\n",
+	    v.bits, (unsigned)(F32W_CHUNKS * DATA_SZ / 1024),
+	    ok_write ? "whole" : "SHORT", bad_a == -1 ? "ok" : "WRONG",
+	    bad_b == -1 ? "ok" : "WRONG", agree_before ? "yes" : "NO",
+	    agree_after ? "yes" : "NO");
+
+	/* Nothing below here touches the device. */
+	test_assert_zero(res);
+	test_assert_equal(32u, v.bits);
+	test_assert_true(fa >= 0 && fb >= 0);
+	test_assert_true(ok_write);
+	test_assert_equal(-1, bad_a);
+	test_assert_equal(-1, bad_b);
+	test_assert_true(agree_before);
+	test_assert_true(agree_after);
+}
+
 TEST_CASE("a read longer than one sector returns the whole thing") {
 	test_assert_zero(write_file(FILE_A, DATA_SZ, 1));
 

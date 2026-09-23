@@ -239,6 +239,9 @@ struct fat_fs_info {
 	/* Hint for free-cluster search. Per-volume, verified on use.
 	 * 0 or out of range means "start at beginning". */
 	uint32_t free_hint;
+	/* Mounted volume: FAT sectors may be held until the locked operation ends
+	 * (fat_fatc_*). Zero for the on-stack volume a format builds. */
+	uint8_t fatc_ok;
 };
 
 struct fat_file_info {
@@ -338,6 +341,11 @@ extern uint32_t fat_direntry_get_size(struct fat_dirent *de);
 extern void     fat_direntry_set_size(struct fat_dirent *de, uint32_t size);
 
 extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
+
+/* Held FAT sector (fat_common.c): flush writes it to both copies, drop also
+ * forgets it. Driver lock held; the outermost fat_unlock() drops. */
+extern int fat_fatc_flush(void);
+extern int fat_fatc_drop(void);
 
 /* Serialises the whole driver (shared fat_sector_buff). Recursive. */
 extern void fat_lock(void);
