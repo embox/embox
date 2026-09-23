@@ -729,9 +729,10 @@ static uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
 			if (DFS_OK == result) {
 				result = fat_read_sector(fsi, p_scratch, ++sector);
 				if (DFS_OK == result) {
-					/* Odd cluster: High 12 bits being set*/
+					/* Odd cluster: High 12 bits being set; the top eight
+					 * of them are this sector's first byte. */
 					if (cluster & 1) {
-						p_scratch[0] = new_contents & 0xff00;
+						p_scratch[0] = (new_contents & 0xff00) >> 8;
 					}
 					/* Even cluster: Low 12 bits being set */
 					else {
