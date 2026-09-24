@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <ctype.h>
 #include <dirent.h>
 
 #include <errno.h>
@@ -1032,6 +1033,212 @@ TEST_CASE("empty files in a subdirectory are created and deleted") {
 }
 
 /* ------------------------------------------------------------------ *
+ * ".." of a new directory names its parent's first cluster, 0 for the root.
+ * Only fsck reads it, so this reads the media as fsck does. */
+
+static int raw_sector(struct block_dev *bdev, const struct volume *v,
+    unsigned sec, uint8_t *buf) {
+	return (int)v->bytepersec == block_dev_read(bdev, (char *)buf,
+	    v->bytepersec, sec * (v->bytepersec / bdev->block_size)) ? 0 : -1;
+}
+
+static unsigned clus_sector(const struct volume *v, unsigned clus) {
+	return v->dataarea + (clus - 2) * v->secperclus;
+}
+
+/* The next cluster of a chain, or 0 at its end. A FAT12 entry is a byte and
+ * a half and may straddle two sectors, so two are read. */
+static unsigned clus_next(struct block_dev *bdev, const struct volume *v,
+    unsigned clus) {
+	uint8_t buf[1024];
+	unsigned off = v->bits == 12 ? clus + clus / 2 : clus * (v->bits / 8);
+	unsigned sec = v->reserved + off / v->bytepersec, next;
+
+	if (raw_sector(bdev, v, sec, buf)
+	    || raw_sector(bdev, v, sec + 1, buf + v->bytepersec)) {
+		return 0;
+	}
+	off %= v->bytepersec;
+	if (v->bits == 12) {
+		next = buf[off] | (buf[off + 1] << 8);
+		next = (clus & 1) ? next >> 4 : next & 0xfff;
+		return next >= 0xff8 ? 0 : next;
+	}
+	if (v->bits == 16) {
+		next = buf[off] | (buf[off + 1] << 8);
+		return next >= 0xfff8 ? 0 : next;
+	}
+	next = (buf[off] | (buf[off + 1] << 8) | (buf[off + 2] << 16)
+	           | ((unsigned)buf[off + 3] << 24)) & 0x0fffffff;
+	return next >= 0x0ffffff8 ? 0 : next;
+}
+
+static unsigned de_clus(const uint8_t *d) {
+	return (d[26] | (d[27] << 8)) | ((unsigned)(d[20] | (d[21] << 8)) << 16);
+}
+
+/* Look for the 8.3 name @name (11 bytes, blank-padded, any case) in the
+ * directory starting at cluster @clus, 0 for a FAT12/16 root. Returns its
+ * first cluster, or 0. */
+static unsigned dir_find(struct block_dev *bdev, const struct volume *v,
+    unsigned clus, const char *name) {
+	uint8_t buf[512];
+	unsigned s, e, i, nsec;
+
+	if (clus == 0 && v->bits == 32) {
+		clus = v->rootclus;
+	}
+	while (1) {
+		nsec = clus ? v->secperclus : v->rootsecs;
+		for (s = 0; s < nsec; s++) {
+			if (raw_sector(bdev, v, (clus ? clus_sector(v, clus)
+			                               : v->rootstart) + s, buf)) {
+				return 0;
+			}
+			for (e = 0; e < v->bytepersec / 32; e++) {
+				const uint8_t *d = buf + e * 32;
+
+				if (d[0] == 0x00) {
+					return 0;
+				}
+				if (d[0] == 0xe5 || (d[11] & 0x0f) == 0x0f) {
+					continue;
+				}
+				for (i = 0; i < 11; i++) {
+					if (toupper(d[i]) != toupper((unsigned char)name[i])) {
+						break;
+					}
+				}
+				if (i == 11) {
+					return de_clus(d);
+				}
+			}
+		}
+		if (clus == 0 || (clus = clus_next(bdev, v, clus)) == 0) {
+			return 0;
+		}
+	}
+}
+
+/* ".." of the directory at cluster @clus, or ~0 when it cannot be read. */
+static unsigned dotdot_of(struct block_dev *bdev, const struct volume *v,
+    unsigned clus) {
+	uint8_t buf[512];
+
+	if (raw_sector(bdev, v, clus_sector(v, clus), buf)
+	    || memcmp(buf + 32, "..         ", 11)) {
+		return ~0u;
+	}
+	return de_clus(buf + 32);
+}
+
+/* Every live 8.3 entry of the directory at @clus: how many, how many repeat
+ * an earlier name, and how many are empty files holding a cluster -- each an
+ * fsck error. */
+#define DD_MAX 512
+static uint8_t dd_names[DD_MAX][11];
+
+static void dir_audit(struct block_dev *bdev, const struct volume *v,
+    unsigned clus, unsigned *live, unsigned *dups, unsigned *empty_clus) {
+	uint8_t buf[512];
+	unsigned s, e, i;
+
+	*live = *dups = *empty_clus = 0;
+	while (clus) {
+		for (s = 0; s < v->secperclus; s++) {
+			if (raw_sector(bdev, v, clus_sector(v, clus) + s, buf)) {
+				return;
+			}
+			for (e = 0; e < v->bytepersec / 32; e++) {
+				const uint8_t *d = buf + e * 32;
+				uint32_t size;
+
+				if (d[0] == 0x00) {
+					return;
+				}
+				if (d[0] == 0xe5 || (d[11] & 0x0f) == 0x0f || d[0] == '.') {
+					continue;
+				}
+				for (i = 0; i < *live && i < DD_MAX; i++) {
+					if (!memcmp(dd_names[i], d, 11)) {
+						printk("fat_ops: \"%.11s\" twice in one directory\n",
+						    (const char *)d);
+						(*dups)++;
+						break;
+					}
+				}
+				if (*live < DD_MAX) {
+					memcpy(dd_names[*live], d, 11);
+				}
+				(*live)++;
+				size = d[28] | (d[29] << 8) | (d[30] << 16)
+				       | ((uint32_t)d[31] << 24);
+				if (size == 0 && !(d[11] & 0x10) && de_clus(d) != 0) {
+					(*empty_clus)++;
+				}
+			}
+		}
+		clus = clus_next(bdev, v, clus);
+	}
+}
+
+/* Names that are 8.3 already, so the two directories are found by name on
+ * the media; the files have long names sharing their first eighteen
+ * characters, so each needs a short name of its own. */
+#define DD_PARENT FS_DIR "/DDPARENT"
+#define DD_FILE   DD_PARENT "/fsck-dotdot-entry-%03u"
+
+TEST_CASE("a new directory's .. names its parent's first cluster, 0 for the root") {
+	struct block_dev *bdev = fat_bdev();
+	struct volume v;
+	unsigned pclus, sclus, n, per_clus, i, live, dups, empty_clus;
+	char path[64];
+	int fd;
+
+	test_assert_zero(volume_read(bdev, &v));
+
+	test_assert_zero(mkdir(DD_PARENT, 0777));
+	/* More entries than one cluster holds, so the next one is not in the
+	 * first: each name takes two long-name entries and the 8.3 one. */
+	per_clus = v.secperclus * v.bytepersec / 32;
+	n = per_clus / 3 + 8;
+	for (i = 0; i < n; i++) {
+		snprintf(path, sizeof(path), DD_FILE, i);
+		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+		test_assert(fd >= 0);
+		close(fd);
+	}
+	test_assert_zero(mkdir(DD_PARENT "/ZSUB", 0777));
+
+	pclus = dir_find(bdev, &v, 0, "DDPARENT   ");
+	test_assert_not_equal(pclus, 0);
+	test_assert_not_equal(clus_next(bdev, &v, pclus), 0); /* really two */
+	sclus = dir_find(bdev, &v, pclus, "ZSUB       ");
+	test_assert_not_equal(sclus, 0);
+
+	printk("fat_ops: parent at cluster %u, its .. %u; child at %u, its .. %u\n",
+	    pclus, dotdot_of(bdev, &v, pclus), sclus, dotdot_of(bdev, &v, sclus));
+	test_assert_equal(dotdot_of(bdev, &v, pclus), 0);
+	test_assert_equal(dotdot_of(bdev, &v, sclus), pclus);
+
+	dir_audit(bdev, &v, pclus, &live, &dups, &empty_clus);
+	printk("fat_ops: %u entries, %u duplicate 8.3 names, %u empty files "
+	       "holding a cluster\n", live, dups, empty_clus);
+	test_assert_equal(live, n + 1);
+	test_assert_zero(dups);
+	test_assert_zero(empty_clus);
+
+	/* Every one found by its long name, which a duplicate short name would
+	 * not stop -- a host fsck would. */
+	for (i = 0; i < n; i++) {
+		snprintf(path, sizeof(path), DD_FILE, i);
+		test_assert_zero(unlink(path));
+	}
+	test_assert_zero(rmdir(DD_PARENT "/ZSUB"));
+	test_assert_zero(rmdir(DD_PARENT));
+}
+
+/* ------------------------------------------------------------------ *
  * A mount that fails leaves the tree as it found it: no superblock and no
  * inodes behind. Repeated, since one leak is invisible and several empty a
  * pool.
@@ -1214,8 +1421,10 @@ static int root_live_entries(int *bad_clus, int *bad_date) {
 	return live;
 }
 
-/* The entries' dates are checked too. */
-TEST_CASE("a file on a full volume is refused with ENOSPC, and leaves nothing") {
+/* An empty file owns no cluster, so on a full volume it is created and its
+ * first write fails. Its entry keeps cluster 0, not DFS_BAD_CLUS. The dates
+ * are checked too. */
+TEST_CASE("a file on a full volume takes no cluster, and its first write fails") {
 	int fd, n, bad_clus, bad_date;
 	ssize_t w;
 
@@ -1239,15 +1448,16 @@ TEST_CASE("a file on a full volume is refused with ENOSPC, and leaves nothing") 
 	test_assert(total <= FS_BYTES);
 
 	fd = open(FILE_B, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	if (fd >= 0) {
-		close(fd);
-		printk("fat_ops: a file was created on a full volume\n");
+	test_assert(fd >= 0);
+	w = write(fd, pattern, 1);
+	if (w > 0) {
+		printk("fat_ops: a byte was written to a full volume\n");
 	}
-	test_assert(fd < 0);
-	test_assert_equal(ENOSPC, errno);
+	test_assert(w <= 0);
+	test_assert_zero(close(fd));
 
 	n = root_live_entries(&bad_clus, &bad_date);
-	test_assert_equal(1, n);
+	test_assert_equal(2, n);
 	test_assert_zero(bad_clus);
 	test_assert_zero(bad_date);
 
