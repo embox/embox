@@ -21,7 +21,6 @@
 #include <drivers/pin_description.h>
 #include <drivers/gpio.h>
 #include <drivers/dma.h>
-//#include <drivers/niiet_dma.h>
 #include <drivers/clk.h>
 
 #include "niiet_pwm_priv.h"
@@ -164,6 +163,9 @@ static int niiet_pwm_init(struct pwm_device *dev) {
 
             dev->pwmd_dma_dev[i] = dma_dev_by_id(NIIET_PWM_DMA_NUM(dev->pwmd_dma[i]));
             if (dev->pwmd_dma_dev[i]) {
+                priv->dma_data[i].ch_num = i;
+                priv->dma_data[i].pwm_dev = dev;
+
                 dma_init(dev->pwmd_dma_dev[i]);
 			    dma_config(dev->pwmd_dma_dev[i], NIIET_PWM_DMA_CHAN(dev->pwmd_dma[i]), &conf);
 			    pwm_dma_config(dev, i, priv->dma_buffer[i], NIIET_PWM_DMA_BUF_SIZE);
@@ -252,11 +254,32 @@ static int niiet_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty) {
     return 0;
 }
 
+static int niiet_pwm_dma_callback(struct dma_req *req, void *data, int res) {
+    struct niiet_pwm_dma_data *dma_data;
+    struct pwm_device *dev;
+    int chan;
+
+    if (data == NULL) {
+        log_error("niiet_pwm_dma_callback data == NULL");
+        return 0;
+    }
+
+    dma_data = data;
+
+    dev = dma_data->pwm_dev;
+    chan = dma_data->ch_num;
+
+    log_debug("niiet_pwm_dma_callback pwm%d chan%d", dev->pwmd_id, chan);
+
+    return 0;
+}
+
 static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
     int duty_ns[], int size) {
 	struct niiet_tmr_regs *regs;
 	struct niiet_capcom_reg *capcom_reg;
 	uint32_t cap_ctrl;
+    struct niiet_pwm_priv *priv;
 	struct dma_req req = {0};
     char dma_type[32];
 
@@ -266,16 +289,19 @@ static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
 		return 0;
 	}
 
+	priv = dev->pwmd_priv;
+
 	regs = (void *)dev->pwmd_desc->pwmd_base_addr;
 	capcom_reg = &regs->CAPCOM[chan_num];
 	cap_ctrl = TMR_CAPCOM_CTRL_OUTMODE(TMR_CAPCOM_CTRL_OUTMODE_RESET_SET);
 	capcom_reg->CAPCOM_CTRL = cap_ctrl;
 
-    //capcom_reg->CAPCOM_VAL = 0;
-    //capcom_reg->CAPCOM_VAL1 = duty_ns[0];
     niiet_trm_set_dma(regs, chan_num, NIIET_TMR_DMA_TX);
 
     snprintf(dma_type, sizeof(dma_type), DMA_TYPE_TMR "%d", dev->pwmd_id);
+
+    req.dr_callback = niiet_pwm_dma_callback;
+    req.dr_data = &priv->dma_data[chan_num];
 
 	req.dr_src = (uintptr_t)(void *)duty_ns;
 	req.dr_src_width = 4;

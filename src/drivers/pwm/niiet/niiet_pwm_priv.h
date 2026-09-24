@@ -33,6 +33,11 @@
 
 struct dma_dev ;
 
+struct niiet_pwm_dma_data {
+	struct pwm_device *pwm_dev;
+	int                ch_num;
+};
+
 struct niiet_pwm_priv {
 	const struct pin_description *pin_desc;
 	const uintptr_t               base_addr;
@@ -41,6 +46,7 @@ struct niiet_pwm_priv {
 	uint32_t                      comp_mask;
 	int                           idx;
 
+	struct niiet_pwm_dma_data     dma_data[NIIET_PWM_CHAN_MAX];
 	struct dma_dev               *dma_dev[NIIET_PWM_CHAN_MAX];
 	uint32_t                      dma_buffer[NIIET_PWM_CHAN_MAX][NIIET_PWM_DMA_BUF_SIZE];
 
