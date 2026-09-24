@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -15,13 +16,14 @@
 
 #include <drivers/clk.h>
 #include <drivers/dma.h>
-#include <drivers/niiet_dma.h>
+
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
 #include <util/log.h>
 
 #include <config/board_config.h>
 
+#include "niiet_dma_priv.h"
 #include "niiet_dma_regs.h"
 
 #define DMA_DEV_ID 0
@@ -336,17 +338,15 @@ static inline int niiet_dma_irq_to_ch(int irq) {
 	return -1;
 }
 
-struct niiet_dma_priv {
-	struct dma_req *req[CONF_DMA0_MISC_CHAN_NUM];
-};
-
-static struct niiet_dma_priv niiet_dma_priv;
-
 static irq_return_t niiet_dma_irq_handler(unsigned int irq_num, void *dev_id) {
 	int chan;
+	struct dma_dev *dev = dev_id;
+
 	chan = niiet_dma_irq_to_ch(irq_num);
-	log_error("niiet_dma_irq_handler(irq=%d chan=%d)", irq_num, chan);
+	log_debug("niiet_dma_irq_handler(irq=%d chan=%d)", irq_num, chan);
 	DMA->CH[chan].INT_CLEAR = 1;
+
+	dma_complite(dev, &dev->dd_req[chan], 0);
 
 	return 0;
 }
@@ -367,7 +367,7 @@ static int niiet_dma_config(struct dma_dev *dev, int ch, struct dma_config *conf
 	}
 
 	res = irq_attach(irq, niiet_dma_irq_handler, /* IF_SHARESUP */ 0,
-	    &niiet_dma_priv, "dma");
+	    dev, "dma");
 	if (0 != res) {
 		return res;
 	}
@@ -376,7 +376,12 @@ static int niiet_dma_config(struct dma_dev *dev, int ch, struct dma_config *conf
 }
 
 static int niiet_dma_transfer(struct dma_dev *dev, int ch, struct dma_req *req) {
-	niiet_dma_priv.req[ch] = req;
+
+	if (!req) {
+		return -EINVAL;
+	}
+
+	memcpy(&dev->dd_req[ch], req, sizeof(dev->dd_req[ch]));
 
 	DMA->CH_ENABLE &= ~((uint32_t)(1) << ch);
 	DMA->CH[ch].STATIC0 = DMA_CH_STATIC0_RD_TOKENS(0x1);
@@ -429,6 +434,8 @@ static struct dma_ops niiet_dma_ops = {
     .do_activate = niiet_dma_activate,
     .do_get_type = niiet_dma_get_type,
 };
+
+static struct niiet_dma_priv niiet_dma_priv;
 
 DMA_DEV_DEF(DMA_DEV_ID, DMA_BASE_ADDR, 
 					&niiet_dma_ops, &niiet_dma_priv, 0xFFFFFFFF, 32);
