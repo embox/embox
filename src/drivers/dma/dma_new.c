@@ -52,6 +52,7 @@ int dma_activate(struct dma_dev *dev, uint32_t ch_mask) {
 	}
 
     if (dev->dd_ops->do_activate) {
+        dev->dd_status[ch_mask] |= DMA_CH_STATUS_BUSY;
         res = dev->dd_ops->do_activate(dev, ch_mask);
     }
 
@@ -84,4 +85,23 @@ int dma_init(struct dma_dev *dev) {
     }
 
 	return res;
+}
+
+int dma_complite(struct dma_dev *dev, struct dma_req *req, int res) {
+
+    if (req && req->dr_callback) {
+        req->dr_callback(req, req->dr_data, res);
+    }
+
+    dev->dd_status[req->dr_chan] &= ~DMA_CH_STATUS_BUSY;
+
+    return 0;
+}
+
+uint32_t dma_get_status(struct dma_dev *dev, int ch) {
+    return dev->dd_status[ch];
+}
+
+uint32_t dma_is_ch_busy(struct dma_dev *dev, int ch) {
+    return (dev->dd_status[ch] & DMA_CH_STATUS_BUSY) ? 1 : 0;
 }
