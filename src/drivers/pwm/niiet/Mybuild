@@ -49,6 +49,114 @@ module niiet_pwm3 {
 	depends niiet_pwm_drv
 }
 
+module niiet_pwm4 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm4.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm5 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm5.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm6 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm6.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm7 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm7.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm8 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm8.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm9 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm9.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm10 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm10.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm11 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm11.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm12 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm12.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm13 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm13.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm14 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm14.c"
+
+	depends niiet_pwm_drv
+}
+
+module niiet_pwm15 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm15.c"
+
+	depends niiet_pwm_drv
+}
+
 module niiet_pwm32 {
 	option number base_addr = 0
 	option number clk_div = 1
