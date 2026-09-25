@@ -838,10 +838,11 @@ static uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
 					if (cluster & 1) {
 						p_scratch[0] = (new_contents & 0xff00) >> 8;
 					}
-					/* Even cluster: Low 12 bits being set */
+					/* Even cluster: Low 12 bits being set; this byte's
+					 * low nibble takes their top nibble, bits 8-11. */
 					else {
 						p_scratch[0] = (p_scratch[0] & 0xf0) |
-								(new_contents & 0x0f);
+								((new_contents & 0x0f00) >> 8);
 					}
 					result = fat_write_sector(fsi, p_scratch, sector);
 					/* mirror the FAT into copy 2 */

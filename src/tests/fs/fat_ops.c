@@ -899,6 +899,105 @@ TEST_CASE("what was written survives a remount") {
 	test_assert_equal(-1, check_file(FILE_A, DATA_SZ, 4096));
 }
 
+/* A FAT12 entry is a byte and a half, so some straddle two 512-byte sectors
+ * (clusters 341, 682, 1365, 1706...). Read back after a remount, so the FAT on
+ * the media is followed. */
+TEST_CASE("a file across FAT12 entries that straddle two sectors reads back whole") {
+	const size_t chunks = (FS_BYTES / 2) / DATA_SZ;
+	size_t k, got;
+	int fd;
+
+	fd = open(FILE_A, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	test_assert(fd >= 0);
+	for (k = 0; k < chunks; k++) {
+		pattern_fill(pattern, DATA_SZ, 50 + k);
+		test_assert_equal((ssize_t)DATA_SZ, write(fd, pattern, DATA_SZ));
+	}
+	test_assert_zero(close(fd));
+
+	test_assert_zero(umount(FS_DIR));
+	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+
+	fd = open(FILE_A, O_RDONLY);
+	test_assert(fd >= 0);
+	for (k = 0; k < chunks; k++) {
+		for (got = 0; got < DATA_SZ;) {
+			ssize_t n = read(fd, readback + got, DATA_SZ - got);
+
+			if (n <= 0) {
+				break;
+			}
+			got += (size_t)n;
+		}
+		if (got != DATA_SZ) {
+			printk("fat_ops: the file ended at %u bytes of %u\n",
+			    (unsigned)(k * DATA_SZ + got), (unsigned)(chunks * DATA_SZ));
+		}
+		test_assert_equal(DATA_SZ, got);
+		pattern_fill(pattern, DATA_SZ, 50 + k);
+		test_assert_equal(-1, pattern_first_diff(readback, pattern, DATA_SZ));
+	}
+	test_assert_zero(close(fd));
+	test_assert_zero(remove(FILE_A));
+}
+
+/* The gap lands in reused clusters, so stale non-zero data is written and
+ * removed first. Also a write at an offset into an empty file, and one past
+ * the allocated chain. */
+TEST_CASE("a write past the end leaves zeros in the gap") {
+	static const off_t at[] = {5, 3000};
+	unsigned i;
+	int fd;
+
+	memset(pattern, 'X', DATA_SZ);
+	fd = open(FILE_B, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	test_assert(fd >= 0);
+	test_assert_equal((ssize_t)DATA_SZ, write(fd, pattern, DATA_SZ));
+	test_assert_zero(close(fd));
+	test_assert_zero(remove(FILE_B));
+
+	for (i = 0; i < sizeof(at) / sizeof(at[0]); i++) {
+		size_t k;
+
+		fd = open(FILE_A, O_RDWR | O_CREAT | O_TRUNC, 0666);
+		test_assert(fd >= 0);
+		/* Into an empty file, at an offset. */
+		test_assert_equal(at[i], lseek(fd, at[i], SEEK_SET));
+		test_assert_equal(3, write(fd, "abc", 3));
+		/* And past the end of what is there. */
+		test_assert_equal(at[i] + 3 + 5000, lseek(fd, 5000, SEEK_END));
+		test_assert_equal(1, write(fd, "Z", 1));
+		test_assert_equal(at[i] + 3 + 5000 + 1, lseek(fd, 0, SEEK_END));
+		test_assert_zero(close(fd));
+
+		test_assert_zero(umount(FS_DIR));
+		test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+
+		fd = open(FILE_A, O_RDONLY);
+		test_assert(fd >= 0);
+		memset(readback, 0x55, DATA_SZ);
+		for (k = 0; k < (size_t)(at[i] + 3 + 5000 + 1);) {
+			ssize_t n = read(fd, readback + k, DATA_SZ - k);
+
+			if (n <= 0) {
+				break;
+			}
+			k += (size_t)n;
+		}
+		test_assert_zero(close(fd));
+		test_assert_equal((size_t)(at[i] + 3 + 5000 + 1), k);
+		for (k = 0; k < (size_t)at[i]; k++) {
+			test_assert_zero(readback[k]);
+		}
+		test_assert_zero(memcmp(readback + at[i], "abc", 3));
+		for (k = at[i] + 3; k < (size_t)(at[i] + 3 + 5000); k++) {
+			test_assert_zero(readback[k]);
+		}
+		test_assert_equal('Z', readback[at[i] + 3 + 5000]);
+		test_assert_zero(remove(FILE_A));
+	}
+}
+
 TEST_CASE("unlinking a multi-cluster file returns, and gives the space back") {
 	int i;
 
@@ -1449,11 +1548,14 @@ TEST_CASE("a file on a full volume takes no cluster, and its first write fails")
 
 	fd = open(FILE_B, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	test_assert(fd >= 0);
+	errno = 0;
 	w = write(fd, pattern, 1);
 	if (w > 0) {
 		printk("fat_ops: a byte was written to a full volume\n");
 	}
-	test_assert(w <= 0);
+	/* -1 and ENOSPC, not 0: a 0 is "try again", and stdio does, for ever. */
+	test_assert_equal(-1, w);
+	test_assert_equal(ENOSPC, errno);
 	test_assert_zero(close(fd));
 
 	n = root_live_entries(&bad_clus, &bad_date);
