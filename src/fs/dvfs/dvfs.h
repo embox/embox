@@ -111,6 +111,14 @@ extern int dvfs_rename(const char *from, const char *to);
 extern int dvfs_flock(struct file_desc *desc, int operation);
 extern void dvfs_flock_release(struct file_desc *desc);
 
+/* fcntl(2) record locks (F_GETLK, F_SETLK, F_SETLKW), which belong to the
+ * task. dvfs_lockf_release() drops a task's locks on one file (a close) or on
+ * all of them (inode NULL; the task's end does that itself). */
+struct flock;
+struct task;
+extern int dvfs_lockf(struct file_desc *desc, int cmd, struct flock *fl);
+extern void dvfs_lockf_release(struct inode *in, const struct task *owner);
+
 /* The name of an open dentry goes away: off the parent's list, DYING, freed
  * by the last reference. Under the lock. */
 extern void dentry_unlink_dying(struct dentry *d);
