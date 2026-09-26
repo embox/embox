@@ -52,10 +52,12 @@ struct motor_dev {
 };
 
 __BEGIN_DECLS
-extern struct motor_dev *motor_dev_by_id(int id);
 
+extern struct motor_dev *motor_dev_by_id(int id);
+extern struct motor_dev *motor_dev_by_pwm(struct pwm_device *pwm, int chan);
 extern int motor_conf(struct motor_dev *dev, struct motor_conf *conf);
 extern int motor_send_msg(struct motor_dev *dev, struct motor_msg *msg);
+
 __END_DECLS
 
 #define MOTOR_DEV_DEF(id, ops, priv, pwm_id, pwm_chan) \
