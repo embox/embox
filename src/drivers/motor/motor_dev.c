@@ -32,6 +32,18 @@ struct motor_dev *motor_dev_by_id(int id) {
 	return NULL;
 }
 
+struct motor_dev *motor_dev_by_pwm(struct pwm_device *pwm, int chan) {
+	const struct motor_dev *dev;
+
+	array_spread_foreach(dev, __motor_device_registry) {
+		if ((dev->md_pwm_dev == pwm) && (dev->md_pwm_chan == chan)) {
+			return (struct motor_dev *)dev;
+		}
+	}
+
+	return NULL;
+}
+
 static int motor_subsystem_init(void) {
 	const struct motor_dev *motor_dev;
 
