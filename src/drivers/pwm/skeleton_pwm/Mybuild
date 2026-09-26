@@ -47,3 +47,23 @@ module skeleton_pwm3 {
 
 	depends skeleton_pwm_drv
 }
+
+module skeleton_pwm4 {
+	option boolean use_bconf=false
+	option boolean use_dma=false
+	option number timer_freq = 10000000
+
+	source "skeleton_pwm4.c"
+
+	depends skeleton_pwm_drv
+}
+
+module skeleton_pwm5 {
+	option boolean use_bconf=false
+	option boolean use_dma=false
+	option number timer_freq = 10000000
+
+	source "skeleton_pwm5.c"
+
+	depends skeleton_pwm_drv
+}
