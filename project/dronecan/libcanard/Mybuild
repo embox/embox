@@ -1,0 +1,8 @@
+package project.dronecan
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/project/dronecan/libcanard/install/include")
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+module libcanard {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "libcanard.a"
+}
