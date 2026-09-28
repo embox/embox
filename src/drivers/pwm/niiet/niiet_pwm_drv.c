@@ -21,7 +21,6 @@
 #include <drivers/pin_description.h>
 #include <drivers/gpio.h>
 #include <drivers/dma.h>
-//#include <drivers/niiet_dma.h>
 #include <drivers/clk.h>
 
 #include "niiet_pwm_priv.h"
@@ -164,6 +163,9 @@ static int niiet_pwm_init(struct pwm_device *dev) {
 
             dev->pwmd_dma_dev[i] = dma_dev_by_id(NIIET_PWM_DMA_NUM(dev->pwmd_dma[i]));
             if (dev->pwmd_dma_dev[i]) {
+                priv->dma_data[i].ch_num = i;
+                priv->dma_data[i].pwm_dev = dev;
+
                 dma_init(dev->pwmd_dma_dev[i]);
 			    dma_config(dev->pwmd_dma_dev[i], NIIET_PWM_DMA_CHAN(dev->pwmd_dma[i]), &conf);
 			    pwm_dma_config(dev, i, priv->dma_buffer[i], NIIET_PWM_DMA_BUF_SIZE);
@@ -183,31 +185,37 @@ static int niiet_pwm_init(struct pwm_device *dev) {
 }
 
 static int niiet_pwm_enable(struct pwm_device *dev, uint32_t chan_mask) {
-    struct niiet_tmr_regs *regs;
-    uint32_t ctrl;
+	struct niiet_tmr_regs *regs;
+	struct niiet_pwm_priv *priv;
+	uint32_t ctrl;
 
-    assert(dev);
+	assert(dev);
 
-    regs = (void *)dev->pwmd_desc->pwmd_base_addr;
+	regs = (void *)dev->pwmd_desc->pwmd_base_addr;
 
-    ctrl = regs->CTRL;
-    ctrl &= ~TMR_CTRL_MODE(TMR_CTRL_MODE_MASK);
-    ctrl |= TMR_CTRL_MODE(TMR_CTRL_MODE_UP);
+	ctrl = regs->CTRL;
+	ctrl &= ~TMR_CTRL_MODE(TMR_CTRL_MODE_MASK);
+	ctrl |= TMR_CTRL_MODE(TMR_CTRL_MODE_UP);
 
-    for (int i = 0; i < NIIET_PWM_CHAN_MAX; i++) {
-        if (!((1 << i) & chan_mask)) {
-            continue;
-        }
+	for (int i = 0; i < NIIET_PWM_CHAN_MAX; i++) {
+		if (!((1 << i) & chan_mask)) {
+			continue;
+		}
 		if (dev->pwmd_dma_dev[i]) {
-            ctrl |= TMR_CTRL_CLR;
+			priv = dev->pwmd_priv;
 
-            dma_activate(dev->pwmd_dma_dev[i], NIIET_PWM_DMA_CHAN(dev->pwmd_dma[i]));
+			if (priv->dma_flags & NIIET_PWM_DMA_PREPARED) {
+				ctrl |= TMR_CTRL_CLR;
+
+				dma_activate(dev->pwmd_dma_dev[i],
+				    NIIET_PWM_DMA_CHAN(dev->pwmd_dma[i]));
+			}
 		}
 	}
 
-    regs->CTRL = ctrl;
+	regs->CTRL = ctrl;
 
-    return 0;
+	return 0;
 }
 
 static void niiet_pwm_disable(struct pwm_device *dev, uint32_t chan_mask) {
@@ -252,11 +260,35 @@ static int niiet_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty) {
     return 0;
 }
 
+static int niiet_pwm_dma_callback(struct dma_req *req, void *data, int res) {
+    struct niiet_pwm_dma_data *dma_data;
+    struct pwm_device *dev;
+    struct niiet_pwm_priv *priv;
+    int chan;
+
+    if (data == NULL) {
+        log_error("niiet_pwm_dma_callback data == NULL");
+        return 0;
+    }
+
+    dma_data = data;
+
+    dev = dma_data->pwm_dev;
+    chan = dma_data->ch_num;
+    priv = dev->pwmd_priv;
+
+    log_debug("niiet_pwm_dma_callback pwm%d chan%d", dev->pwmd_id, chan);
+    priv->dma_flags &= ~NIIET_PWM_DMA_PREPARED;
+
+    return 0;
+}
+
 static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
     int duty_ns[], int size) {
 	struct niiet_tmr_regs *regs;
 	struct niiet_capcom_reg *capcom_reg;
 	uint32_t cap_ctrl;
+    struct niiet_pwm_priv *priv;
 	struct dma_req req = {0};
     char dma_type[32];
 
@@ -266,16 +298,19 @@ static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
 		return 0;
 	}
 
+	priv = dev->pwmd_priv;
+
 	regs = (void *)dev->pwmd_desc->pwmd_base_addr;
 	capcom_reg = &regs->CAPCOM[chan_num];
 	cap_ctrl = TMR_CAPCOM_CTRL_OUTMODE(TMR_CAPCOM_CTRL_OUTMODE_RESET_SET);
 	capcom_reg->CAPCOM_CTRL = cap_ctrl;
 
-    //capcom_reg->CAPCOM_VAL = 0;
-    //capcom_reg->CAPCOM_VAL1 = duty_ns[0];
     niiet_trm_set_dma(regs, chan_num, NIIET_TMR_DMA_TX);
 
     snprintf(dma_type, sizeof(dma_type), DMA_TYPE_TMR "%d", dev->pwmd_id);
+
+    req.dr_callback = niiet_pwm_dma_callback;
+    req.dr_data = &priv->dma_data[chan_num];
 
 	req.dr_src = (uintptr_t)(void *)duty_ns;
 	req.dr_src_width = 4;
@@ -287,6 +322,8 @@ static int niiet_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
 	req.dr_dest_type = dma_get_type(dev->pwmd_dma_dev[chan_num], dma_type);
 	req.dr_size = size * 4;
 	dma_transfer(dev->pwmd_dma_dev[chan_num], NIIET_PWM_DMA_CHAN(dev->pwmd_dma[chan_num]), &req);
+
+    priv->dma_flags |= NIIET_PWM_DMA_PREPARED;
 
 	return 0;
 }

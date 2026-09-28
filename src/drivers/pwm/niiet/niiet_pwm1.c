@@ -79,6 +79,7 @@
 #define PWM_CHAN3_FUNC       (-1)
 #define PWM_CHAN3_MASK_AVAIL (0 << 3)
 #endif
+
 #if defined(CONF_PWM1_DMA_OUT0_NUM)
 #define DMA0_EN     1
 #define DMA0_NUM    MACRO_CONCAT(CONF_PWM, _DMA_OUT0_NUM)
