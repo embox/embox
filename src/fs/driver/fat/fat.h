@@ -281,6 +281,11 @@ static inline int fat_sec_by_clus(struct fat_fs_info *fsi, int clus) {
 }
 
 extern void fat_set_filetime(struct fat_dirent *de);
+extern void fat_set_wrttime(struct fat_dirent *de, int64_t secs);
+extern int64_t fat_wrttime_now(void);
+extern int64_t fat_direntry_get_mtime(const struct fat_dirent *de);
+extern int64_t fat_direntry_get_ctime(const struct fat_dirent *de);
+extern int fat_set_mtime(struct fat_file_info *fi, int64_t secs);
 //extern void fat_get_filename(char *tmppath, char *filename);
 extern int fat_check_filename(char *filename);
 extern int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name);

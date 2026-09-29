@@ -121,6 +121,7 @@ static int fat_truncate(struct inode *node, off_t length) {
 	res = fat_truncate_file(fi, (uint32_t)length);
 	if (res == 0) {
 		inode_size_set(node, length);
+		node->i_mtime = fat_wrttime_now();
 	}
 	fat_unlock();
 
@@ -285,6 +286,31 @@ static int fat_rename(struct inode *node, struct inode *new_parent,
 	return res == DFS_OK ? 0 : -EIO;
 }
 
+/* A directory's private data is its dirinfo, whose first member is the
+ * fat_file_info of its own entry -- the same thing a file's is. */
+static int fat_utime(struct inode *node, time_t mtime) {
+	struct fat_file_info *fi;
+	int res;
+
+	fat_lock();
+	fi = inode_priv(node);
+	if (!fi) {
+		fat_unlock();
+		return -ENOENT;
+	}
+	res = fat_set_mtime(fi, mtime);
+	if (res == 0) {
+		/* What the entry now says: FAT keeps two-second steps. */
+		struct fat_dirent de;
+
+		fat_set_wrttime(&de, mtime);
+		node->i_mtime = fat_direntry_get_mtime(&de);
+	}
+	fat_unlock();
+
+	return res;
+}
+
 struct inode_operations fat_iops = {
 	.ino_create   = fat_create,
 	.ino_lookup   = fat_ilookup,
@@ -292,4 +318,5 @@ struct inode_operations fat_iops = {
 	.ino_iterate  = fat_iterate,
 	.ino_truncate = fat_truncate,
 	.ino_rename   = fat_rename,
+	.ino_utime    = fat_utime,
 };

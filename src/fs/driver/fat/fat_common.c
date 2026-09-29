@@ -1894,6 +1894,9 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 	}
 
 	fat_direntry_set_size(&((struct fat_dirent*) p_scratch)[fi->diroffset], *size);
+	/* A write is a modification: the entry says when. */
+	fat_set_wrttime(&((struct fat_dirent*) p_scratch)[fi->diroffset],
+	    fat_wrttime_now());
 
 	if (fat_write_sector(fsi, p_scratch, fi->dirsector)) {
 		return DFS_ERRMISC;
@@ -1990,6 +1993,29 @@ int fat_truncate_file(struct fat_file_info *fi, uint32_t length) {
 	    fi->firstcluster);
 	fat_direntry_set_size(&((struct fat_dirent *)scratch)[fi->diroffset],
 	    length);
+	fat_set_wrttime(&((struct fat_dirent *)scratch)[fi->diroffset],
+	    fat_wrttime_now());
+	if (fat_write_sector(fsi, scratch, fi->dirsector)) {
+		return -EIO;
+	}
+	return 0;
+}
+
+/* utime() on a FAT file or directory: the last-write time of its entry, to
+ * FAT's two seconds. The root has no entry and keeps no time. */
+int fat_set_mtime(struct fat_file_info *fi, int64_t secs) {
+	struct fat_fs_info *fsi = fi->fsi;
+	uint8_t *scratch = fat_sector_buff;
+
+	fat_lock_assert("fat_set_mtime");
+
+	if (fi->removed || fi->dirsector == 0) {
+		return 0;
+	}
+	if (fat_read_sector(fsi, scratch, fi->dirsector)) {
+		return -EIO;
+	}
+	fat_set_wrttime(&((struct fat_dirent *)scratch)[fi->diroffset], secs);
 	if (fat_write_sector(fsi, scratch, fi->dirsector)) {
 		return -EIO;
 	}
@@ -2930,6 +2956,9 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 
 	inode_size_set(inode, fi->filelen);
 	inode->i_no = fat_ino_of(fi);
+	/* stat() reads these. */
+	inode->i_mtime = fat_direntry_get_mtime(de);
+	inode->i_ctime = fat_direntry_get_ctime(de);
 	if (de->attr & ATTR_READ_ONLY) {
 		inode->i_mode |= S_IRALL;
 	} else {

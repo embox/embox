@@ -11,6 +11,7 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <utime.h>
 
 #include <ctype.h>
 #include <dirent.h>
@@ -781,6 +782,40 @@ TEST_CASE("ftruncate grows a file with zeros and shrinks it, and a remount agree
 	close(fd);
 	test_assert_zero(stat(FILE_A, &st));
 	test_assert_zero(st.st_size);
+	test_assert_zero(remove(FILE_A));
+}
+
+/* The time lives in the directory entry, in FAT's two-second steps, so what
+ * stat() says holds across a remount. */
+TEST_CASE("utime sets a modification time that survives a remount, to two seconds") {
+	const char *dir = FS_DIR "/mtime_d";
+	struct utimbuf ut = {.actime = 1000000000, .modtime = 1234567891};
+	struct stat st;
+
+	/* A write stamps the entry; a clock before 1980 reads as FAT's epoch. */
+	test_assert_zero(write_file(FILE_A, 100, 61));
+	test_assert_zero(stat(FILE_A, &st));
+	test_assert(st.st_mtime >= 315532800);
+	test_assert_zero(st.st_mtime % 2);
+
+	test_assert_zero(mkdir(dir, 0777));
+	test_assert_zero(utime(FILE_A, &ut));
+	test_assert_zero(utime(dir, &ut));
+	test_assert_zero(stat(FILE_A, &st));
+	test_assert_equal(1234567890, (long)st.st_mtime);
+
+	test_assert_zero(umount(FS_DIR));
+	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+
+	test_assert_zero(stat(FILE_A, &st));
+	test_assert_equal(1234567890, (long)st.st_mtime);
+	test_assert_zero(stat(dir, &st));
+	test_assert_equal(1234567890, (long)st.st_mtime);
+
+	test_assert_equal(-1, utime(FS_DIR "/missing", &ut));
+	test_assert_equal(ENOENT, errno);
+
+	test_assert_zero(rmdir(dir));
 	test_assert_zero(remove(FILE_A));
 }
 

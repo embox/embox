@@ -87,6 +87,8 @@ static size_t fat_write_unlocked(struct file_desc *desc, void *buf,
 			file_set_size(desc, old_pos + bytecount);
 			fi->filelen = old_pos + bytecount;
 		}
+		/* What fat_write_file() stamped on the entry. */
+		inode_mtime_set(desc->f_inode, fat_wrttime_now());
 		return bytecount;
 	}
 	if (DFS_OK == rezult || DFS_EOF == rezult || size == 0) {

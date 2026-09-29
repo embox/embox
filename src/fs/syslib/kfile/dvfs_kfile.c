@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <time.h>
 #include <stddef.h>
 
 #include <drivers/block_dev.h> /* block_dev_block_size */
@@ -17,6 +18,9 @@
 
 #include <util/atomic_rmw.h>
 #include <util/math.h>
+
+/* Weak: without embox.compat.posix.time.clock, i_mtime stays as it is. */
+extern time_t time(time_t *t) __attribute__((weak));
 
 /**
  * @brief Uninitialize file descriptor
@@ -87,6 +91,11 @@ int kwrite(struct file_desc *desc, char *buf, int count) {
 		if (!(inode->i_mode & DVFS_NO_LSEEK)
 		    && desc->f_pos > (off_t) inode->i_size) {
 			inode->i_size = desc->f_pos;
+		}
+		/* For stat(); a driver keeping times on the medium (ino_utime) sets
+		 * i_mtime to what it stored. */
+		if (time && !(inode->i_ops && inode->i_ops->ino_utime)) {
+			inode->i_mtime = time(NULL);
 		}
 	}
 
