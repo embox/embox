@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <string.h>
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("fs read tests");
@@ -71,6 +72,10 @@ TEST_CASE("Test readdir operations on fs") {
 
 	dent = readdir(d);
 	while (dent) {
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) {
+			dent = readdir(d);
+			continue;
+		}
 
 		for (i = 0; i < ARRAY_SIZE(fs_test_rd_dir_ents); i++) {
 			if (!strcmp(dent->d_name, fs_test_rd_dir_ents[i])) {

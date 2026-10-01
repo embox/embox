@@ -107,6 +107,10 @@ static void print(const char *path, const char *beg, char *end, DIR *dir,
 	struct stat sb;
 
 	while (NULL != (dent = readdir(dir))) {
+		/* readdir() returns "." and ".." as well */
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) {
+			continue;
+		}
 		endptr = stpcpy(end, dent->d_name);
 
 		if (-1 == stat(path, &sb)) {

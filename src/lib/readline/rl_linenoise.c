@@ -179,6 +179,10 @@ char *rl_filename_completion_function(const char *text, int state) {
 	}
 
 	while (NULL != (dent = readdir(dir))) {
+		/* readdir() returns "." and ".." as well */
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) {
+			continue;
+		}
 		if (strncmp(&name[0], &dent->d_name[0], name_len) == 0) {
 			strcpy(&filename[0], &path[0]);
 			strcpy(&filename[path_len], &dent->d_name[0]);
