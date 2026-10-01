@@ -39,8 +39,8 @@
 #ifdef SMP /* XXX */
 #include <kernel/cpu/cpu.h>
 #include <kernel/time/sys_timer.h>
-#include <util/atomic_rmw.h>
 #endif
+#include <util/atomic_rmw.h>
 
 // XXX
 #ifndef __barrier
