@@ -57,7 +57,7 @@ struct sys_timer {
 #endif
 	struct dlist_head st_wait_link;
 
-	uint32_t load;
+	clock_t load;
 	/* Clocks count at which timer should fire: cnt = current clocks() + load. */
 	clock_t cnt;
 	sys_timer_handler_t handle;
