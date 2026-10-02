@@ -1,27 +1,5 @@
 package embox.kernel.sched
 
-module sched {
-	option string log_level="LOG_NONE"
-	source "sched_start.c"
-	depends idle
-	depends boot
-
-	source "sched.c"
-	depends embox.kernel.addr_space
-
-	source "sched_signal.c"
-
-	depends schedee
-
-	depends embox.kernel.critical
-	depends embox.profiler.trace
-
-	depends wait_queue
-
-	depends embox.kernel.timer.strategy.api
-	depends embox.kernel.sched.current.api
-}
-
 module schedee {
 	/* source "include/kernel/sched/schedee.h" */
 

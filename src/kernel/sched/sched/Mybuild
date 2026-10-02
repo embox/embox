@@ -1,0 +1,57 @@
+package embox.kernel.sched
+
+@DefaultImpl(sched_nosmp)
+abstract module sched {
+}
+
+module sched_nosmp extends sched {
+	option string log_level="LOG_NONE"
+
+	@IncludeExport(path="kernel")
+	source "sched.h"
+
+	source "sched_start.c"
+	depends idle
+	depends boot
+
+	source "sched.c"
+	depends embox.kernel.addr_space
+
+	source "sched_signal.c"
+
+	depends schedee
+
+	depends embox.kernel.critical
+	depends embox.profiler.trace
+
+	depends wait_queue
+
+	depends embox.kernel.timer.strategy.api
+	depends embox.kernel.sched.current.api
+}
+
+module sched_smp extends sched {
+	option string log_level="LOG_NONE"
+
+	@IncludeExport(path="kernel", target_name="sched.h")
+	source "sched_smp.h"
+
+	source "sched_start.c"
+	depends idle
+	depends boot
+
+	source "sched_smp.c"
+	depends embox.kernel.addr_space
+
+	source "sched_signal.c"
+
+	depends schedee
+
+	depends embox.kernel.critical
+	depends embox.profiler.trace
+
+	depends wait_queue
+
+	depends embox.kernel.timer.strategy.api
+	depends embox.kernel.sched.current.api
+}
