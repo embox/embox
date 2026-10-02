@@ -1,0 +1,82 @@
+package embox.kernel.thread
+
+@DefaultImpl(core_nosmp)
+abstract module core {
+	option number thread_stack_align=8
+	option number thread_stack_size=0x20000
+	option number thread_pool_size=16
+}
+
+module core_nosmp extends core {
+	option string log_level="LOG_NONE"
+
+	source "core.c"
+	source "thread_switch.c"
+
+	@IncludeExport(path="kernel")
+	source "thread.h"
+
+	@IncludeExport(path="kernel/thread", target_name="types.h")
+	source "thread_types.h"
+
+	depends thread_allocator
+	depends sched_wait
+
+	@NoRuntime depends embox.kernel.sched.sched
+	@NoRuntime depends embox.kernel.sched.sched_ticker
+	@NoRuntime depends embox.kernel.sched.timing.timing
+	@NoRuntime depends embox.arch.context
+
+	@NoRuntime depends embox.kernel.sched.boot_thread
+
+	depends stack_api
+	depends thread_local
+	depends thread_cancel
+	depends signal_api
+
+	depends embox.compat.libc.assert
+
+	depends embox.kernel.cpu.common
+	depends embox.kernel.sched.current.api
+
+	depends stack_protect
+}
+
+module core_smp extends core {
+	option string log_level="LOG_NONE"
+
+	option number thread_stack_align=8
+	option number thread_stack_size=0x20000
+	option number thread_pool_size=16
+
+	source "core_smp.c"
+	source "thread_switch.c"
+
+	@IncludeExport(path="kernel")
+	source "thread.h"
+
+	@IncludeExport(path="kernel/thread", target_name="types.h")
+	source "thread_types.h"
+
+	depends thread_allocator
+	depends sched_wait
+
+	@NoRuntime depends embox.kernel.sched.sched
+	@NoRuntime depends embox.kernel.sched.sched_ticker
+	@NoRuntime depends embox.kernel.sched.timing.timing
+	@NoRuntime depends embox.arch.context
+
+	@NoRuntime depends embox.kernel.sched.boot_thread
+
+	depends stack_api
+	depends thread_local
+	depends thread_cancel
+	depends signal_api
+
+	depends embox.compat.libc.assert
+
+	depends embox.kernel.cpu.common
+	depends embox.kernel.sched.current.api
+
+	depends stack_protect
+}
