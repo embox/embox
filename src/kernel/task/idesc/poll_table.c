@@ -17,7 +17,6 @@
 #include <kernel/task/resource/poll_table.h>
 #include <kernel/thread.h>
 #include <kernel/thread/thread_sched_wait.h>
-#include <util/atomic_rmw.h>
 
 static struct idesc *poll_table_idx2idesc(int idx) {
 	return idx < 0 ? NULL : index_descriptor_get(idx);
@@ -75,11 +74,8 @@ static int poll_table_cleanup(struct idesc_poll_table *pt) {
 		if (!idesc) {
 			continue;
 		}
-		/* Read the count the decrement returned. The separate load could see
-		 * another poller's decrement and send two threads down the close path.
-		 * */
-		if (atomic_rmw_sub_fetch(&idesc->idesc_usage_count, 1, __ATOMIC_ACQ_REL)
-		    > 0) {
+		idesc->idesc_usage_count--;
+		if (idesc->idesc_usage_count > 0) {
 			idesc_wait_cleanup(idesc, &idesc_poll->wait_link);
 		}
 		else {
@@ -102,7 +98,7 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 		if (!idesc) {
 			continue;
 		}
-		atomic_rmw_add_fetch(&idesc->idesc_usage_count, 1, __ATOMIC_RELAXED);
+		idesc->idesc_usage_count++;
 
 		idesc_wait_init(&ip->wait_link, ip->i_poll_mask);
 		idesc_wait_prepare(idesc, &ip->wait_link);

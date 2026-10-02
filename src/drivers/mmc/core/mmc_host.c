@@ -63,15 +63,6 @@ static int mmc_block_read(struct block_dev *bdev, char *buffer, size_t count, bl
 	assert(mmc->ops->request);
 	mmc->ops->request(mmc, &req);
 
-	/* Upstream returned block_size unconditionally, so a
-	 * failed transfer looked exactly like a good one and the caller got
-	 * stale buffer contents. */
-	if (req.cmd.error) {
-		log_error("mmc cmd %d blkno %d failed: %d", (int)req.cmd.opcode,
-		    (int)blkno, req.cmd.error);
-		return -EIO;
-	}
-
 	return bdev->block_size;
 }
 
@@ -107,15 +98,6 @@ static int mmc_block_write(struct block_dev *bdev, char *buffer, size_t count, b
 	assert(mmc->ops);
 	assert(mmc->ops->request);
 	mmc->ops->request(mmc, &req);
-
-	/* Upstream returned block_size unconditionally, so a
-	 * failed transfer looked exactly like a good one and the caller got
-	 * stale buffer contents. */
-	if (req.cmd.error) {
-		log_error("mmc cmd %d blkno %d failed: %d", (int)req.cmd.opcode,
-		    (int)blkno, req.cmd.error);
-		return -EIO;
-	}
 
 	return bdev->block_size;
 }
@@ -215,8 +197,7 @@ static void mmc_go_idle(struct mmc_host *host) {
 void mmc_set_bus_width(struct mmc_host *host, int width) {
 	uint32_t resp[4];
 
-	/* CMD55 must carry host->rca, not a hardcoded 1. */
-	mmc_send_cmd(host, 55, host->rca << 16, MMC_RSP_R1, resp);
+	mmc_send_cmd(host, 55, 0x10000, MMC_RSP_R1, resp);
 	mmc_send_cmd(host, 6, width, MMC_RSP_R1, resp);
 }
 

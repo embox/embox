@@ -6,8 +6,6 @@
  * @author Vita Loginova
  */
 
-#include <stdint.h>
-
 #include <embox/test.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread.h>
@@ -28,9 +26,7 @@ TEST_CASE("General") {
 }
 
 static void *run(void *arg) {
-	/* Through intptr_t, or clang refuses the narrowing cast
-	 * outright (-Wvoid-pointer-to-int-cast is an error in this tree). */
-	if ((intptr_t)arg == 1)
+	if ((int)arg == 1)
 	{
 	test_assert_zero(thread_launch(t2));
 	}
