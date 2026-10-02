@@ -68,7 +68,6 @@ static inline void spin_init(spinlock_t *lock, unsigned int state) {
 #define __SPIN_UNLOCKED 0
 #define __SPIN_LOCKED   1
 
-#if defined(SMP) || defined(SPIN_DEBUG)
 
 static inline int __spin_trylock_smp(spinlock_t *lock) {
 #ifdef __HAVE_ARCH_CMPXCHG
@@ -82,32 +81,23 @@ static inline int __spin_trylock_smp(spinlock_t *lock) {
 #endif /* __HAVE_ARCH_CMPXCHG */
 }
 
-#else /* !(SMP || SPIN_DEBUG) */
-
-static inline int __spin_trylock_smp(spinlock_t *lock) {
-	(void)lock;
-
-	return 1;
-}
-
-#endif /* SMP || SPIN_DEBUG */
-
 static inline int __spin_trylock(spinlock_t *lock) {
 	int ret;
 
-#if defined(SMP) || defined(SPIN_DEBUG)
 	unsigned int cpu_id = cpu_get_id();
 
 	assertf(lock->owner != cpu_id, "Recursive lock of a spin owned by this CPU");
-#endif
 
-	ret = __spin_trylock_smp(lock);
 #if defined(SMP) || defined(SPIN_DEBUG)
+	ret = __spin_trylock_smp(lock);
+#else	
+	ret = (lock->owner != cpu_id) 
+#endif	
+	
 	if (ret) {
 		assert(lock->owner == -1u);
 		lock->owner = cpu_id;
 	}
-#endif
 #ifdef SPIN_CONTENTION_LIMIT
 	if (ret)
 		lock->contention_count = SPIN_CONTENTION_LIMIT;
@@ -143,6 +133,7 @@ static inline void __spin_unlock(spinlock_t *lock) {
 	 * that takes the lock before it sees the lock free. */
 	atomic_rmw_store(&lock->l, __SPIN_UNLOCKED, __ATOMIC_RELEASE);
 #else /* !(SMP || SPIN_DEBUG) */
+	lock->owner = -1u;
 	__barrier();
 #endif /* SMP || SPIN_DEBUG */
 }
