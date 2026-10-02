@@ -15,15 +15,15 @@
 
 #include "pl022_spi.h"
 
-#define SPI_BUS_NUM        0
+#define SPI_BUS_NUM        2
 
 #define SPI_BASE_ADDR	  (uintptr_t)OPTION_GET(NUMBER,base_addr)
 
 #define SPI_BUS_NAME      MACRO_CONCAT(spibus,SPI_BUS_NUM)
 
-EMBOX_UNIT_INIT(pl022_spi0_init);
+EMBOX_UNIT_INIT(pl022_spi2_init);
 
-static struct pl022_spi pl022_spi0 = {
+static struct pl022_spi pl022_spi2 = {
 	.base_addr = SPI_BASE_ADDR,
 };
 
@@ -74,10 +74,10 @@ static void hw_pins_config(struct spi_controller *spi_c) {
 
 #endif /* USE_BOARD_CONF */
 
-static int pl022_spi0_init(void) {
+static int pl022_spi2_init(void) {
 	struct spi_controller *spi_c = spi_controller_by_id(SPI_BUS_NUM);
 
-	pl022_spi0.spi_controller = spi_c;
+	pl022_spi2.spi_controller = spi_c;
 	spi_c->spic_label = SPI_BASE_ADDR;
 #if USE_BOARD_CONF == 1
 	spi_c->spic_pins = pl022_spi_pins;
@@ -87,13 +87,13 @@ static int pl022_spi0_init(void) {
 	spi_c->spic_pins = NULL;
 #endif /* USE_BOARD_CONF */
 
-	pl022_spi_init(&pl022_spi0);
-
+	pl022_spi_init(&pl022_spi2);
+	
 	return 0;
 }
 
 #if USE_BOARD_CONF == 1
-SPI_CONTROLLER_DEF(SPI_BUS_NAME, &pl022_spic_ops, &pl022_spi0, SPI_BUS_NUM, pl022_spi_pins);
+SPI_CONTROLLER_DEF(SPI_BUS_NAME, &pl022_spic_ops, &pl022_spi2, SPI_BUS_NUM, pl022_spi_pins);
 #else
-SPI_CONTROLLER_DEF(SPI_BUS_NAME, &pl022_spic_ops, &pl022_spi0, SPI_BUS_NUM, NULL);
+SPI_CONTROLLER_DEF(SPI_BUS_NAME, &pl022_spic_ops, &pl022_spi2, SPI_BUS_NUM, NULL);
 #endif /* USE_BOARD_CONF */

@@ -91,6 +91,7 @@ static int pl022_spi1_init(void) {
 	
 	return 0;
 }
+
 #if USE_BOARD_CONF == 1
 SPI_CONTROLLER_DEF(SPI_BUS_NAME, &pl022_spic_ops, &pl022_spi1, SPI_BUS_NUM, pl022_spi_pins);
 #else

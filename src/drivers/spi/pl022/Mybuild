@@ -17,6 +17,7 @@ module pl022_spi0 {
 	option number irq_num = 0
 
 	source "pl022_spi0.c"
+
 	@NoRuntime depends embox.driver.spi.spi0_dev0
 
 	depends embox.driver.spi.pl022_spi_drv
@@ -30,7 +31,22 @@ module pl022_spi1 {
 	option number irq_num = 0
 
 	source "pl022_spi1.c"
+
 	@NoRuntime depends embox.driver.spi.spi1_dev0
+
+	depends embox.driver.spi.pl022_spi_drv
+}
+
+module pl022_spi2 {
+	option string log_level="LOG_ERR"
+	option boolean use_board_conf=false
+
+	option number base_addr = 0
+	option number irq_num = 0
+
+	source "pl022_spi2.c"
+
+	@NoRuntime depends embox.driver.spi.spi2_dev0
 
 	depends embox.driver.spi.pl022_spi_drv
 }
