@@ -1,0 +1,11 @@
+package embox.kernel
+
+@Mandatory
+module spinlock {
+	option boolean spin_debug=false
+	option number spin_contention_limit=0x10000000
+
+	@IncludeExport(path="kernel")
+	source "spinlock.h"
+	source "spinlock.c"
+}
