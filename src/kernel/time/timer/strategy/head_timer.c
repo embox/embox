@@ -8,9 +8,12 @@
  * @author Fedor Burdun
  */
 
-#include <kernel/time/sys_timer.h>
+#include <compiler.h>
+#include <sys/types.h>
+
 #include <hal/clock.h>
 #include <hal/ipl.h>
+#include <kernel/time/sys_timer.h>
 
 static DLIST_DEFINE(sys_timers_list); /* list head to timers */
 
@@ -60,7 +63,7 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 	ipl_restore(ipl);
 }
 
-int timer_strat_get_next_event(clock_t *next_event) {
+__attribute_no_ubsan int timer_strat_get_next_event(clock_t *next_event) {
 	ipl_t ipl;
 	int ret = -1;
 	struct sys_timer *t;
