@@ -69,19 +69,18 @@ int clock_source_unregister(struct clock_source *cs) {
 struct timespec clock_source_read(struct clock_source *cs) {
 	struct time_counter_device *cd;
 	struct time_event_device *ed;
-	struct timespec ts;
-	uint64_t ns;
+	struct timespec ts = {0};
 
-	ns = 0;
 	ed = cs->event_device;
 	cd = cs->counter_device;
 
 	if (cd && cd->get_time) {
-		ns = cd->get_time(cs);
+		ts = ns_to_timespec(cd->get_time(cs));
 	}
 	else if (ed && (ed->flags & CLOCK_EVENT_PERIODIC_MODE)) {
 		cycle_t cycle;
 		volatile clock_t jiffies;
+		struct timespec jiffies_ts;
 
 		cycle = 0;
 		jiffies = ed->jiffies;
@@ -91,13 +90,15 @@ struct timespec clock_source_read(struct clock_source *cs) {
 				jiffies = ed->jiffies;
 				cycle = cd->get_cycles(cs);
 			} while (jiffies != ed->jiffies);
-			ns = cycle * (NSEC_PER_SEC / cd->cycle_hz);		
+			ts = cycles64_to_timespec(cd->cycle_hz, cycle);		
 		}
 
-		ns += (uint64_t)jiffies * (NSEC_PER_SEC / ed->event_hz);
+		jiffies_ts = jiffies_to_timespec(ed->event_hz, jiffies);
+		ts = timespec_add(ts, jiffies_ts);
 	}
-
-	ts = ns_to_timespec(ns);
+	else if (cd && cd->get_cycles) {
+		ts = cycles64_to_timespec(cd->cycle_hz, cd->get_cycles(cs));
+	}
 
 	return ts;
 }
