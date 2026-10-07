@@ -16,6 +16,8 @@
 int dma_config(struct dma_dev *dev, int ch, struct dma_config *conf) {
     int res;
 
+    res = 0;
+
     if (!dev || !dev->dd_ops) {
 		return -EINVAL;
 	}
@@ -33,6 +35,8 @@ int dma_config(struct dma_dev *dev, int ch, struct dma_config *conf) {
 int dma_transfer(struct dma_dev *dev, int ch, struct dma_req *req) {
     int res;
 
+    res = 0;
+
     if (!dev || !dev->dd_ops) {
 		return -EINVAL;
 	}
@@ -46,6 +50,8 @@ int dma_transfer(struct dma_dev *dev, int ch, struct dma_req *req) {
 
 int dma_activate(struct dma_dev *dev, uint32_t ch_mask) {
     int res;
+
+    res = 0;
 
     if (!dev || !dev->dd_ops) {
 		return -EINVAL;
@@ -62,6 +68,8 @@ int dma_activate(struct dma_dev *dev, uint32_t ch_mask) {
 int dma_get_type(struct dma_dev *dev, char *type) {
     int res;
 
+    res = 0;
+
     if (!dev || !dev->dd_ops) {
 		return -EINVAL;
 	}
@@ -75,6 +83,8 @@ int dma_get_type(struct dma_dev *dev, char *type) {
 
 int dma_init(struct dma_dev *dev) {
     int res;
+
+    res = 0;
 
     if (!dev || !dev->dd_ops) {
 		return -EINVAL;
