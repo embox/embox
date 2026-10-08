@@ -277,7 +277,9 @@ static int niiet_pwm_dma_callback(struct dma_req *req, void *data, int res) {
     chan = dma_data->ch_num;
     priv = dev->pwmd_priv;
 
+    (void)chan;
     log_debug("niiet_pwm_dma_callback pwm%d chan%d", dev->pwmd_id, chan);
+
     priv->dma_flags &= ~NIIET_PWM_DMA_PREPARED;
 
     return 0;
