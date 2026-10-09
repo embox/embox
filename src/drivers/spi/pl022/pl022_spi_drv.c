@@ -8,6 +8,7 @@
 
 #include <util/log.h>
 
+#include <cstdint>
 #include <errno.h>
 
 #include <hal/reg.h>
@@ -222,6 +223,8 @@ struct pl022_regs {
 
 #define SSP_READ_REG     REG32_LOAD
 
+#define TIMEOUT_LIMIT		100000
+
 /*
  * ARM PL022 exists in different 'flavors'.
  * This drivers currently support the standard variant (0x00041022), that has a
@@ -363,51 +366,55 @@ static int pl022_spi_set_mode(struct spi_controller *spi_dev, bool is_master) {
 	return pl022_spi_setup(dev, is_master);
 }
 
+static uint8_t pl022_transfer_byte(struct pl022_spi *dev, uint8_t val) {
+	int timeout;
+
+	/* Wait until there is space in TX FIFO */
+	timeout = TIMEOUT_LIMIT;
+	while (!(REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_TNF)
+			&& timeout--) {
+	}
+
+	if (timeout == 0) {
+		log_debug("PL022 TX timeout");
+		return 0;
+	}
+
+	/* Start one SPI exchange */
+	SSP_WRITE_REG(SSP_DR(dev->base_addr), val);
+
+	/* Wait until received data appears in RX FIFO */
+	timeout = TIMEOUT_LIMIT;
+	while (!(REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_RNE)
+			&& timeout--) {
+	}
+
+	if (timeout == 0) {
+		log_debug("PL022 RX timeout");
+		return 0;
+	}
+
+	/* Get the byte received during this exchange */
+	return SSP_READ_REG(SSP_DR(dev->base_addr));
+}
+
 
 static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 	uint8_t *outbuf, int count) {
 	struct pl022_spi *dev = spi_dev->spic_priv;
 	uint8_t value;
-	int tx_cnt;
-	int rx_cnt;
-
-	rx_cnt = 0;
-	tx_cnt = 0;
 
 	pl022_spi_claim_bus(dev);
-    pl022_spi_flush(dev);
-	/* transmit/recieve */
-	while (tx_cnt < count) {
-		if (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_TNF) {
-			if (inbuf) {
-				value = *inbuf++;
-			} else {
-				value = 0;
-			}
-			log_debug("SPI WRITE: data=0x%02X, txcnt=0x%02X ", value, tx_cnt);
-			SSP_WRITE_REG(SSP_DR(dev->base_addr), value);
-			tx_cnt++;
-		}
+  pl022_spi_flush(dev);
 
-		if (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_RNE) {
-			value = SSP_READ_REG(SSP_DR(dev->base_addr));
-			if (outbuf) {
-				*outbuf++ = value;
-				log_debug("SPI READ: data=0x%02X, rxcnt=0x%02X\n", value, tx_cnt);																		
-			}
-			rx_cnt++;
-		}
-	}
+  while (count--) {
+		value = inbuf ? *inbuf++ : 0;
+		log_debug("SPI WRITE: data=0x%02X\n", value);
+		value = pl022_transfer_byte(dev, value);
 
-	while (rx_cnt < tx_cnt) {
-		if (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_RNE) {
-			value = SSP_READ_REG(SSP_DR(dev->base_addr));
-			if (outbuf) {
-				*outbuf++ = value;
-				log_debug("SPI READ: data=0x%02X, rxcnt=0x%02X\n", value, tx_cnt);				
-			}
-			rx_cnt++;
-		}
+	  log_debug("SPI READ: data=0x%02X\n", value);
+		if (outbuf)
+			*outbuf++ = value;
 	}
 
 	pl022_spi_release_bus(dev);
