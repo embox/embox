@@ -8,7 +8,6 @@
 
 #include <util/log.h>
 
-#include <cstdint>
 #include <errno.h>
 
 #include <hal/reg.h>
