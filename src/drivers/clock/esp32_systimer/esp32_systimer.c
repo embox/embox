@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include <drivers/common/memory.h>
+#include <drivers/esp32_intmatrix.h>
 #include <framework/mod/options.h>
 #include <hal/clock.h>
 #include <hal/ipl.h>
@@ -14,6 +15,10 @@
 #define RTC_FREQ  OPTION_GET(NUMBER, rtc_freq)
 #define BASE_ADDR OPTION_GET(NUMBER, base_addr)
 #define IRQ_NUM   OPTION_GET(NUMBER, irq_num)
+
+#if defined(__EMBOX_PLATFORM__esp32c5__)
+#define SYSTIMER_TARGET0_INTR_SOURCE 60U
+#endif
 
 #define SYSTIMER_CONF           (BASE_ADDR + 0x000)
 #define SYSTIMER_TARGET0_CONF   (BASE_ADDR + 0x034)
@@ -182,8 +187,14 @@ static int esp32_systimer_init(struct clock_source *cs) {
 	REG32_STORE(SYSTIMER_INT_CLR, 1);
 	REG32_STORE(SYSTIMER_TARGET0_CONF, 0); /* Compare against UNIT0. */
 
-	res = irq_attach(IRQ_NUM, esp32_systimer_irq_handler, 0, cs,
-	    "esp32_systimer");
+#if defined(__EMBOX_PLATFORM__esp32c5__)
+	res = esp32_intmatrix_route(SYSTIMER_TARGET0_INTR_SOURCE, IRQ_NUM);
+	if (res != 0) {
+		return res;
+	}
+#endif
+
+	res = irq_attach(IRQ_NUM, esp32_systimer_irq_handler, 0, cs, "esp32_systimer");
 	if (res != 0) {
 		return res;
 	}
@@ -193,7 +204,7 @@ static int esp32_systimer_init(struct clock_source *cs) {
 	return 0;
 }
 
-CLOCK_SOURCE_DEF(esp32_systimer, esp32_systimer_init, NULL,
-    &esp32_systimer_ed, &esp32_systimer_cd);
+CLOCK_SOURCE_DEF(esp32_systimer, esp32_systimer_init, NULL, &esp32_systimer_ed,
+    &esp32_systimer_cd);
 
 PERIPH_MEMORY_DEFINE(esp32_systimer, (uintptr_t)BASE_ADDR, 0x80);

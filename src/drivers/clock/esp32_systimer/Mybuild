@@ -8,4 +8,5 @@ module esp32_systimer {
 	source "esp32_systimer.c"
 
 	depends embox.kernel.time.clock_source
+	@NoRuntime depends embox.driver.interrupt.esp32_inmatrix
 }

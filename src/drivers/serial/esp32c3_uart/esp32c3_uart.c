@@ -5,15 +5,24 @@
  * @author  Efim Perevalov
  */
 // #include <assert.h>
+#include <errno.h>
 #include <stdint.h>
 
 #include <drivers/common/memory.h>
+#include <drivers/esp32_intmatrix.h>
 #include <drivers/serial/uart_dev.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
 
 #define UART_BASE      UINTMAX_C(OPTION_GET(NUMBER, base_addr))
 #define UART_BAUD_RATE OPTION_GET(NUMBER, baud_rate)
+
+#if defined(__EMBOX_PLATFORM__esp32c5__)
+#define UART0_BASE_ADDR   0x60000000U
+#define UART1_BASE_ADDR   0x60001000U
+#define UART0_INTR_SOURCE 47U
+#define UART1_INTR_SOURCE 48U
+#endif
 
 #define UART_ERR_WR_MASK_M   (1U << 26)
 
@@ -151,6 +160,33 @@ static int esp32c3_uart_hasrx(struct uart *dev) {
     return 0;
 }
 
+static int esp32c3_uart_irq_en(struct uart *dev, const struct uart_params *params) {
+#if defined(__EMBOX_PLATFORM__esp32c5__)
+	uint32_t source;
+	int res;
+
+	switch (dev->base_addr) {
+	case UART0_BASE_ADDR:
+		source = UART0_INTR_SOURCE;
+		break;
+	case UART1_BASE_ADDR:
+		source = UART1_INTR_SOURCE;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	res = esp32_intmatrix_route(source, dev->irq_num);
+	if (res != 0) {
+		return res;
+	}
+#endif
+
+	REG32_ORIN(UART_INT_ENA(dev->base_addr), 1);
+
+	return 0;
+}
+
 static int esp32c3_uart_setup(struct uart *dev, const struct uart_params *params) {
     //  modifyreg32(UART_CONF0_REG(priv->id), UART_ERR_WR_MASK_M | UART_MEM_CLK_EN_M, UART_ERR_WR_MASK_M);
     uint32_t conf0 = REG32_LOAD(UART_CONF0(dev->base_addr));
@@ -179,12 +215,10 @@ static int esp32c3_uart_setup(struct uart *dev, const struct uart_params *params
     mem_conf_reg |= (1 << UART_TX_SIZE_S) | (1 << UART_RX_SIZE_S);
     REG32_STORE(UART_MEM_CONF(dev->base_addr), mem_conf_reg);
 
-    REG32_ORIN(UART_INT_ENA(dev->base_addr), 1);
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
+		return esp32c3_uart_irq_en(dev, params);
+	}
 
-    return 0;
-}
-
-static int esp32c3_uart_irq_en(struct uart *dev, const struct uart_params *params) {
     return 0;
 }
 

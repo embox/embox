@@ -6,6 +6,7 @@ module esp32c3_uart {
 	source "esp32c3_uart.c"
 
 	depends embox.driver.serial.core
+	@NoRuntime depends embox.driver.interrupt.esp32_inmatrix
 }
 
 module esp32c3_uart_diag extends embox.driver.serial.diag {
