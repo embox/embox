@@ -22,7 +22,12 @@
 #define __context_sp_offset     (CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 3)
 
 /* The stack pointer must always be 16-byte aligned when a function is entered */
+#if defined(__EMBOX_PLATFORM__esp32c5__)
+#define __context_cause_offset (CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 4)
+#define __context_size binalign_bound((CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 5), 16)
+#else
 #define __context_size binalign_bound((CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 4), 16)
+#endif
 
 .section .text
 .global riscv_trap_handler
@@ -41,6 +46,12 @@ riscv_trap_handler:
 	REG_S   t0, __context_status_offset(sp)
 	REG_S   t1, __context_epc_offset(sp)
 	REG_S   ra, __context_ra_offset(sp)
+
+#if defined(__EMBOX_PLATFORM__esp32c5__)
+	/* CLIC keeps the previous interrupt level (MPIL) in mcause. */
+	csrr    t1, CSR_CAUSE
+	REG_S   t1, __context_cause_offset(sp)
+#endif
 
 #ifdef __riscv_f
 	/* Check if [m|s]status.FS is Clean or Dirty */
@@ -62,6 +73,10 @@ riscv_trap_handler:
 	blt     a0, zero, 2f
 
 	/* Exception handling */
+#if defined(__EMBOX_PLATFORM__esp32c5__)
+	/* Strip the CLIC context fields before indexing the exception table. */
+	andi    a0, a0, 0x3f
+#endif
 	mv      a1, sp
 	REG_S   sp, __context_sp_offset(a1)
 	call    riscv_exception_handler
@@ -71,6 +86,11 @@ riscv_trap_handler:
 	call    riscv_interrupt_handler
 
 riscv_trap_exit:
+#if defined(__EMBOX_PLATFORM__esp32c5__)
+	/* Restore MPIL before mret, including after a nested trap. */
+	REG_L   t2, __context_cause_offset(sp)
+	csrw    CSR_CAUSE, t2
+#endif
 	/* Load [m|s]status, [m|s]epc and ra registers */
 	REG_L   t0, __context_status_offset(sp)
 	REG_L   t1, __context_epc_offset(sp)

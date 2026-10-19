@@ -17,7 +17,7 @@
 #define IRQ_NUM   OPTION_GET(NUMBER, irq_num)
 
 #if defined(__EMBOX_PLATFORM__esp32c5__)
-#define SYSTIMER_TARGET0_INTR_SOURCE 60U
+#define SYSTIMER_TARGET0_INTR_SOURCE 61U
 #endif
 
 #define SYSTIMER_CONF           (BASE_ADDR + 0x000)

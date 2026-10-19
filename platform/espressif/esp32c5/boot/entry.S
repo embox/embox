@@ -19,7 +19,7 @@ esp32c5_boot_entry:
 	tail esp32c5_boot
 .size esp32c5_boot_entry, . - esp32c5_boot_entry
 
-.balign 4
+.balign 64
 esp32c5_boot_trap:
 	wfi
 	j esp32c5_boot_trap

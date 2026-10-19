@@ -56,6 +56,8 @@
 #define UART_INT_ENA(base) (base + 0x000C) /* R/W */
 #define UART_INT_CLR(base) (base + 0x0010) /* WT */
 
+#define UART_RXFIFO_FULL_INT (1U << 0)
+
 /* Configuration Register */
 #define UART_CLKDIV(base)       (base + 0x0014) /* R/W */
 #define UART_RX_FILT(base)	  	(base + 0x0018) /* R/W */
@@ -150,6 +152,9 @@ static int esp32c3_uart_hasrx(struct uart *dev) {
     uint32_t uart_status;
     uint32_t uart_rxfifo_cnt;
 
+	/* Clear before checking FIFO so a newly received byte is not lost. */
+	REG32_STORE(UART_INT_CLR(dev->base_addr), UART_RXFIFO_FULL_INT);
+
     uart_status = REG32_LOAD(UART_STATUS(dev->base_addr));
     uart_rxfifo_cnt = uart_status & 0x3FF;
 
@@ -182,7 +187,8 @@ static int esp32c3_uart_irq_en(struct uart *dev, const struct uart_params *param
 	}
 #endif
 
-	REG32_ORIN(UART_INT_ENA(dev->base_addr), 1);
+	/* Only RX FIFO interrupts are handled; discard ROM interrupt enables. */
+	REG32_STORE(UART_INT_ENA(dev->base_addr), UART_RXFIFO_FULL_INT);
 
 	return 0;
 }

@@ -17,6 +17,9 @@ struct excpt_context {
 	unsigned long epc;
 	unsigned long ra;
 	unsigned long sp;
+#if defined(__EMBOX_PLATFORM__esp32c5__)
+	unsigned long cause;
+#endif
 };
 
 typedef void (*excpt_handler)(struct excpt_context *ctx);
