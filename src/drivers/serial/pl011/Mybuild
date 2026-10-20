@@ -1,6 +1,7 @@
 package embox.driver.serial
 
 module pl011 {
+	option string log_level = "LOG_NONE"
 	/* FIXME Set UARTCLK to 0 since it is not used in many templates */
 	option number uartclk=0
 	option boolean use_bconf=false
