@@ -84,6 +84,7 @@ struct uart_ops {
 	int (*uart_setup)(struct uart *dev, const struct uart_params *params);
 	int (*uart_irq_en)(struct uart *dev, const struct uart_params *params);
 	int (*uart_irq_dis)(struct uart *dev, const struct uart_params *params);
+	int (*uo_probe)(struct uart *dev);
 };
 
 struct uart {
