@@ -26,7 +26,7 @@ extern int fat_destroy_inode(struct inode *inode);
  *
  * @return Error code
  */
-static int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
+static int fat_iterate_unlocked(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	struct dirinfo *dirinfo;
 	struct fat_dirent de;
 	int res;
@@ -104,7 +104,7 @@ static int fat_truncate(struct inode *node, off_t length) {
  *
  * @return Negative error code
  */
-int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
+static int fat_create_unlocked(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
 	struct dirinfo *di;
@@ -155,7 +155,7 @@ int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
 extern int fat_dir_empty(struct fat_file_info *fi);
-static int fat_delete(struct inode *dir, struct inode *node) {
+static int fat_delete_unlocked(struct inode *dir, struct inode *node) {
 	struct fat_file_info *fi;
 
 	fi = inode_priv(node);
@@ -168,16 +168,44 @@ static int fat_delete(struct inode *dir, struct inode *node) {
 		return -1;
 	}
 
-	if (S_ISDIR(node->i_mode)) {
-		fat_dirinfo_free((void *) fi);
-	} else {
-		fat_file_free(fi);
-	}
+	/* Through fat_destroy_inode(), which also clears the inode's private
+	 * pointer, so inode_free() does not release it a second time. */
+	fat_destroy_inode(node);
 
 	return 0;
 }
 
 extern struct inode *fat_ilookup(struct inode *node, char const *name, struct inode const *dir);
+
+/* fat_iterate reaches fat_destroy_inode, which is why the lock has to be
+ * recursive. */
+static int fat_iterate(struct inode *next, char *name, struct inode *parent,
+		struct dir_ctx *ctx) {
+	int res;
+
+	fat_lock();
+	res = fat_iterate_unlocked(next, name, parent, ctx);
+	fat_unlock();
+	return res;
+}
+
+int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
+	int res;
+
+	fat_lock();
+	res = fat_create_unlocked(i_new, i_dir, mode);
+	fat_unlock();
+	return res;
+}
+
+static int fat_delete(struct inode *dir, struct inode *node) {
+	int res;
+
+	fat_lock();
+	res = fat_delete_unlocked(dir, node);
+	fat_unlock();
+	return res;
+}
 
 struct inode_operations fat_iops = {
 	.ino_create   = fat_create,
