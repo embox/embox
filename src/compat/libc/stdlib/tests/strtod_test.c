@@ -68,3 +68,13 @@ TEST_CASE("Empty string") {
     test_assert(res == 0.0);
     test_assert(end == input);  
 }
+
+TEST_CASE("Negative number with positive exponent") {
+    double res = strtod("-34e+6", NULL);
+    test_assert(DOUBLE_EQ(res, -34000000.0));
+}
+
+TEST_CASE("Negative number with negative exponent") {
+    double res = strtod("-34e-6", NULL);
+    test_assert(DOUBLE_EQ(res * 1e+6, -34.0));
+}
