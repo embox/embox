@@ -517,6 +517,102 @@ struct pwm_conf pwms[] = {
 			},
 		},
 	},
+		[10] = {
+		.name = "PWM10",
+		.dev = {
+			.name = "PWM10",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR10_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT0", GPIO_PORT_D, 5, GPIO_MODE_ALT, 3),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR10"),
+			},
+			.dmas = {
+				VAL("OUT0_NUM", 0),
+				VAL("OUT0_CHAN", 10),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+				VAL("TMR_NAME", "TMR10"),
+				VAL("TMR_IDX", 10),
+			},
+		},
+	},
+	[12] = {
+		.name = "PWM12",
+		.dev = {
+			.name = "PWM12",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR12_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT0", GPIO_PORT_D, 6, GPIO_MODE_ALT, 5),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR12"),
+			},
+			.dmas = {
+				VAL("OUT0_NUM", 0),
+				VAL("OUT0_CHAN", 12),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+				VAL("TMR_NAME", "TMR12"),
+				VAL("TMR_IDX", 12),
+			},
+		},
+	},
+	[13] = {
+		.name = "PWM13",
+		.dev = {
+			.name = "PWM13",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR13_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT0", GPIO_PORT_D, 8, GPIO_MODE_ALT, 5),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR13"),
+			},
+			.dmas = {
+				VAL("OUT0_NUM", 0),
+				VAL("OUT0_CHAN", 13),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+				VAL("TMR_NAME", "TMR13"),
+				VAL("TMR_IDX", 13),
+			},
+		},
+	},
+	[14] = {
+		.name = "PWM14",
+		.dev = {
+			.name = "PWM14",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR14_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT0", GPIO_PORT_D, 7, GPIO_MODE_ALT, 5),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR14"),
+			},
+			.dmas = {
+				VAL("OUT0_NUM", 0),
+				VAL("OUT0_CHAN", 14),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+				VAL("TMR_NAME", "TMR14"),
+				VAL("TMR_IDX", 14),
+			},
+		},
+	},
 };
 
 struct spi_conf spis[] = {
