@@ -1,8 +1,0 @@
-package platform.espressif.esp32c5
-
-@LinkerSection(text="esp32c5_boot", rodata="esp32c5_boot")
-module boot {
-	source "entry.S"
-	source "boot.c"
-	source "boot.lds.S"
-}

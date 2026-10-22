@@ -6,15 +6,22 @@
 
 #include <stdint.h>
 
-/* Mybuild places all text and rodata of this module in boot SRAM. */
+/* The standalone linker script places the loader in boot SRAM. */
 #define REG32(addr) (*(volatile uint32_t *)(uintptr_t)(addr))
 
 #define LP_WDT_BASE       0x600b1c00U
 #define LP_WDT_KEY        0x50d83aa1U
+#define TG0_BASE          0x60008000U
+#define TG_WDT_CONFIG0    0x48U
+#define TG_WDT_WPROTECT   0x64U
+#define TG_WDT_KEY        0x50d83aa1U
+#define TG_WDT_EN         (1U << 31)
+#define TG_WDT_FLASHBOOT  (1U << 14)
 #define CACHE_CTRL        0x600c8004U
 #define FLASH_VADDR       0x42000000U
 #define FLASH_OFFSET      0x00010000U
 #define MMU_PAGE_SIZE     0x00010000U
+#define FLASH_SIZE        0x00100000U
 
 /* Bound by boot.lds.S; these calls always execute from mask ROM. */
 extern int esp32c5_rom_printf(const char *fmt, ...);
@@ -25,9 +32,6 @@ extern int esp32c5_rom_mmu_set(uint32_t sensitive, uint32_t ext_ram,
 		uint32_t vaddr, uint32_t paddr, uint32_t page_kb,
 		uint32_t pages, uint32_t fixed);
 
-extern char _data_lma[], _data_len[];
-extern void _start(void);
-
 static const char boot_message[] =
 	"\r\nEmbox ESP32-C5: SRAM boot\r\n";
 static const char map_message[] =
@@ -36,7 +40,6 @@ static const char fail_message[] =
 	"Embox ESP32-C5: MMU setup failed (%d)\r\n";
 
 void __attribute__((noreturn)) esp32c5_boot(void) {
-	uint32_t end, pages;
 	int ret;
 
 	/* Disable the ROM boot watchdog; leave the super watchdog auto-fed. */
@@ -47,16 +50,19 @@ void __attribute__((noreturn)) esp32c5_boot(void) {
 	REG32(LP_WDT_BASE + 0x1c) |= 1U << 18;
 	REG32(LP_WDT_BASE + 0x20) = 0;
 
-	esp32c5_rom_printf(boot_message);
+	/* TG0 flash-boot watchdog is independent of the LP watchdog above.
+	 * Embox does not service it; disable both normal and flash-boot modes. */
+	REG32(TG0_BASE + TG_WDT_WPROTECT) = TG_WDT_KEY;
+	REG32(TG0_BASE + TG_WDT_CONFIG0) &=
+		~(TG_WDT_EN | TG_WDT_FLASHBOOT);
+	REG32(TG0_BASE + TG_WDT_WPROTECT) = 0;
 
-	/* .data initializers are last in the flash load image. */
-	end = (uintptr_t)_data_lma + (uintptr_t)_data_len;
-	pages = (end - FLASH_VADDR + MMU_PAGE_SIZE - 1) / MMU_PAGE_SIZE;
+	esp32c5_rom_printf(boot_message);
 
 	esp32c5_rom_cache_init();
 	esp32c5_rom_cache_disable();
 	ret = esp32c5_rom_mmu_set(0, 0, FLASH_VADDR, FLASH_OFFSET,
-		MMU_PAGE_SIZE / 1024, pages, 0);
+		MMU_PAGE_SIZE / 1024, FLASH_SIZE / MMU_PAGE_SIZE, 0);
 	if (ret) {
 		esp32c5_rom_printf(fail_message, ret);
 		for (;;) {
@@ -70,7 +76,8 @@ void __attribute__((noreturn)) esp32c5_boot(void) {
 	__asm__ volatile ("fence.i" ::: "memory");
 	esp32c5_rom_printf(map_message);
 
-	/* The generic entry installs its own stack, clears BSS and copies data. */
-	_start();
+	/* Fixed image ABI: _start is at FLASH_VADDR. It installs its own stack
+	 * before reclaiming any loader/ROM SRAM. No ROM calls after this point. */
+	__asm__ volatile ("jr %0" :: "r" (FLASH_VADDR) : "memory");
 	__builtin_unreachable();
 }

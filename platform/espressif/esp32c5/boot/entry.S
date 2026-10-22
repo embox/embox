@@ -7,10 +7,7 @@
 esp32c5_boot_entry:
 	csrci mstatus, 8
 
-	.option push
-	.option norelax
-	la gp, __global_pointer$
-	.option pop
+	/* Standalone C code is built without small-data addressing/relaxation. */
 	la sp, __esp32c5_boot_stack_top
 
 	/* An early fault must not enter the kernel with uninitialized data. */
