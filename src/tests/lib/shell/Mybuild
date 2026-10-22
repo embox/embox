@@ -5,3 +5,23 @@ module tokenizer {
 	source "tokenizer.c"
 	depends embox.lib.Tokenizer
 }
+
+module tish_stdin_flags {
+	source "tish_stdin_flags.c"
+	depends embox.cmd.sh.tish
+	depends embox.test.lib.shell.set_stdin_nonblock
+	depends embox.compat.posix.index_descriptor
+	depends embox.compat.posix.unistd.pipe
+	depends embox.kernel.task.api
+	depends embox.compat.posix.proc.waitpid
+}
+
+@AutoCmd
+@Cmd(name = "tish_set_stdin_nonblock",
+	help = "Set STDIN nonblocking for the tish regression test",
+	man = "")
+module set_stdin_nonblock {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "set_stdin_nonblock.c"
+	depends embox.compat.posix.index_descriptor
+}

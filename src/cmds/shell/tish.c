@@ -244,9 +244,29 @@ static int tish_cdata_fill(const char *cmdline, struct cmd_data *cdata) {
 	return 0;
 }
 
+#if UNSET_NODELAY_MODE
+static void sh_restore_stdin_flags(int flags) {
+	int current_flags;
+
+	if (flags == -1) {
+		return;
+	}
+
+	current_flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+	if (current_flags != -1 && current_flags != flags) {
+		if (fcntl(STDIN_FILENO, F_SETFL, flags) == -1) {
+			printf("tish: cannot restore STDIN flags\n");
+		}
+	}
+}
+#endif
+
 static int tish_exec(const char *cmdline) {
 	struct cmd_data cdata;
 	int res;
+#if UNSET_NODELAY_MODE
+	int stdin_flags;
+#endif
 
 	res = tish_cdata_fill(cmdline, &cdata);
 	if (res != 0) {
@@ -258,12 +278,20 @@ static int tish_exec(const char *cmdline) {
 		return res;
 	}
 
+#if UNSET_NODELAY_MODE
+	stdin_flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+#endif
+
 	if (is_builtin(cdata.argv[0])) {
 		res = process_builtin(&cdata);
 	}
 	else {
 		res = process_external(&cdata);
 	}
+
+#if UNSET_NODELAY_MODE
+	sh_restore_stdin_flags(stdin_flags);
+#endif
 
 	if (res < 0) {
 		printf("tish: failed to exec %s: %s\n", cdata.argv[0], strerror(-res));
@@ -337,22 +365,20 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 	return 0;
 }
 
-#if UNSET_NODELAY_MODE
-static void sh_unset_nodelay_mode(void) {
-	int orig_ifd_flags = fcntl(STDIN_FILENO, F_GETFL, 0);
-	if (orig_ifd_flags & O_NONBLOCK) {
-		if (fcntl(STDIN_FILENO, F_SETFL, orig_ifd_flags & ~O_NONBLOCK) == -1) {
-			printf("cant unset_nodelay_mode\n");
-		}
-	}
-}
-#endif
-
 static void tish_run(void) {
 	char *line;
 	char prompt_buf[PROMPT_BUF_LEN];
 	const char *prompt;
 	int err;
+#if UNSET_NODELAY_MODE
+	int stdin_flags;
+
+	stdin_flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+	if (stdin_flags != -1) {
+		stdin_flags &= ~O_NONBLOCK;
+		sh_restore_stdin_flags(stdin_flags);
+	}
+#endif
 
 	/**
 	 * Set the completion callback. This will be called every time the
@@ -361,10 +387,6 @@ static void tish_run(void) {
 	readline_init();
 	rl_attempted_completion_function = cmd_completion;
 	rl_bind_key('\t', rl_complete);
-
-#if UNSET_NODELAY_MODE
-	sh_unset_nodelay_mode();
-#endif
 
 #if 0
 	/**
@@ -380,6 +402,9 @@ static void tish_run(void) {
 	 * and presses enter.
 	 */
 	while (1) {
+#if UNSET_NODELAY_MODE
+		sh_restore_stdin_flags(stdin_flags);
+#endif
 		if (RICH_PROMPT_SUPPORT) {
 			prompt =
 			    0 == rich_prompt(PROMPT_FMT, prompt_buf, ARRAY_SIZE(prompt_buf))
@@ -417,10 +442,6 @@ static void tish_run(void) {
 		readline_free(line);
 
 		tish_collect_bg_childs();
-
-#if UNSET_NODELAY_MODE
-		sh_unset_nodelay_mode();
-#endif
 	}
 }
 
