@@ -35,6 +35,9 @@ void udp4_set_check_field(struct udphdr *udph,
 	udph->check = 0;
 	udph->check = ~fold_short(partial_sum(&ipph, sizeof ipph) +
 			partial_sum(udph, ntohs(ipph.data_len))) & 0xFFFF;
+	if (udph->check == 0) {
+		udph->check = 0xFFFF;
+	}
 }
 
 void udp6_set_check_field(struct udphdr *udph,
@@ -48,6 +51,9 @@ void udp6_set_check_field(struct udphdr *udph,
 	udph->check = 0;
 	udph->check = ~fold_short(partial_sum(&ip6ph, sizeof ip6ph) +
 			partial_sum(udph, ntohl(ip6ph.len))) & 0xFFFF;
+	if (udph->check == 0) {
+		udph->check = 0xFFFF;
+	}
 }
 
 void udp_set_check_field(struct udphdr *udph, const void *nhhdr) {
