@@ -341,6 +341,11 @@ int stdio_scan(const char **in, const char *fmt, va_list args) {
 				break;
 			}
 			fmt++;
+		} else if (isspace((int) *fmt)) {
+			while (isspace((int) *fmt)) {
+				fmt++;
+			}
+			trim_leading(in, &pc);
 		} else {
 			char ch = __stdio_scanchar(in, &pc);
 			if (*fmt++ != ch) {
