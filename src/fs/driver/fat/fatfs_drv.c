@@ -95,8 +95,15 @@ static int fat_fill_sb_unlocked(struct super_block *sb, const char *source) {
 	}
 
 	fsi = fat_fs_alloc();
+	if (fsi == NULL) {
+		return -ENOMEM;
+	}
+
 	*fsi = (struct fat_fs_info) {
 		.bdev = bdev,
+		/* The first allocation after a mount pays one scan, and every one
+		 * after it is a step. */
+		.free_hint = 2,
 	};
 	sb->sb_data = fsi;
 	sb->sb_iops = &fat_iops;
