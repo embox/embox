@@ -188,6 +188,8 @@ abstract module scanf_api {
 
 static module scanf_without_file extends scanf_api {
 	source "scanf.c", "scanf_scanchar_without_file.c"
+
+	depends embox.compat.libc.stdlib.core /* strtod() */
 }
 
 static module scanf extends scanf_api {
@@ -195,6 +197,7 @@ static module scanf extends scanf_api {
 	source "fscanf.c"
 
 	depends file_ops /* ungetc() */
+	depends embox.compat.libc.stdlib.core /* strtod() */
 }
 
 static module div {

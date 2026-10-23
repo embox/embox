@@ -111,6 +111,38 @@ static int scan_int(const char **in, int base, int width, int *res, int *pc_ptr)
 	*res = dst;
 	return 0;
 }
+
+static int scan_float(const char **in, int width, double *res, int *pc_ptr) {
+	char buf[64];
+	char *end;
+	int len = 0;
+	int ch;
+
+	if (EOF == (ch = trim_leading(in, pc_ptr))) {
+		return EOF;
+	}
+
+	while ((len < width) && (len < (int) sizeof(buf) - 1)) {
+		ch = __stdio_scanchar(in, pc_ptr);
+		if (!(isdigit(ch) || (ch == '.') || (ch == 'e') || (ch == 'E')
+			|| (((ch == '-') || (ch == '+'))
+				&& ((len == 0) || (buf[len - 1] == 'e')
+					|| (buf[len - 1] == 'E'))))) {
+			__stdio_unscanchar(in, ch, pc_ptr);
+			break;
+		}
+		buf[len++] = ch;
+	}
+	buf[len] = '\0';
+
+	*res = strtod(buf, &end);
+	if (end == buf) {
+		return -1;
+	}
+
+	return 0;
+}
+
 #define OPS_LEN_MIN           0x00000040 /* s_char (d, i); u_char (u, o, x, X); s_char* (n) */
 #define OPS_LEN_SHORT         0x00000080 /* short (d, i); u_short (u, o, x, X); short* (n) */
 #define OPS_LEN_LONG          0x00000100 /* long (d, i); u_long (u, o, x, X); wint_t (c); wchar_t(s); long* (n) */
@@ -221,7 +253,34 @@ int stdio_scan(const char **in, const char *fmt, va_list args) {
 				++converted;
 			}
 				break;
-			case 'f': /* TODO float scanf haven't realized */
+			case 'e':
+			case 'f':
+			case 'g':
+			case 'E':
+			case 'F':
+			case 'G': {
+				double dst;
+				if (0 != (err = scan_float(in, width, &dst, &pc))) {
+					if (err == EOF)
+						converted = EOF;
+					goto out;
+				}
+
+				switch (ops_len) {
+				case OPS_LEN_LONG:
+					*va_arg(args, double*) = dst;
+					break;
+				case OPS_LEN_LONGFP:
+					*va_arg(args, long double*) = dst;
+					break;
+				default:
+					*va_arg(args, float*) = dst;
+					break;
+				}
+
+				++converted;
+			}
+				break;
 			case 'd': {
 				int dst;
 				if (0 != (err = scan_int(in, 10, width, &dst, &pc))) {
