@@ -79,6 +79,17 @@ static void uart_internal_init(struct uart *uart) {
 	dlist_add_next(&uart->uart_lnk, &uart_list);
 }
 
+static int uart_probe(struct uart *uart) {
+	const struct uart_ops *uops = uart->uart_ops;
+
+	if (uops->uo_probe) {
+		log_debug("probe tty %s", uart->dev_name);
+		return uops->uo_probe(uart);
+	}
+
+	return 0;
+}
+
 int uart_open(struct uart *uart) {
 	if (uart_state_test(uart, UART_STATE_OPEN)) {
 		return -EINVAL;
@@ -86,6 +97,8 @@ int uart_open(struct uart *uart) {
 	uart_state_set(uart, UART_STATE_OPEN);
 
 	uart_internal_init(uart);
+
+	uart_probe(uart);
 
 	uart_setup(uart);
 

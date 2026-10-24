@@ -164,7 +164,12 @@ void usb_phy_bconf_init(struct niiet_udc *niiet_udc) {
 
 	niiet_udc->usbphy_regs->PHYCFG0 = USE_PHY_POLARITY << USBCTR_PHYCFG0_POL_Pos
 									| 0 << USBCTR_PHYCFG0_EXTPHY_Pos;
+#if 0
 	while(!(niiet_udc->usbphy_regs->PHYSTAT & USBCTR_PHYSTAT_UTMI_CLK_EN));
+#else
+	for (int i = 0; i < 100000; i ++);
+#endif
+
 
 # endif /* USE_PHY_EXT */
 }
