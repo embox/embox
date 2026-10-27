@@ -9,8 +9,8 @@
 #include <drivers/ttys.h>
 #include <embox/unit.h>
 #include <kernel/lthread/lthread.h>
-#include <mem/misc/pool.h>
 #include <lib/libds/dlist.h>
+#include <mem/misc/pool.h>
 #include <util/log.h>
 
 EMBOX_UNIT_INIT(idesc_serial_init);
@@ -28,8 +28,7 @@ static int uart_rx_buff_put(struct uart *dev) {
 			{
 				uart_state_set(dev, UART_STATE_RX_ACTIVE);
 
-				if (ring_full(&dev->uart_rx_ring.ring,
-				        dev->uart_rx_ring.capacity)) {
+				if (ring_full(&dev->uart_rx_ring.ring, dev->uart_rx_ring.capacity)) {
 					if (dev->uart_ops->uart_irq_dis) {
 						dev->uart_ops->uart_irq_dis(dev, &dev->params);
 					}
@@ -58,10 +57,16 @@ static int uart_rx_action(struct lthread *self) {
 		int ch;
 
 		if (uart_state_test(uart, UART_STATE_RX_ACTIVE)) {
+			if (uart->uart_ops->uart_irq_dis) {
+				uart->uart_ops->uart_irq_dis(uart, &uart->params);
+			}
+
 			uart_state_clear(uart, UART_STATE_RX_ACTIVE);
+
 			while (ring_buff_dequeue(&uart->uart_rx_ring, &ch, 1)) {
 				tty_rx_locked(uart->tty, ch, 0);
 			}
+
 			if (uart->uart_ops->uart_irq_en) {
 				uart->uart_ops->uart_irq_en(uart, &uart->params);
 			}
