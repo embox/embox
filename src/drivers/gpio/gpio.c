@@ -47,6 +47,28 @@ int gpio_setup_mode(unsigned int port, gpio_mask_t pins, uint32_t mode) {
 	return chip->setup_mode(port, pins, mode);
 }
 
+#if GPIO_MATRIX
+int gpio_setup_route(unsigned int port, uint32_t pin, uint32_t signal) {
+	const struct gpio_chip *chip;
+
+	chip = gpio_get_chip(GPIO_CHIP(port));
+	if (!chip) {
+		return -EINVAL;
+	}
+
+	port = GPIO_PORT(port);
+	if (port >= chip->nports) {
+		return -EINVAL;
+	}
+
+	if (!chip->setup_route) {
+		return -ENOTSUP;
+	}
+
+	return chip->setup_route(port, pin, signal);
+}
+#endif
+
 void gpio_set(unsigned int port, gpio_mask_t pins, int level) {
 	const struct gpio_chip *chip;
 

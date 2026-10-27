@@ -81,3 +81,16 @@ Host-side image layout checks:
 ```sh
 python3 -B scripts/espressif/test_esp32c5_image.py
 ```
+
+## GPIO check
+
+Use the UART shell to set GPIO23 high and low:
+
+```text
+pin GPIOA 23 set
+pin GPIOA 23 reset
+```
+
+Measure the pin with a multimeter, or connect an external LED through a
+series resistor to GND. The onboard WS2812B cannot indicate a static GPIO
+level: it requires a colour data frame.
