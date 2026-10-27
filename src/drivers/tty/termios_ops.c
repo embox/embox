@@ -117,8 +117,7 @@ static int termios_handle_erase(const struct termios2 *t, char ch,
 				erase_len = 1;
 			}
 
-			i_ring->head -= erase_len - buflen;
-			ring_fixup_head(i_ring, buflen);
+			ring_just_write(i_ring, buflen, buflen - erase_len);
 
 			while (erase_len--) {
 				result += termios_echo_erase(t, o_ring, o_buff, buflen);
