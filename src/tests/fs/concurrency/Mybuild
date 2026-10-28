@@ -5,4 +5,9 @@ module concurrency_test {
 	source "concurrency_test_file.txt"
 
 	source "concurrency_test.c"
+
+	/* The suite runs from its module's enable op: without this dependency it
+	 * runs before the root FS is mounted and cannot open its @InitFS file. */
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.pthreads
 }

@@ -36,9 +36,18 @@ struct super_block {
 
 	struct inode           *sb_root;
 	void                   *sb_data;
+
+	/* Set by kumount() once no descriptor is open on the volume, checked
+	 * when a descriptor is created, so the count stays true through the
+	 * teardown. */
+	int                     sb_unmounting;
 };
 
 extern struct super_block *super_block_alloc(const char *fs_driver, const char *source);
 extern int super_block_free(struct super_block *sb);
+
+/* Seals the volume against new descriptors if none are open on it. Answers 0
+ * when the seal is on, or the number of open descriptors when it is not. */
+extern int file_desc_seal_sb(struct super_block *sb);
 
 #endif /* SUPER_BLOCK_H_ */

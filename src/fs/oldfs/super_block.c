@@ -98,9 +98,10 @@ int super_block_free(struct super_block *sb) {
 	}
 
 	if (sb->sb_root) {
-		/* Mount root should be generally
-		 * freed on umount */
-		inode_free(sb->sb_root);
+		/* A DIR may hold the mount root: return the filesystem's data while it
+		 * exists, and release the inode rather than free it. */
+		inode_detach_fs(sb->sb_root);
+		inode_release(sb->sb_root);
 	}
 
 	pool_free(&super_block_pool, sb);

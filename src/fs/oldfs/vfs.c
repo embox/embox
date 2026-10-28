@@ -19,8 +19,15 @@
 #include <fs/hlpr_path.h>
 #include <fs/inode.h>
 #include <fs/vfs.h>
+#include <kernel/printk.h>
+#include <fs/super_block.h>
+#include <fs/mount.h>
 
 #include <limits.h>
+
+#include <hal/ipl.h>
+#include <kernel/spinlock.h>
+#include <util/atomic_rmw.h>
 
 #define ROOT_MODE 0775
 
@@ -39,6 +46,40 @@ struct lookup_tuple {
 	const char *name;
 	size_t len;
 };
+
+/* Guards the namespace tree's child lists, which lookups walk while other
+ * cores create, unlink and mount. Parent pointers are single words and are
+ * read without it. Interrupts are masked and nothing inside blocks:
+ * inode_free() and the mount table lock ("..") are taken outside it.
+ * It does not keep a lookup's result alive; that is what i_ref is for.
+ * Without SMP masked interrupts alone exclude every other walker. */
+#if defined(SMP)
+static spinlock_t vfs_tree_lock = SPIN_STATIC_UNLOCKED;
+#endif
+
+/* Times a walk waited for another core in the tree; zero means no
+ * contention was exercised. */
+unsigned long vfs_tree_contended;
+
+static ipl_t vfs_tree_enter(void) {
+	ipl_t ipl = ipl_save();
+
+#if defined(SMP)
+	if (!__spin_trylock(&vfs_tree_lock)) {
+		atomic_rmw_add_fetch(&vfs_tree_contended, 1, __ATOMIC_RELAXED);
+		__spin_lock(&vfs_tree_lock);
+	}
+#endif
+
+	return ipl;
+}
+
+static void vfs_tree_leave(ipl_t ipl) {
+#if defined(SMP)
+	__spin_unlock(&vfs_tree_lock);
+#endif
+	ipl_restore(ipl);
+}
 
 static int vfs_lookup_cmp(struct tree_link *link, void *data) {
 	struct lookup_tuple *lookup = data;
@@ -229,13 +270,31 @@ void vfs_get_leaf_path(struct path *path) {
 }
 
 void if_mounted_follow_down(struct path *path) {
-	if (path->node->mounted) {
-		path->mnt_desc = mount_table_get_child(path->mnt_desc, path->node);
+	struct mount_descriptor *child;
 
-		assert(path->mnt_desc);
-
-		path->node = path->mnt_desc->mnt_root;
+	if (!path->node->mounted) {
+		return;
 	}
+
+	child = mount_table_get_child(path->mnt_desc, path->node);
+	if (child == NULL) {
+		/* `mounted' is read without the lock and can be stale; then this is
+		 * not a mount point after all. */
+		return;
+	}
+
+	/* Do not walk into a volume being unmounted; stop at the mount point.
+	 * i_sb is read once, as in file_desc_alloc(). */
+	{
+		struct super_block *sb = child->mnt_root ? child->mnt_root->i_sb : NULL;
+
+		if (sb && sb->sb_unmounting) {
+			return;
+		}
+	}
+
+	path->mnt_desc = child;
+	path->node = child->mnt_root;
 }
 
 /**
@@ -380,15 +439,28 @@ struct inode *vfs_subtree_lookup_childn(struct inode *parent, const char *name,
 	struct lookup_tuple lookup = { .name = name, .len = len };
 	struct tree_link *tlink;
 	struct inode *ret;
+	ipl_t ipl;
 
 	assert(parent);
 
+	/* Before taking the lock: it takes the mount table's lock, and the two
+	 * never nest. */
 	if (path_is_double_dot(name))
 		return (ret = __vfs_get_parent(parent)) ? ret : parent;
 
-	tlink = tree_lookup_child(&(parent->tree_link), vfs_lookup_cmp, &lookup);
+	ipl = vfs_tree_enter();
+	if (parent->i_dying) {
+		/* A name under an inode that has left the tree resolves to nothing. */
+		vfs_walk_dying++;
+		tlink = NULL;
+	}
+	else {
+		tlink = tree_lookup_child(&(parent->tree_link), vfs_lookup_cmp,
+		    &lookup);
+	}
+	vfs_tree_leave(ipl);
 
-	return tree_element(tlink, struct inode, tree_link);
+	return tlink ? tree_element(tlink, struct inode, tree_link) : NULL;
 }
 
 struct inode *vfs_subtree_lookup_child(struct inode *parent, const char *name) {
@@ -412,22 +484,41 @@ struct inode *vfs_subtree_lookup(struct inode *parent, const char *str_path) {
 
 struct inode *vfs_subtree_get_child_next(struct inode *parent, struct inode *prev_child) {
 	struct tree_link *chld_link;
+	struct inode *ret = NULL;
+	ipl_t ipl;
 
 	assert(parent);
 
-	if (!prev_child) {
-		chld_link = tree_children_begin(&parent->tree_link);
+	ipl = vfs_tree_enter();
+
+	if (parent->i_dying) {
+		/* Its children were unlinked with it; the list is being dismantled. */
+		vfs_walk_dying++;
 		goto out;
 	}
 
-	chld_link = tree_children_next(&prev_child->tree_link);
-
-	if (tree_children_end(&parent->tree_link) == chld_link) {
-		return NULL;
+	if (!prev_child) {
+		chld_link = tree_children_begin(&parent->tree_link);
+	}
+	else {
+		if (prev_child->i_dying) {
+			/* The cursor was unlinked, so its neighbours are stale; end the
+			 * walk. */
+			vfs_walk_dying++;
+			goto out;
+		}
+		chld_link = tree_children_next(&prev_child->tree_link);
+		if (tree_children_end(&parent->tree_link) == chld_link) {
+			goto out;
+		}
 	}
 
+	ret = tree_element(chld_link, struct inode, tree_link);
+
 out:
-	return tree_element(chld_link, struct inode, tree_link);
+	vfs_tree_leave(ipl);
+
+	return ret;
 }
 
 struct inode *vfs_subtree_create(struct inode *parent, const char *path,
@@ -448,13 +539,110 @@ struct inode *vfs_get_leaf(void) {
 	return leaf.node;
 }
 
+/* Reference counting for inodes held across a walk; see fs/oldfs/inode.h. */
+unsigned long inode_free_deferred;
+unsigned long inode_ref_refused;
+
+/* Walks that arrived at an inode after it left the tree. Only one still
+ * allocated can be detected, so this is a measurement, not a guarantee. */
+unsigned long vfs_walk_dying;
+
+int inode_ref(struct inode *node) {
+	ipl_t ipl;
+	int live;
+
+	if (node == NULL) {
+		return 0;
+	}
+
+	ipl = vfs_tree_enter();
+	live = !node->i_dying;
+	if (live) {
+		node->i_ref++;
+	}
+	else {
+		inode_ref_refused++;
+	}
+	vfs_tree_leave(ipl);
+
+	return live;
+}
+
+void inode_unref(struct inode *node) {
+	ipl_t ipl;
+	int last;
+
+	if (node == NULL) {
+		return;
+	}
+
+	ipl = vfs_tree_enter();
+	if (node->i_ref <= 0) {
+		vfs_tree_leave(ipl);
+		printk("inode_unref(%p): i_ref %d, i_dying %d, sb %p, name '%s', "
+		       "from %p -- %s\n",
+		    node, node->i_ref, node->i_dying, node->i_sb, node->name,
+		    __builtin_return_address(0),
+		    node->i_ref == -1 ? "ALREADY FREED" : "NEVER REFERENCED");
+		return;
+	}
+	last = (0 == --node->i_ref) && node->i_dying;
+	vfs_tree_leave(ipl);
+
+	/* Outside the lock: inode_free() reaches the filesystem's destroy_inode(),
+	 * which may block on a driver mutex. */
+	if (last) {
+		inode_free(node);
+	}
+}
+
+void inode_release(struct inode *node) {
+	ipl_t ipl;
+	int held;
+
+	if (node == NULL) {
+		return;
+	}
+
+	ipl = vfs_tree_enter();
+	/* No new reference may be taken from here; checking holders and giving
+	 * the inode up are one operation under the lock. */
+	node->i_dying = 1;
+	held = node->i_ref > 0;
+	if (held) {
+		inode_free_deferred++;
+	}
+	vfs_tree_leave(ipl);
+
+	/* A deferred inode keeps its filesystem data, as a descriptor may still
+	 * read through it; kumount() returns that data. */
+	if (!held) {
+		inode_free(node);
+	}
+}
+
 int vfs_del_leaf(struct inode *node) {
+	ipl_t ipl;
 	int rc;
+	int held = 0;
 
 	assert(node);
 
+	ipl = vfs_tree_enter();
 	rc = tree_unlink_link(&(node->tree_link));
 	if (rc) {
+		/* As in inode_release(); here it is one operation with the unlink. */
+		node->i_dying = 1;
+		held = node->i_ref > 0;
+		if (held) {
+			inode_free_deferred++;
+		}
+	}
+	vfs_tree_leave(ipl);
+
+	/* Outside the lock: destroy_inode() may block on a driver mutex. The
+	 * inode is already unlinked, so no walk reaches it. */
+	if (rc && !held) {
 		inode_free(node);
 	}
 	return rc;
@@ -494,7 +682,12 @@ struct inode *vfs_set_root(struct inode *node) {
 }
 
 int vfs_add_leaf(struct inode *child, struct inode *parent) {
+	ipl_t ipl;
+
+	ipl = vfs_tree_enter();
 	tree_add_link(&(parent->tree_link), &(child->tree_link));
+	vfs_tree_leave(ipl);
+
 	return 0;
 }
 

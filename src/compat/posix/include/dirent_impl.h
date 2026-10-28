@@ -16,4 +16,9 @@ struct DIR_struct {
 	struct slist inodes_list;
 };
 
+/* Follows a DIR onto the volume mounted at its path, moving the DIR's
+ * reference with it. Use instead of if_mounted_follow_down() on a DIR's
+ * path, which would leave the reference behind. */
+extern int dir_follow_down(DIR *dir);
+
 #endif /* DIRENT_IMPL_H_ */

@@ -65,3 +65,69 @@ module mount_table {
 
 	depends embox.fs.fs_api
 }
+
+module fat_ops {
+	source "fat_ops.c"
+
+	/* The root-capacity case creates 96 files at once: the template must raise
+	 * embox.fs.driver.fat(inode_quantity=128) and
+	 * embox.fs.node(fnode_quantity=1024). A Mybuild cannot set another
+	 * module's option. */
+
+	/* The root is read-only initfs, so the mount point directory comes from
+	 * @InitFS. */
+	@InitFS(target_dir="tmp_fat")
+	source "fat_ops_mountpoint.txt"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.driver.fat
+	depends embox.fs.filesystem
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}
+
+module mount_smp {
+	source "mount_smp.c"
+
+	/* The root is read-only initfs, so the mount point comes from @InitFS. */
+	@InitFS(target_dir="tmp_mnt")
+	source "mount_smp_mountpoint.txt"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.driver.fat
+	depends embox.fs.filesystem
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.pthreads
+	depends embox.framework.LibFramework
+}
+
+module inode_life {
+	source "inode_life.c"
+
+	@InitFS(target_dir="tmp_inode")
+	source "inode_life_mountpoint.txt"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.driver.fat
+	depends embox.fs.filesystem
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.pthreads
+	depends embox.framework.LibFramework
+}
+
+module fat_big {
+	source "fat_big.c"
+
+	@InitFS(target_dir="tmp_big")
+	source "fat_big_mountpoint.txt"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.driver.fat
+	depends embox.fs.filesystem
+	depends embox.fs.rootfs_oldfs
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}

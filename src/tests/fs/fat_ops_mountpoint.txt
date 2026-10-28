@@ -1,0 +1,3 @@
+This file exists so that /tmp_fat exists: the suite beside it needs an
+empty directory to mount a ramdisk on, and the root filesystem it runs
+against is read-only initfs.

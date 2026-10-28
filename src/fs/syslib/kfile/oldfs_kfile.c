@@ -45,6 +45,12 @@ ssize_t kwrite(struct file_desc *file, const void *buf, size_t size) {
 		goto end;
 	}
 
+	/* Same check as kread(): a recycled descriptor writes to the wrong file. */
+	if (!file_desc_valid(file)) {
+		ret = -EBADF;
+		goto end;
+	}
+
 	ret = file->f_ops->write(file, (void *)buf, size);
 	if (ret > 0) {
 		file_set_pos(file, file_get_pos(file) + ret);
@@ -72,9 +78,22 @@ ssize_t kread(struct file_desc *desc, void *buf, size_t size) {
 		goto end;
 	}
 
-	/* Don't try to read past EOF */
-	if (size > desc->f_inode->i_size - file_get_pos(desc)) {
-		size = desc->f_inode->i_size - file_get_pos(desc);
+	/* A descriptor that outlived its volume points at a reused pool slot. */
+	if (!file_desc_valid(desc)) {
+		ret = -EBADF;
+		goto end;
+	}
+
+	/* Don't read past EOF. Read i_size and pos once: another core may change
+	 * i_size between reads. pos may be past i_size after a truncation. */
+	{
+		size_t i_size = desc->f_inode->i_size;
+		size_t pos = (size_t)file_get_pos(desc);
+		size_t left = (i_size > pos) ? (i_size - pos) : 0;
+
+		if (size > left) {
+			size = left;
+		}
 	}
 
 	ret = desc->f_ops->read(desc, buf, size);
