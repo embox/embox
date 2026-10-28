@@ -12,10 +12,10 @@
 
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-extern const struct uart_ops esp32c3_uart_ops;
+extern const struct uart_ops esp32_uart_ops;
 
-static struct uart esp32c3_uart_ttyS0 = {
-    .uart_ops   = &esp32c3_uart_ops,
+static struct uart esp32_uart_ttyS0 = {
+    .uart_ops   = &esp32_uart_ops,
     .irq_num    = IRQ_NUM,
     .base_addr  = (unsigned long)UART_BASE,
     .params = ((struct uart_params){
@@ -24,8 +24,8 @@ static struct uart esp32c3_uart_ttyS0 = {
     }),
 };
 
-PERIPH_MEMORY_DEFINE(esp32c3_uart, UART_BASE, 0x1000);
+PERIPH_MEMORY_DEFINE(esp32_uart, UART_BASE, 0x1000);
 
-STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &esp32c3_uart_ttyS0);
+STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &esp32_uart_ttyS0);
 
-TTYS_DEF(TTY_NAME, &esp32c3_uart_ttyS0);
+TTYS_DEF(TTY_NAME, &esp32_uart_ttyS0);

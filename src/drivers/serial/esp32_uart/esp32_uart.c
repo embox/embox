@@ -136,11 +136,11 @@
 /* Version Register */
 #define UHCI_DATE(base)      ((base) + 0x0080)  /* R/W */
 
-static int esp32c3_uart_getc(struct uart *dev) {
+static int esp32_uart_getc(struct uart *dev) {
    return (int)(REG32_LOAD(UART_FIFO(dev->base_addr)) & 0xFF);
 }
 
-static int esp32c3_uart_putc(struct uart *dev, int ch) {
+static int esp32_uart_putc(struct uart *dev, int ch) {
     while (REG32_LOAD(UART_STATUS(dev->base_addr)) & (0x3FF << 16)) {};
 
     REG32_STORE(UART_FIFO(dev->base_addr), (uint32_t)(ch & 0xFF));
@@ -148,7 +148,7 @@ static int esp32c3_uart_putc(struct uart *dev, int ch) {
     return 0;
 }
 
-static int esp32c3_uart_hasrx(struct uart *dev) {
+static int esp32_uart_hasrx(struct uart *dev) {
     uint32_t uart_status;
     uint32_t uart_rxfifo_cnt;
 
@@ -165,7 +165,7 @@ static int esp32c3_uart_hasrx(struct uart *dev) {
     return 0;
 }
 
-static int esp32c3_uart_irq_en(struct uart *dev, const struct uart_params *params) {
+static int esp32_uart_irq_en(struct uart *dev, const struct uart_params *params) {
 #if defined(__EMBOX_PLATFORM__esp32c5__)
 	uint32_t source;
 	int res;
@@ -193,7 +193,7 @@ static int esp32c3_uart_irq_en(struct uart *dev, const struct uart_params *param
 	return 0;
 }
 
-static int esp32c3_uart_setup(struct uart *dev, const struct uart_params *params) {
+static int esp32_uart_setup(struct uart *dev, const struct uart_params *params) {
     //  modifyreg32(UART_CONF0_REG(priv->id), UART_ERR_WR_MASK_M | UART_MEM_CLK_EN_M, UART_ERR_WR_MASK_M);
     uint32_t conf0 = REG32_LOAD(UART_CONF0(dev->base_addr));
     conf0 &= ~(UART_ERR_WR_MASK_M | UART_MEM_CLK_EN_M);
@@ -222,22 +222,22 @@ static int esp32c3_uart_setup(struct uart *dev, const struct uart_params *params
     REG32_STORE(UART_MEM_CONF(dev->base_addr), mem_conf_reg);
 
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		return esp32c3_uart_irq_en(dev, params);
+		return esp32_uart_irq_en(dev, params);
 	}
 
     return 0;
 }
 
-static int esp32c3_uart_irq_dis(struct uart *dev, const struct uart_params *params) {
+static int esp32_uart_irq_dis(struct uart *dev, const struct uart_params *params) {
     REG32_ANDIN(UART_INT_ENA(dev->base_addr), 0);
     return 0;
 }
 
-const struct uart_ops esp32c3_uart_ops = {
-		.uart_getc = esp32c3_uart_getc,
-		.uart_putc = esp32c3_uart_putc,
-		.uart_hasrx = esp32c3_uart_hasrx,
-		.uart_setup = esp32c3_uart_setup,
-		.uart_irq_en = esp32c3_uart_irq_en,
-		.uart_irq_dis = esp32c3_uart_irq_dis,
+const struct uart_ops esp32_uart_ops = {
+		.uart_getc = esp32_uart_getc,
+		.uart_putc = esp32_uart_putc,
+		.uart_hasrx = esp32_uart_hasrx,
+		.uart_setup = esp32_uart_setup,
+		.uart_irq_en = esp32_uart_irq_en,
+		.uart_irq_dis = esp32_uart_irq_dis,
 };
