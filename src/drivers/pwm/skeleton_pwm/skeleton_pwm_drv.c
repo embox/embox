@@ -41,17 +41,18 @@ static void skeleton_pwm_disable(struct pwm_device *dev, uint32_t chan_mask) {
 }
 
 static int skeleton_pwm_set_period(struct pwm_device *dev, int period) {
-	log_debug("skeleton_pwm_set_period(id(%d) period(0x%x)", dev->pwmd_id, period);
+	log_debug("skeleton_pwm_set_period(id(%d) period(%d)", dev->pwmd_id, period);
 	return 0;
 }
 
 static int skeleton_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty) {
+	log_debug("skeleton_pwm_set_duty(id(%d) chan(%d) period(%d)", dev->pwmd_id, chan_num, duty);
 	return 0;
 }
 
 static int skeleton_pwm_set_duty_array(struct pwm_device *dev, int chan_num,
     int duty_ns[], int size) {
-	log_debug("skeleton_pwm_set_duty_array(id(%d) chan(0x%x) size(%d)",
+	log_debug("skeleton_pwm_set_duty_array(id(%d) chan(%d) size(%d)",
 	    dev->pwmd_id, chan_num, size);
 	for (int i = 0; i < size; i += 4) {
 		log_debug(" %3d: %10d  %10d %10d %10d", i, duty_ns[i + 0],
