@@ -2,6 +2,7 @@
 
 #include <soc/esp32c5_gpio.h>
 #include <soc/esp32c5_gpio_sig_map.h>
+#include <soc/esp32c5_spi.h>
 #include <soc/esp32c5_uart.h>
 
 struct gpio_conf gpios[] = {
@@ -59,5 +60,36 @@ struct uart_conf uarts[] = {
 	},
 };
 
+/* Hardware GP-SPI2 is exposed as Embox SPI bus 0. */
+struct spi_conf spis[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "SPI0",
+		.dev = {
+			.name = "SPI0",
+			.regs = {
+				REGMAP("BASE", 0x60081000, 0x1000),
+				REGMAP("PCR", 0x60096000, 0x1000),
+			},
+			/* SPI2 through GPIO matrix; hardware CS0. */
+			.pins = {
+				PIN("CLK", GPIO_PORT_A, GPIO5,
+					GPIO_MODE_ALT | GPIO_MODE_OUT, ESP32_MATRIX_OUT(FSPICLK_OUT)),
+				PIN("TX", GPIO_PORT_A, GPIO7,
+					GPIO_MODE_ALT | GPIO_MODE_OUT, ESP32_MATRIX_OUT(FSPID_OUT)),
+				PIN("RX", GPIO_PORT_A, GPIO2,
+					GPIO_MODE_ALT | GPIO_MODE_IN, ESP32_MATRIX_IN(FSPIQ_IN)),
+				PIN("CS", GPIO_PORT_A, GPIO10,
+					GPIO_MODE_ALT | GPIO_MODE_OUT, ESP32_MATRIX_OUT(FSPICS0_OUT)),
+			},
+			.clocks = {
+				VAL("SOURCE", ESP32C5_SPI_CLK_PLL160M),
+				VAL("SOURCE_DIV", 2),
+			},
+		},
+		/* PLL 160 MHz / 2 / 80 = fixed 1 MHz SCLK. */
+		.clk_div = 80,
+	},
+};
 
-EXPORT_CONFIG(GPIO(gpios), UART(uarts));
+EXPORT_CONFIG(GPIO(gpios), UART(uarts), SPI(spis));

@@ -7,33 +7,12 @@
 /* IO_MUX function selectors. */
 #define FUNC_U0TXD_U0TXD                     0
 #define FUNC_U0RXD_U0RXD                     0
-#define PIN_FUNC_GPIO                        1
+#define FUNC_MTMS_FSPIQ                       2
+#define FUNC_GPIO6_FSPICLK                    2
+#define FUNC_GPIO7_FSPID                      2
+#define FUNC_GPIO10_FSPICS0                   2
 
-/* Packed AF value for gpio_setup_route(), not GPIO_MODE_ALT_SET().
- * Plain IO_MUX function numbers retain route type zero.
- */
-#define ESP32_ROUTE_VALUE_MASK                0xffffU
-#define ESP32_ROUTE_TYPE_SHIFT                16
-#define ESP32_ROUTE_TYPE_MASK                 0xffffU
-
-#define ESP32_ROUTE_IOMUX                     0U
-#define ESP32_ROUTE_MATRIX_IN                 1U
-#define ESP32_ROUTE_MATRIX_OUT                2U
-
-#define ESP32_ROUTE(type, value) \
-	((((type) & ESP32_ROUTE_TYPE_MASK) << ESP32_ROUTE_TYPE_SHIFT) | \
-	 ((value) & ESP32_ROUTE_VALUE_MASK))
-#define ESP32_ROUTE_TYPE(route) \
-	(((route) >> ESP32_ROUTE_TYPE_SHIFT) & ESP32_ROUTE_TYPE_MASK)
-#define ESP32_ROUTE_VALUE(route) \
-	((route) & ESP32_ROUTE_VALUE_MASK)
-
-#define ESP32_MATRIX_IN(signal) \
-	ESP32_ROUTE(ESP32_ROUTE_MATRIX_IN, signal)
-#define ESP32_MATRIX_OUT(signal) \
-	ESP32_ROUTE(ESP32_ROUTE_MATRIX_OUT, signal)
-
-/* GPIO pin numbers, not bit masks. */
+/* GPIO pin numbers. */
 #define GPIO0                                0
 #define GPIO1                                1
 #define GPIO2                                2

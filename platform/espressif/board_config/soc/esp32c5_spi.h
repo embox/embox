@@ -1,0 +1,8 @@
+#ifndef ESP32C5_SPI_H_
+#define ESP32C5_SPI_H_
+
+#define ESP32C5_SPI_CLK_XTAL    0
+#define ESP32C5_SPI_CLK_PLL160M 1
+#define ESP32C5_SPI_CLK_RC_FAST 2
+
+#endif /* ESP32C5_SPI_H_ */

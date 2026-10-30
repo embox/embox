@@ -3,6 +3,31 @@
 
 #include <stdint.h>
 
+/* Packed AF value for gpio_setup_route(), not GPIO_MODE_ALT_SET().
+ * Plain IO_MUX function numbers retain route type zero.
+ */
+#define ESP32_ROUTE_VALUE_MASK                0xffffU
+#define ESP32_ROUTE_TYPE_SHIFT                16
+#define ESP32_ROUTE_TYPE_MASK                 0xffffU
+
+#define ESP32_ROUTE_IOMUX                     0U
+#define ESP32_ROUTE_MATRIX_IN                 1U
+#define ESP32_ROUTE_MATRIX_OUT                2U
+
+#define ESP32_ROUTE(type, value) \
+	((((type) & ESP32_ROUTE_TYPE_MASK) << ESP32_ROUTE_TYPE_SHIFT) | \
+	 ((value) & ESP32_ROUTE_VALUE_MASK))
+#define ESP32_ROUTE_TYPE(route) \
+	(((route) >> ESP32_ROUTE_TYPE_SHIFT) & ESP32_ROUTE_TYPE_MASK)
+#define ESP32_ROUTE_VALUE(route) \
+	((route) & ESP32_ROUTE_VALUE_MASK)
+
+#define ESP32_MATRIX_IN(signal) \
+	ESP32_ROUTE(ESP32_ROUTE_MATRIX_IN, signal)
+#define ESP32_MATRIX_OUT(signal) \
+	ESP32_ROUTE(ESP32_ROUTE_MATRIX_OUT, signal)
+
+
 #define ESP32_GPIO_PIN_COUNT       29U
 #define ESP32_GPIO_PIN_MASK        ((1U << ESP32_GPIO_PIN_COUNT) - 1U)
 #define ESP32_GPIO_SIGNAL_COUNT    256U
