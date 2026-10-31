@@ -504,8 +504,14 @@ struct pwm_conf pwms[] = {
 				PIN("OUT3", GPIO_PORT_A, 15, GPIO_MODE_ALT, 5),
 			},
 			.dmas = {
+				VAL("OUT0_NUM", 0),
+				VAL("OUT0_CHAN",20),
+				VAL("OUT1_NUM", 0),
+				VAL("OUT1_CHAN",21),
+				VAL("OUT2_NUM", 0),
+				VAL("OUT2_CHAN",22),
 				VAL("OUT3_NUM", 0),
-				VAL("OUT3_CHAN", 3),
+				VAL("OUT3_CHAN",23),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR3"),
