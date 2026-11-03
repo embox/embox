@@ -3,8 +3,8 @@
 #include <soc/niiet_k1921vg1t_chip.h>
 
 #define HSECLK_VAL    27000000UL
-#define SYSTEM_FREQ  150000000UL
 
+#define SYSTEM_FREQ  150000000UL
 #define PLL0_DIV_NDIV      (100)
 #define PLL0_DIV_PREDIV    (1)
 #define PLL0_DIV_RDIV      (2)
@@ -12,6 +12,27 @@
 #define PLL0_DIV_DIV1B     (2)
 #define PLL0_FRAC          (1)
 #define PLL0_MOD           (1)
+#define FLASH_LATENCY      (2)
+
+// #define SYSTEM_FREQ  180000000UL
+// #define PLL0_DIV_NDIV      (40)
+// #define PLL0_DIV_PREDIV    (1)
+// #define PLL0_DIV_RDIV      (1)
+// #define PLL0_DIV_DIV1A     (2)
+// #define PLL0_DIV_DIV1B     (0)
+// #define PLL0_FRAC          (1)
+// #define PLL0_MOD           (1)
+// #define FLASH_LATENCY      (5)
+
+// #define SYSTEM_FREQ  202500000UL
+// #define PLL0_DIV_NDIV      (75)
+// #define PLL0_DIV_PREDIV    (1)
+// #define PLL0_DIV_RDIV      (1)
+// #define PLL0_DIV_DIV1A     (4)
+// #define PLL0_DIV_DIV1B     (0)
+// #define PLL0_FRAC          (1)
+// #define PLL0_MOD           (1)
+// #define FLASH_LATENCY      (5)
 
 //FOUT = 60 000 000 Hz  from 27 MHz HSE
 #define PLL1_DIV_NDIV      (100)
@@ -21,7 +42,27 @@
 #define PLL1_DIV_DIV1B     (2)
 #define PLL1_FRAC          (1)
 #define PLL1_MOD           (1)
+#define PLL1_CFG_CP        (9)
 
+/*
+    //FOUT = 180.000000 MHz  from Fref = 27 MHz HSE
+    // RCU->PLLDIV is equivalent for RCU->PLL[0].DIV
+    RCU->PLL[0].DIV = ( 2 << RCU_PLL_DIV_DIV1A_Pos ) |
+                      ( 0 << RCU_PLL_DIV_DIV1B_Pos ) |
+                      ( 1 << RCU_PLL_DIV_PREDIV_Pos) |
+                      ( 1 << RCU_PLL_DIV_NNCLR_Pos ) |      // N-divider enable
+                      ( 1 << RCU_PLL_DIV_RNCLR_Pos ) |      // R-divider enable
+                      ( 1 << RCU_PLL_DIV_RDIV_Pos  ) |
+                      ( 40 << RCU_PLL_DIV_NDIV_Pos );
+    RCU->PLL[0].MOD  = ( 1 << RCU_PLL_MOD_MOD_Pos   );
+    RCU->PLL[0].FRAC = ( 1 << RCU_PLL_FRAC_FRAC_Pos );
+    RCU->PLL[0].CFG  = ( 1 << RCU_PLL_CFG_FOUTEN_Pos ) |    // Fout enable
+               ( 3 << RCU_PLL_CFG_PFD_Pos    ) |
+               ( 0 << RCU_PLL_CFG_CLKSEL_Pos ) |
+               ( 1 << RCU_PLL_CFG_VCOMODE_Pos) |    // PREDIV Dis
+               ( 9 << RCU_PLL_CFG_CP_Pos) |
+               ( 0 << RCU_PLL_CFG_ST_Pos) ; // ST = 0 for integer divider
+*/
 /*
     //FOUT = 150 000 000 Hz  from 27 MHz HSE
     RCU->PLL[0].DIV = ( 1 << RCU_PLL_DIV_DIV1A_Pos ) |
@@ -54,15 +95,23 @@ struct clk_conf clks[] = {
 				VAL("PLL0_DIV_PREDIV", PLL0_DIV_PREDIV),
 				VAL("PLL0_DIV_RDIV", PLL0_DIV_RDIV),
 				VAL("PLL0_DIV_DIV1A", PLL0_DIV_DIV1A),
+				VAL("PLL0_DIV_DIV1B", PLL0_DIV_DIV1B),
 				VAL("PLL0_FRAC", PLL0_FRAC),
 				VAL("PLL0_MOD", PLL0_MOD),
+#ifdef PLL0_CFG_CP
+				VAL("PLL0_CFG_CP", PLL0_CFG_CP),
+#endif /* PLL0_CFG_CP */
 
 				VAL("PLL1_DIV_NDIV", PLL1_DIV_NDIV),
 				VAL("PLL1_DIV_PREDIV", PLL1_DIV_PREDIV),
 				VAL("PLL1_DIV_RDIV", PLL1_DIV_RDIV),
 				VAL("PLL1_DIV_DIV1A", PLL1_DIV_DIV1A),
+				VAL("PLL1_DIV_DIV1B", PLL1_DIV_DIV1B),
 				VAL("PLL1_FRAC", PLL1_FRAC),
 				VAL("PLL1_MOD", PLL1_MOD),
+#ifdef PLL1_CFG_CP
+				VAL("PLL1_CFG_CP", PLL1_CFG_CP),
+#endif /* PLL1_CFG_CP */
 			},
 		},
 		.type = {
@@ -76,6 +125,18 @@ struct clk_conf clks[] = {
 			.name = "SIU",
 			.regs = {
 				REGMAP("BASE", (SIU_BASE), 0x100),
+			},
+		},
+	},
+	[2] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "FLASHM",
+			.regs = {
+				REGMAP("BASE", (FLASHM_BASE), 0x100),
+			},
+			.misc = {
+				VAL("FLASH_LATENCY", FLASH_LATENCY),
 			},
 		},
 	},
