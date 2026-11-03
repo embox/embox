@@ -29,7 +29,8 @@ extern int fat_destroy_inode(struct inode *inode);
  *
  * @return Pointer of inode or NULL if not found
  */
-struct inode *fat_ilookup(struct inode *node, char const *name, struct inode const *dir) {
+static struct inode *fat_ilookup_unlocked(struct inode *node, char const *name,
+    struct inode const *dir) {
 	struct dirinfo *di;
 	struct fat_dirent de;
 	uint8_t tmp_ent;
@@ -81,6 +82,19 @@ succ_out:
 	di->currententry = tmp_ent;
 	di->currentsector = tmp_sec;
 	return node;
+}
+
+/* Under the driver lock: the walk goes through the sector buffer every volume
+ * shares. */
+struct inode *fat_ilookup(struct inode *node, char const *name,
+    struct inode const *dir) {
+	struct inode *res;
+
+	fat_lock();
+	res = fat_ilookup_unlocked(node, name, dir);
+	fat_unlock();
+
+	return res;
 }
 
 extern struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag);

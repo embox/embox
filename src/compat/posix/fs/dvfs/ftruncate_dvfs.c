@@ -26,16 +26,25 @@ int ftruncate(int fd, off_t length) {
 
 	file = (struct file_desc *) idesc;
 
-	assert(file->f_inode);
-	assert(file->f_inode->i_ops);
+	if (length < 0) {
+		return SET_ERRNO(EINVAL);
+	}
 
-	if (!file->f_inode->i_ops->ino_truncate)
-		return -EPERM;
+	if ((ret = dvfs_file_valid(file))) {
+		return SET_ERRNO(-ret);
+	}
+
+	if (!file->f_inode || !file->f_inode->i_ops
+	    || !file->f_inode->i_ops->ino_truncate) {
+		return SET_ERRNO(EINVAL);
+	}
 
 	ret = file->f_inode->i_ops->ino_truncate(file->f_inode, length);
+	if (ret != 0) {
+		return SET_ERRNO(ret < 0 ? -ret : EIO);
+	}
 
-	if (ret == 0)
-		file->f_inode->i_size = length;
+	file->f_inode->i_size = length;
 
-	return ret;
+	return 0;
 }

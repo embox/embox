@@ -31,20 +31,9 @@ int mount(const char *source, const char *target, const char *filesystemtype,
 }
 
 int umount(const char *target) {
-	struct lookup lu = {};
 	int err;
 
-	if ((err = dvfs_lookup(target, &lu))) {
-		return SET_ERRNO(-err);
-	}
-
-	dentry_ref_dec(lu.item);
-
-	if (!(lu.item->flags & DVFS_MOUNT_POINT)) {
-		return SET_ERRNO(EINVAL);
-	}
-
-	err = dvfs_umount(lu.item);
+	err = dvfs_umount_path(target);
 	if (err) {
 		return SET_ERRNO(-err);
 	}

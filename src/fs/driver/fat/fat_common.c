@@ -126,6 +126,7 @@ static const char bootcode[130] =
 static uint32_t fat_dir_rewind(struct dirinfo *di, int n);
 static uint32_t fat_write_de(struct dirinfo *di, struct fat_dirent *de);
 static uint32_t fat_get_free_entries(struct dirinfo *dir, int n);
+static int fat_dirent_by_file(struct fat_file_info *fi, struct fat_dirent *de);
 static uint32_t fat_dir_extend(struct dirinfo *di);
 int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
 	size_t ret;
@@ -1839,6 +1840,62 @@ static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 	}
 }
 
+/* Deletes the entry at SECTOR/OFFSET of DI and its long-name entries. By
+ * place, not cluster: during a rename two entries name the same cluster. */
+static int fat_dir_clean_at(struct dirinfo *di, uint32_t sector,
+    uint32_t offset) {
+	struct fat_dirent de = { };
+	struct dirinfo saved_di = { };
+	void *p_scratch = di->p_scratch;
+	struct fat_fs_info *fsi = di->fi.fsi;
+
+	fat_reset_dir(di);
+
+	if (read_dir_buf(di)) {
+		return DFS_ERRMISC;
+	}
+
+	while (true) {
+		if (DFS_OK != fat_get_next(di, &de)) {
+			return DFS_ERRMISC;
+		}
+
+		if (fat_current_dirsector(di) == sector
+		    && di->currententry - 1 == offset) {
+			if (saved_di.p_scratch == NULL) {
+				/* No long name: just the entry itself */
+				((struct fat_dirent *) p_scratch)[offset].name[0] = 0xe5;
+				return fat_write_sector(fsi, p_scratch, sector)
+				    ? DFS_ERRMISC : DFS_OK;
+			}
+
+			read_dir_buf(&saved_di);
+
+			while (saved_di.currententry != di->currententry ||
+					saved_di.currentcluster != di->currentcluster ||
+					saved_di.currentsector != di->currentsector) {
+				((struct fat_dirent*) p_scratch)[saved_di.currententry].name[0] = 0xe5;
+
+				if (fat_write_sector(fsi, p_scratch, fat_current_dirsector(&saved_di))) {
+					return DFS_ERRMISC;
+				}
+
+				fat_get_next(&saved_di, &de);
+			}
+
+			return DFS_OK;
+		}
+
+		if (de.attr != ATTR_LONG_NAME) {
+			memset(&saved_di, 0, sizeof(saved_di));
+		} else if ((de.name[0] & FAT_LONG_ORDER_NUM_MASK) &&
+				saved_di.p_scratch == NULL) {
+			memcpy(&saved_di, di, sizeof(saved_di));
+			saved_di.currententry--;
+		}
+	}
+}
+
 int fat_dir_empty(struct fat_file_info *fi) {
 	struct dirinfo *di = (void *) fi;
 	struct fat_dirent de = { };
@@ -1959,6 +2016,127 @@ int fat_reset_dir(struct dirinfo *di) {
 	return 0;
 }
 
+/* Makes room for NAME in DI -- its long-name entries, written, and the slot
+ * for the 8.3 entry after them, which DI is left pointing at -- and puts the
+ * 8.3 form of the name in FILENAME. */
+static int fat_write_name(struct dirinfo *di, const char *name,
+    uint8_t filename[12]) {
+	struct fat_dirent de;
+	int entries;
+	uint32_t res;
+
+	entries = fat_entries_per_name(name);
+
+	res = fat_get_free_entries(di, entries);
+	if (res < 0) {
+		return -1;
+	}
+
+	fat_dir_rewind(di, res);
+
+	if (entries > 1) {
+		path_canonical_to_dir((char *) filename, (char *) name);
+		/* Write long-name descriptors */
+		for (int i = entries - 1; i >= 1; i--) {
+			memset(&de, 0, sizeof(de));
+			fat_write_longname((char *) name + 13 * (i - 1), &de);
+			de.attr = ATTR_LONG_NAME;
+			de.crttimetenth = fat_canonical_name_checksum((char *) filename);
+			de.name[0] = FAT_LONG_ORDER_NUM_MASK & i;
+			if (i == entries - 1) {
+				de.name[0] |= FAT_LONG_ORDER_LAST;
+			}
+
+			fat_write_de(di, &de);
+			di->currententry++;
+			if (DFS_EOF == fat_fetch_dir(di)) {
+				fat_dir_extend(di);
+			}
+		}
+	} else {
+		memcpy(filename, name, 12);
+	}
+
+	return 0;
+}
+
+/*
+ * Gives the file FI the name NAME in NEWDI (same volume); data, chain and
+ * entry fields stay. The new entries are written before the old are deleted,
+ * so an interruption leaves two names rather than none.
+ */
+int fat_rename_file(struct fat_file_info *fi, struct dirinfo *newdi,
+    const char *name) {
+	fat_lock_assert("fat_rename_file");
+	struct fat_fs_info *fsi = fi->fsi;
+	struct dirinfo *olddi = fi->fdi;
+	struct fat_dirent de, pde;
+	uint8_t filename[12];
+	uint32_t old_sector, old_offset, new_sector, new_offset;
+	uint32_t pclus, sec;
+
+	assert(fsi);
+	assert(olddi);
+	assert(newdi);
+
+	while (*name == '/') {
+		name++;
+	}
+
+	old_sector = fi->dirsector;
+	old_offset = fi->diroffset;
+
+	if (fat_dirent_by_file(fi, &de)) {
+		return DFS_ERRMISC;
+	}
+
+	newdi->fi.fsi = fsi;
+	if (fat_write_name(newdi, name, filename)) {
+		return DFS_ERRMISC;
+	}
+	memcpy(de.name, filename, MSDOS_NAME);
+	fat_set_filetime(&de);
+
+	new_sector = fat_current_dirsector(newdi);
+	new_offset = newdi->currententry;
+	if (fat_write_de(newdi, &de)) {
+		return DFS_ERRMISC;
+	}
+
+	olddi->fi.fsi = fsi;
+	if (fat_dir_clean_at(olddi, old_sector, old_offset)) {
+		return DFS_ERRMISC;
+	}
+
+	fi->dirsector = new_sector;
+	fi->diroffset = new_offset;
+	fi->fdi = newdi;
+
+	if ((de.attr & ATTR_DIRECTORY) && newdi != olddi) {
+		/* A directory that moved: its ".." names the new parent, and the
+		 * root is 0 there whatever cluster it is in. */
+		pclus = 0;
+		if (newdi->fi.dirsector != 0) {
+			if (fat_dirent_by_file(&newdi->fi, &pde)) {
+				return DFS_ERRMISC;
+			}
+			pclus = fat_direntry_get_clus(&pde);
+		}
+
+		sec = fat_sec_by_clus(fsi, fat_direntry_get_clus(&de));
+		if (fat_read_sector(fsi, fat_sector_buff, sec)) {
+			return DFS_ERRMISC;
+		}
+		fat_direntry_set_clus(&((struct fat_dirent *) fat_sector_buff)[1],
+		    pclus);
+		if (fat_write_sector(fsi, fat_sector_buff, sec)) {
+			return DFS_ERRMISC;
+		}
+	}
+
+	return DFS_OK;
+}
+
 /*
  * Create a file or directory. You supply a file_create_param_t
  * structure.
@@ -1971,8 +2149,6 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	struct volinfo *volinfo;
 	uint32_t cluster;
 	struct fat_fs_info *fsi;
-	int entries;
-	uint32_t res;
 
 	assert(fi);
 	assert(di);
@@ -1991,38 +2167,10 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 			fsi->vi.bytepersec, fsi->bdev->block_size);
 	log_debug("name(%s), mode(%x)", name, mode);
 
-	entries = fat_entries_per_name(name);
-
 	di->fi.fsi = fsi;
 
-	res = fat_get_free_entries(di, entries);
-	if (res < 0) {
+	if (fat_write_name(di, name, filename)) {
 		return -1;
-	}
-
-	fat_dir_rewind(di, res);
-
-	if (entries > 1) {
-		path_canonical_to_dir((char *) filename, name);
-		/* Write long-name descriptors */
-		for (int i = entries - 1; i >= 1; i--) {
-			memset(&de, 0, sizeof(de));
-			fat_write_longname(name + 13 * (i - 1), &de);
-			de.attr = ATTR_LONG_NAME;
-			de.crttimetenth = fat_canonical_name_checksum((char *) filename);
-			de.name[0] = FAT_LONG_ORDER_NUM_MASK & i;
-			if (i == entries - 1) {
-				de.name[0] |= FAT_LONG_ORDER_LAST;
-			}
-
-			fat_write_de(di, &de);
-			di->currententry++;
-			if (DFS_EOF == fat_fetch_dir(di)) {
-				fat_dir_extend(di);
-			}
-		}
-	} else {
-		memcpy(filename, name, sizeof(filename));
 	}
 
 	cluster = fat_get_free_fat(fsi, fat_sector_buff);
@@ -2418,7 +2566,12 @@ int fat_destroy_inode(struct inode *inode) {
 	struct fat_file_info *fi;
 	struct dirinfo *di;
 
+	/* Under the driver lock, the test of the private pointer too: the VFS
+	 * reclaims on any core while a locked read or write may use it. */
+	fat_lock();
+
 	if (!inode_priv(inode)) {
+		fat_unlock();
 		return 0;
 	}
 
@@ -2431,6 +2584,8 @@ int fat_destroy_inode(struct inode *inode) {
 	}
 
 	inode_priv_set(inode, NULL);
+
+	fat_unlock();
 
 	return 0;
 }

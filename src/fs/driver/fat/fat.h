@@ -300,6 +300,8 @@ extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 extern int      fat_root_dir_record(void *bdev);
 extern int      fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, int mode);
 extern int      fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch);
+extern int      fat_rename_file(struct fat_file_info *fi, struct dirinfo *newdi,
+                                const char *name);
 
 extern struct fat_fs_info *fat_fs_alloc(void);
 extern void fat_fs_free(struct fat_fs_info *fsi);

@@ -15,46 +15,27 @@
 #include <fs/dvfs.h>
 
 int mkdir(const char *pathname, mode_t mode) {
-	struct lookup lu = {};
-	char *t;
+	struct lookup lu;
+	char last[NAME_MAX];
 	int res;
 
-	char parent[PATH_MAX];
+	dvfs_lock();
 
-	dvfs_lookup(pathname, &lu);
-
-	if (lu.item) {
-		dentry_ref_dec(lu.item);
-		return SET_ERRNO(EEXIST);
-	}
-
-	parent[0] = '\0';
-	strncat(parent, pathname, sizeof(parent) - 1);
-	if (parent[strlen(parent) - 1] == '/')
-		parent[strlen(parent) - 1] = '\0';
-
-	t = strrchr(parent, '/');
-	if (t) {
-		memset(t + 1, '\0', parent + PATH_MAX - t);
-
-		if ((res = dvfs_lookup(parent, &lu))) {
-			return SET_ERRNO(-res);
+	/* Resolve and create in one hold of the lock. A missing earlier
+	 * component is ENOENT. */
+	res = dvfs_lookup_at(NULL, pathname, &lu, last);
+	if (res == 0) {
+		if (lu.item) {
+			res = -EEXIST;
+		} else {
+			res = dvfs_create_new(last, &lu,
+			    S_IFDIR | (mode & VFS_DIR_VIRTUAL));
 		}
-
-		lu.parent = lu.item;
-		lu.item = NULL;
-	}
-	else {
-		parent[0] = '\0';
-		if ((res = dvfs_lookup(pathname, &lu))) {
-			return SET_ERRNO(-res);
-		}
+		dvfs_lookup_put(&lu);
 	}
 
-	res = dvfs_create_new(pathname + strlen(parent), &lu,
-	    S_IFDIR | (mode & VFS_DIR_VIRTUAL));
-	dentry_ref_dec(lu.parent);
-	dentry_ref_dec(lu.item);
+	dvfs_unlock();
+
 	if (res) {
 		return SET_ERRNO(-res);
 	}
