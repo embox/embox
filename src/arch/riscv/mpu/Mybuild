@@ -1,0 +1,9 @@
+package embox.arch.riscv
+
+module mpu {
+  option boolean dcache_en = false
+  option boolean icache_en = true
+
+  source "mpu.c"
+  source "mpu.h"
+}
