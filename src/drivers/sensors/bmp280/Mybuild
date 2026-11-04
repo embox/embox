@@ -12,3 +12,13 @@ static module bmp280_i2c extends bmp280 {
 	option number i2c_bus = 1
 	source "bmp280_i2c.c"
 }
+
+static module bmp280_spi extends bmp280 {
+	option string log_level="LOG_ERR"
+	option number spi_bus = 0
+	option number spi_cs = 0
+
+	source "bmp280_spi.c"
+
+	depends embox.driver.spi.core
+}
