@@ -77,4 +77,9 @@
 #define ESP32_I2C_CMD_ACK_VAL      (1U << 10)
 #define ESP32_I2C_CMD_DONE         (1U << 31)
 
+/* Clock ID for this bus instance. */
+struct esp32_i2c {
+	unsigned int clk_id;
+};
+
 #endif /* ESP32_I2C_H_ */

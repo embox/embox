@@ -2,8 +2,23 @@
 
 #include <soc/esp32c5_gpio.h>
 #include <soc/esp32c5_gpio_sig_map.h>
-#include <soc/esp32c5_spi.h>
+#include <soc/esp32c5_clk.h>
 #include <soc/esp32c5_uart.h>
+
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "PCR",
+			.regs = {
+				REGMAP("BASE", 0x60096000, 0x1000),
+			},
+			.clocks = {
+				VAL("XTAL_FREQ", 48000000),
+			},
+		},
+	},
+};
 
 struct gpio_conf gpios[] = {
 	[0] = {
@@ -30,12 +45,19 @@ struct uart_conf uarts[] = {
 			.regs = {
 				REGMAP("BASE_ADDR", UART0_BASE, 0x1000),
 			},
+			.irqs = {
+				VAL("", 1),
+			},
 			/* Direct UART0 connection through IO_MUX. */
 			.pins = {
 				PIN("TX", GPIO_PORT_A, GPIO11,
 					GPIO_MODE_ALT, FUNC_U0TXD_U0TXD),
 				PIN("RX", GPIO_PORT_A, GPIO12,
 					GPIO_MODE_ALT, FUNC_U0RXD_U0RXD),
+			},
+			.clocks = {
+				VAL("ID", ESP32_CLK_UART0),
+				VAL("SOURCE", ESP32_CLK_SRC_PLL80M),
 			},
 		},
 		.baudrate = 115200,
@@ -55,6 +77,10 @@ struct uart_conf uarts[] = {
 				PIN("RX", GPIO_PORT_A, GPIO24,
 					GPIO_MODE_ALT, ESP32_MATRIX_IN(U1RXD_IN)),
 			},
+			.clocks = {
+				VAL("ID", ESP32_CLK_UART1),
+				VAL("SOURCE", ESP32_CLK_SRC_PLL80M),
+			},
 		},
 		.baudrate = 115200,
 	},
@@ -69,7 +95,6 @@ struct spi_conf spis[] = {
 			.name = "SPI0",
 			.regs = {
 				REGMAP("BASE", 0x60081000, 0x1000),
-				REGMAP("PCR", 0x60096000, 0x1000),
 			},
 			/* SPI2 through GPIO matrix; hardware CS0. */
 			.pins = {
@@ -83,7 +108,8 @@ struct spi_conf spis[] = {
 					GPIO_MODE_ALT | GPIO_MODE_OUT, ESP32_MATRIX_OUT(FSPICS0_OUT)),
 			},
 			.clocks = {
-				VAL("SOURCE", ESP32C5_SPI_CLK_PLL160M),
+				VAL("ID", ESP32_CLK_SPI2),
+				VAL("SOURCE", ESP32_CLK_SRC_PLL160M),
 				VAL("SOURCE_DIV", 2),
 			},
 		},
@@ -92,4 +118,34 @@ struct spi_conf spis[] = {
 	},
 };
 
-EXPORT_CONFIG(GPIO(gpios), UART(uarts), SPI(spis));
+struct i2c_conf i2cs[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "I2C0",
+		.dev = {
+			.name = "I2C0",
+			.regs = {
+				REGMAP("BASE", 0x60004000, 0x1000),
+			},
+			/* AF holds the matrix signal ID, shared by input/output.
+			 * Route both directions for each pin in the I2C driver.
+			 * External pull-ups to 3.3 V are required.
+			 */
+			.pins = {
+				PIN("SCL", GPIO_PORT_A, GPIO4,
+					GPIO_MODE_IN | GPIO_MODE_OUT
+						| GPIO_MODE_OUT_OPEN_DRAIN, I2CEXT0_SCL_OUT),
+				PIN("SDA", GPIO_PORT_A, GPIO3,
+					GPIO_MODE_IN | GPIO_MODE_OUT
+						| GPIO_MODE_OUT_OPEN_DRAIN, I2CEXT0_SDA_OUT),
+			},
+			.clocks = {
+				VAL("ID", ESP32_CLK_I2C0),
+				VAL("SOURCE", ESP32_CLK_SRC_XTAL),
+				VAL("SOURCE_DIV", 1),
+			},
+		},
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), SPI(spis), I2C(i2cs));

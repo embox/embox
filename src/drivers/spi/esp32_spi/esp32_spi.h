@@ -63,18 +63,6 @@
 #define ESP32_SPI_CLKDIV_PRE_SHIFT 18
 #define ESP32_SPI_CLK_EDGE_SEL (1U << 30)
 
-/* ESP32-C5 PCR register offsets and fields for SPI2. */
-#define ESP32_SPI_PCR_CONF       0xc4
-#define ESP32_SPI_PCR_CLKM_CONF  0xc8
-#define ESP32_SPI_PCR_CLK_EN     (1U << 0)
-#define ESP32_SPI_PCR_RST_EN     (1U << 1)
-#define ESP32_SPI_PCR_READY      (1U << 2)
-#define ESP32_SPI_PCR_DIV_SHIFT  12
-#define ESP32_SPI_PCR_DIV_MASK   (0xffU << ESP32_SPI_PCR_DIV_SHIFT)
-#define ESP32_SPI_PCR_SEL_SHIFT  20
-#define ESP32_SPI_PCR_SEL_MASK   (3U << ESP32_SPI_PCR_SEL_SHIFT)
-#define ESP32_SPI_PCR_CLKM_EN    (1U << 22)
-
 /* Use the whole buffer from W0, with both HIGHPART bits cleared. */
 #define ESP32_SPI_BUFFER_WORDS 16
 #define ESP32_SPI_BUFFER_SIZE  (ESP32_SPI_BUFFER_WORDS * sizeof(uint32_t))

@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <drivers/clk/esp32c5_pcr.h>
 #include <drivers/i2c/i2c.h>
 #include <drivers/i2c/i2c_priv.h>
 #include <framework/mod/options.h>
@@ -19,19 +20,28 @@
 
 #include "esp32_i2c.h"
 
-#define ESP32_I2C_SOURCE_HZ       OPTION_GET(NUMBER, source_clk_hz)
 #define ESP32_I2C_BUS_HZ          100000U
 #define ESP32_I2C_XFER_TIMEOUT_NS 100000000LL
 
 static int esp32_i2c_init(const struct i2c_bus *bus) {
 	uintptr_t base;
-	uint32_t half_cycle, wait_high, timeout;
+	const struct esp32_i2c *dev;
+	uint32_t half_cycle, wait_high, timeout, source_hz;
+	int ret;
 
-	if (!bus || !bus->i2cb_label) {
+	if (!bus || !bus->i2cb_label || !bus->i2cb_priv) {
 		return -EINVAL;
 	}
 	base = bus->i2cb_label;
-	half_cycle = ESP32_I2C_SOURCE_HZ / ESP32_I2C_BUS_HZ / 2;
+	dev = bus->i2cb_priv;
+	ret = esp32_clk_get_rate(dev->clk_id, &source_hz);
+	if (ret) {
+		return ret;
+	}
+	half_cycle = source_hz / ESP32_I2C_BUS_HZ / 2;
+	if (half_cycle < 8 || half_cycle > 511) {
+		return -EINVAL;
+	}
 	wait_high = half_cycle / 2 - 2;
 	/* Hardware timeout is encoded as an exponent, as in ESP-IDF LL. */
 	timeout = 32U - __builtin_clz(5U * half_cycle) + 2U;

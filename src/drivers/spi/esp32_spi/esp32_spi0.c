@@ -9,10 +9,10 @@
 
 #include <errno.h>
 
+#include <drivers/clk/esp32c5_pcr.h>
 #include <drivers/gpio.h>
 #include <drivers/spi.h>
 #include <embox/unit.h>
-#include <hal/reg.h>
 
 #include <config/board_config.h>
 #include <drivers/gpio/esp32_gpio.h>
@@ -24,41 +24,6 @@ EMBOX_UNIT_INIT(esp32_spi0_init);
 static struct esp32_spi esp32_spi0 = {
 	.base_addr = (uintptr_t)CONF_SPI0_REGION_BASE,
 };
-
-static int esp32_spi0_clock_init(void) {
-	uintptr_t pcr_base = CONF_SPI0_REGION_PCR;
-	unsigned int source = CONF_SPI0_CLK_DEF_SOURCE;
-	unsigned int source_div = CONF_SPI0_CLK_DEF_SOURCE_DIV;
-	unsigned int timeout;
-	uint32_t reg;
-
-	if (source > 2 || !source_div || source_div > 256) {
-		return -EINVAL;
-	}
-
-	REG32_ORIN(pcr_base + ESP32_SPI_PCR_CONF, ESP32_SPI_PCR_CLK_EN);
-	REG32_ORIN(pcr_base + ESP32_SPI_PCR_CONF, ESP32_SPI_PCR_RST_EN);
-	REG32_CLEAR(pcr_base + ESP32_SPI_PCR_CONF, ESP32_SPI_PCR_RST_EN);
-	for (timeout = 100000; timeout; timeout--) {
-		if (REG32_LOAD(pcr_base + ESP32_SPI_PCR_CONF)
-		    & ESP32_SPI_PCR_READY) {
-			break;
-		}
-	}
-	if (!timeout) {
-		return -ETIMEDOUT;
-	}
-
-	REG32_CLEAR(pcr_base + ESP32_SPI_PCR_CLKM_CONF, ESP32_SPI_PCR_CLKM_EN);
-	reg = REG32_LOAD(pcr_base + ESP32_SPI_PCR_CLKM_CONF);
-	reg &= ~(ESP32_SPI_PCR_DIV_MASK | ESP32_SPI_PCR_SEL_MASK);
-	reg |= (source_div - 1) << ESP32_SPI_PCR_DIV_SHIFT;
-	reg |= source << ESP32_SPI_PCR_SEL_SHIFT;
-	REG32_STORE(pcr_base + ESP32_SPI_PCR_CLKM_CONF, reg);
-	REG32_ORIN(pcr_base + ESP32_SPI_PCR_CLKM_CONF, ESP32_SPI_PCR_CLKM_EN);
-
-	return 0;
-}
 
 static int esp32_spi0_pin_init(unsigned int port, uint32_t pin,
     uint32_t mode, uint32_t route) {
@@ -119,7 +84,16 @@ static int esp32_spi0_pins_init(void) {
 static int esp32_spi0_init(void) {
 	int ret;
 
-	ret = esp32_spi0_clock_init();
+	ret = esp32_clk_enable(CONF_SPI0_CLK_DEF_ID);
+	if (ret) {
+		return ret;
+	}
+	ret = esp32_periph_reset(CONF_SPI0_CLK_DEF_ID);
+	if (ret) {
+		return ret;
+	}
+	ret = esp32_clk_configure(CONF_SPI0_CLK_DEF_ID,
+	    CONF_SPI0_CLK_DEF_SOURCE, CONF_SPI0_CLK_DEF_SOURCE_DIV);
 	if (ret) {
 		return ret;
 	}

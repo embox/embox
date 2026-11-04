@@ -16,5 +16,6 @@ module esp32_spi0 {
 	@NoRuntime depends embox.driver.spi.spi0_dev0
 
 	depends embox.driver.spi.esp32_spi_drv
+	depends embox.driver.clk.esp32c5_pcr
 	depends embox.driver.gpio.esp32_gpio
 }
