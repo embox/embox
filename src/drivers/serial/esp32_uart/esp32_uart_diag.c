@@ -10,12 +10,12 @@
 extern const struct uart_ops esp32_uart_ops;
 
 static struct uart esp32_uart_diag = {
-    .uart_ops   = &esp32_uart_ops,
-    .base_addr  = (unsigned long) UART_BASE,
+    .uart_ops = &esp32_uart_ops,
+    .base_addr = (unsigned long)UART_BASE,
 };
 
 static const struct uart_params esp32_uart_diag_params = {
-    .baud_rate        = UART_BAUD_RATE,
+    .baud_rate = UART_BAUD_RATE,
     .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
 };
 

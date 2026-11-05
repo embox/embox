@@ -4,22 +4,24 @@
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
 
-#define UART_BASE      UINTMAX_C(OPTION_GET(NUMBER, base_addr))
-#define IRQ_NUM        OPTION_GET(NUMBER, irq_num)
+#include <config/board_config.h>
+
+#define UART_BASE      CONF_UART0_REGION_BASE_ADDR
+#define IRQ_NUM        CONF_UART0_IRQ
 #define UART_BAUD_RATE OPTION_GET(NUMBER, baud_rate)
 
-#define TTY_NAME  ttyS0
+#define TTY_NAME ttyS0
 
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
 extern const struct uart_ops esp32_uart_ops;
 
 static struct uart esp32_uart_ttyS0 = {
-    .uart_ops   = &esp32_uart_ops,
-    .irq_num    = IRQ_NUM,
-    .base_addr  = (unsigned long)UART_BASE,
+    .uart_ops = &esp32_uart_ops,
+    .irq_num = IRQ_NUM,
+    .base_addr = (unsigned long)UART_BASE,
     .params = ((struct uart_params){
-        .baud_rate        = UART_BAUD_RATE,
+        .baud_rate = UART_BAUD_RATE,
         .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
     }),
 };

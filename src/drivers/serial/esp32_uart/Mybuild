@@ -6,6 +6,7 @@ module esp32_uart {
 	source "esp32_uart.c"
 
 	depends embox.driver.serial.core
+	depends embox.driver.clk.esp32c5_pcr
 	@NoRuntime depends embox.driver.interrupt.esp32_inmatrix
 }
 
@@ -20,9 +21,7 @@ module esp32_uart_diag extends embox.driver.serial.diag {
 }
 
 module esp32_uart_ttyS0 {
-	option number base_addr
 	option number baud_rate
-	option number irq_num
 
 	source "esp32_uart_ttys0.c"
 

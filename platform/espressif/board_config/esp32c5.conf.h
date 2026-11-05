@@ -46,7 +46,8 @@ struct uart_conf uarts[] = {
 				REGMAP("BASE_ADDR", UART0_BASE, 0x1000),
 			},
 			.irqs = {
-				VAL("", 1),
+				/* Full CLIC ID; external interrupt inputs are 16..47. */
+				VAL("", 17),
 			},
 			/* Direct UART0 connection through IO_MUX. */
 			.pins = {
@@ -57,7 +58,8 @@ struct uart_conf uarts[] = {
 			},
 			.clocks = {
 				VAL("ID", ESP32_CLK_UART0),
-				VAL("SOURCE", ESP32_CLK_SRC_PLL80M),
+				/* The standalone loader does not initialize the PLL. */
+				VAL("SOURCE", ESP32_CLK_SRC_XTAL),
 			},
 		},
 		.baudrate = 115200,
