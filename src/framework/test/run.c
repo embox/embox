@@ -162,6 +162,8 @@ static void handle_suite_fixture_failure(const struct test_suite *test_suite,
 
 static void handle_suite_result(const struct test_suite *test_suite,
     int failures, int total) {
+	log_info("completed %s.%s: %d/%d passed", test_package(test_suite),
+	    test_name(test_suite), total - failures, total);
 	if (failures > 0) {
 		log_error("testing \"%s\": %d/%d failures", test_suite->description,
 		    failures, total);
