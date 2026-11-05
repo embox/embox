@@ -1,96 +1,184 @@
-# ESP32-C5: standalone SPI flash startup
+# Embox on ESP32-C5
 
-Build, flash and debug instructions: [RUN.md](RUN.md).
+This guide covers environment setup, building Embox, and flashing an ESP32-C5
+board through either GDB with OpenOCD or a serial port with esptool.
+The connection examples use a board with separate USB JTAG and UART connectors.
 
-The loader and Embox are linked independently:
+Run the build and flashing commands from the Embox repository root.
 
-| Artifact | Purpose | Flash offset |
-| --- | --- | --- |
-| `bootloader.elf` / `bootloader.bin` | SRAM bootstrap, ESP image header | `0x2000` |
-| `embox` / `embox.xip.bin` | Embox ELF / raw XIP payload | `0x10000` |
+## 1. Prepare the environment
 
-The ROM loads the standalone loader into SRAM. The loader disables the boot
-watchdogs (LP and TG0 flash-boot), initializes the cache through ROM functions,
-and maps a fixed 1 MiB
-window of physical flash at `0x10000` to CPU address `0x42000000`. It then jumps
-to `0x42000000`, where the application must place `_start`. The application
-image tool validates that entry point and the ELF load segments. No ESP-IDF
-partition table or application image header is used. The loader has no link-time
-dependency on the application; both must follow this fixed address contract.
+### General tools
 
-## SRAM ownership
+Install Git, GNU Make, a native C/C++ build toolchain, Python 3 with pip and
+venv support, and a bare-metal RISC-V GCC toolchain with Binutils.
+The cross compiler must support RV32 with the ILP32 ABI and the
+`rv32imc_zicsr_zifencei` instruction set. A compiler named
+`riscv64-unknown-elf-gcc` can build RV32 code when its multilib configuration
+supports this target.
 
-Embox owns the full HP SRAM range `0x40800000`–`0x40860000` (384 KiB) after
-handoff. Before handoff, the loader uses `0x40840000`–`0x40848000` for code and
-constants, `0x40848000`–`0x40849000` for its temporary stack, and retains the
-upper ROM working memory. The application is not loaded into SRAM by the loader.
-
-The existing RISC-V `_start` executes from mapped flash, installs its own global
-pointer, trap vector and stack, and only then clears BSS and copies `.data`
-initializers. Those operations may overwrite the old loader and ROM workspace.
-There is no return to the loader and no ROM service may be called after handoff.
-Future ROM-dependent services, wireless stacks or other RAM users require their
-own reservations before enabling them. LP RAM is not included in the 384 KiB.
-
-## Build
-
-Use an RV32-capable RISC-V toolchain and esptool with ESP32-C5 support:
+The commands below use the template's default prefix,
+`riscv64-unknown-elf-`. Add the toolchain's `bin` directory to `PATH` and check:
 
 ```sh
-make build-platform/espressif/esp32c5 CROSS_COMPILE=riscv32-esp-elf- -j4
-make -f platform/espressif/esp32c5/boot/Makefile CROSS_COMPILE=riscv32-esp-elf-
-python3 scripts/espressif/esp32c5_image.py \
-    build/base/bin/embox build/base/bin/embox.xip.bin
+riscv64-unknown-elf-gcc --version
+riscv64-unknown-elf-gcc -print-multi-lib
+riscv64-unknown-elf-objcopy --version
 ```
 
-The standalone makefile accepts `OUTPUT_DIR` (default `build/base/bin`) and
-`ESPTOOL` (default `esptool`). Its flash settings are DIO/20 MHz and a 2 MiB
-size field. The mapped application window ends at physical flash `0x110000`.
-The ordinary `embox.bin` is not an ESP ROM boot image; use the validated XIP
-binary and its separately built loader.
+For the GDB flashing method, install GNU GDB with RISC-V support. The examples
+use `gdb-multiarch`; a RISC-V bare-metal GDB can also be used.
+For console access, install a serial terminal such as minicom.
 
-For an unencrypted development board, write both images through the UART port:
+### ESP-specific tools
+
+ESP-IDF is not required. The two ESP-specific tools used here are esptool and
+Espressif's OpenOCD distribution.
+
+Install esptool in a Python virtual environment outside the source tree:
 
 ```sh
-esptool --chip esp32c5 --port /dev/ttyUSB0 write-flash \
+python3 -m venv ~/.venvs/embox-esp32c5
+. ~/.venvs/embox-esp32c5/bin/activate
+python3 -m pip install 'esptool==5.3.1'
+esptool --chip esp32c5 --help
+```
+
+Activate this environment in each terminal that builds the bootloader or uses
+esptool. Version 5.3.1 is the version recorded in the existing board notes.
+See the [esptool installation documentation](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html)
+for installation details.
+
+For JTAG flashing, download an archive for your host from the
+[Espressif OpenOCD releases](https://github.com/espressif/openocd-esp32/releases).
+Choose a release containing `board/esp32c5-builtin.cfg`. Extract it, then add
+its executable and configuration directories to the environment, replacing
+`/path/to/openocd-esp32` with the extracted directory:
+
+```sh
+export PATH="/path/to/openocd-esp32/bin:$PATH"
+export OPENOCD_SCRIPTS="/path/to/openocd-esp32/share/openocd/scripts"
+openocd --version
+```
+
+Use the executable and scripts from the same distribution. On Linux, install
+the supplied `contrib/60-openocd.rules` as a system udev rule if USB access
+requires it, reload the rules, and reconnect the board. Your user also needs
+permission to access the serial device, typically through the `dialout` or
+`uucp` group, depending on the distribution.
+
+The [ESP32-C5 JTAG documentation](https://docs.espressif.com/projects/esp-idf/en/stable/esp32c5/api-guides/jtag-debugging/index.html)
+describes the built-in USB JTAG connection and OpenOCD configuration.
+
+## 2. Build the images
+
+Load the ESP32-C5 template and build the application:
+
+```sh
+make confload-platform/espressif/esp32c5
+make -j"$(nproc)" CROSS_COMPILE=riscv64-unknown-elf-
+```
+
+Loading a template replaces the active configuration in `conf/`.
+If your toolchain uses another prefix, pass that prefix as `CROSS_COMPILE`
+to both the application build and the bootloader build below.
+
+Build the standalone bootloader, then generate the application's XIP image:
+
+```sh
+make -f platform/espressif/esp32c5/boot/Makefile \
+    CROSS_COMPILE=riscv64-unknown-elf-
+python3 scripts/espressif/esp32c5_image.py \
+    build/base/bin/embox build/base/bin/embox.xip.bin
+esptool --chip esp32c5 image-info build/base/bin/bootloader.bin
+```
+
+The image generator checks the application's ELF layout and requires an entry
+point at `0x42000000`. The bootloader image should contain one RAM segment at
+`0x40840000`, with its entry point inside that segment and valid checksum/hash.
+
+| File | Purpose | Flash offset |
+| --- | --- | --- |
+| `build/base/bin/bootloader.bin` | Standalone SRAM bootloader | `0x2000` |
+| `build/base/bin/embox.xip.bin` | Application executed from mapped flash | `0x10000` |
+| `build/base/bin/embox` | Application ELF with GDB symbols | — |
+| `build/base/bin/bootloader.elf` | Bootloader ELF with GDB symbols | — |
+
+Use the two `.bin` files listed above for either flashing method. The ordinary
+`embox.bin` is not suitable for this boot layout. No ESP-IDF partition table
+is used. Flashing replaces the existing bootloader and any data overlapped by
+the application image.
+
+## 3. Flash the board
+
+Choose one of the following methods. Both write the same images at the same
+flash offsets.
+
+### Option A: GDB with OpenOCD over JTAG
+
+Connect the board's built-in USB JTAG connector, labelled **USB** on the board
+used in the existing notes. Start OpenOCD and leave it running:
+
+```sh
+openocd -f board/esp32c5-builtin.cfg
+```
+
+Wait for the GDB server to listen on port `3333`. In another terminal, from
+the repository root, open the application ELF:
+
+```sh
+gdb-multiarch build/base/bin/embox
+```
+
+Run these commands in GDB. Replace `/absolute/path/to/embox` with the absolute
+repository path. OpenOCD opens the binary files, so absolute paths avoid
+depending on its working directory.
+
+```gdb
+target extended-remote localhost:3333
+monitor reset halt
+monitor program_esp /absolute/path/to/embox/build/base/bin/bootloader.bin 0x2000 verify
+monitor program_esp /absolute/path/to/embox/build/base/bin/embox.xip.bin 0x10000 verify
+```
+
+After both writes report successful verification, reset and stop at the
+application entry point:
+
+```gdb
+monitor reset halt
+hbreak _start
+continue
+```
+
+The expected entry address is `0x42000000`. To run Embox from there:
+
+```gdb
+delete breakpoints
+continue
+```
+
+Use the ELF from the same build as the flashed application. Flash writes are
+performed by OpenOCD's `program_esp` command; GDB's `load` command does not
+install this two-image flash layout.
+
+### Option B: esptool over serial
+
+Connect the board's **UART** connector and identify its serial device.
+```sh
+esptool --chip esp32c5 --port /dev/ttyACM0 write-flash \
     0x2000 build/base/bin/bootloader.bin \
     0x10000 build/base/bin/embox.xip.bin
 ```
 
-This replaces the existing bootloader and any partitions overlapped by either
-image. The layout does not implement secure boot, flash encryption or OTA.
-Once installed, the loader need not be rewritten for compatible applications.
+If automatic download-mode entry fails, hold **BOOT**, press and release
+**RESET**, then release **BOOT** and retry. After flashing, release **BOOT**
+and press **RESET** if the application does not start automatically.
 
-For JTAG, use Espressif OpenOCD with `board/esp32c5-builtin.cfg`. Use `embox`
-for application symbols and `bootloader.elf` for loader symbols. Plain GDB `load`
-is not a substitute for writing the two flash images.
+## 4. Connect to Embox shell
 
-Expected early messages through the ROM-configured console:
-
-```text
-Embox ESP32-C5: SRAM boot
-Embox ESP32-C5: flash mapped, entering _start
-```
-
-The earlier combined-image layout was verified on ESP32-C5-WIFI6-KIT-NXRX,
-revision v1.0. The standalone handoff and reclaimed upper SRAM require a new
-hardware run; host builds and image checks do not verify those behaviors.
-
-Host-side image layout checks:
+Open the UART device with a serial terminal:
 
 ```sh
-python3 -B scripts/espressif/test_esp32c5_image.py
+minicom -D /dev/ttyACM0 -b 115200
 ```
 
-## GPIO check
-
-Use the UART shell to set GPIO23 high and low:
-
-```text
-pin GPIOA 23 set
-pin GPIOA 23 reset
-```
-
-Measure the pin with a multimeter, or connect an external LED through a
-series resistor to GND. The onboard WS2812B cannot indicate a static GPIO
-level: it requires a colour data frame.
