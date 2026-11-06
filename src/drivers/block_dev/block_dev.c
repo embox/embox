@@ -454,6 +454,10 @@ int block_dev_destroy(struct block_dev *dev) {
 
 	dev_module_deinit(&dev->dev_module);
 
+	/* Before the object goes back to the pool: the buffer cache keys on this
+	 * pointer, and the next device created is handed it again. */
+	bcache_forget_dev(dev);
+
 	block_dev_free(dev);
 
 	return 0;

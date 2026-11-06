@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 #include <drivers/block_dev.h>
 #include <fs/dvfs.h>
@@ -23,6 +24,10 @@ int mkfs(const char *blk_name, const char *fs_type, char *fs_spec) {
 		return -EINVAL;
 	}
 
+	if (!drv->format) {
+		return -ENOSYS;
+	}
+
 	if ((err = dvfs_lookup(blk_name, &lu))) {
 		return err;
 	}
@@ -31,10 +36,22 @@ int mkfs(const char *blk_name, const char *fs_type, char *fs_spec) {
 		return -ENOENT;
 	}
 
-	assert(lu.item->d_inode);
-	assert(lu.item->d_inode->i_privdata);
+	if (!lu.item->d_inode || !lu.item->d_inode->i_privdata
+	    || !S_ISBLK(lu.item->d_inode->i_mode)) {
+		dentry_ref_dec(lu.item);
+		return -ENOTBLK;
+	}
 
 	bdev = dev_module_to_bdev(lu.item->d_inode->i_privdata);
 
+	/* The device is found; the dentry is not needed to format it. */
+	dentry_ref_dec(lu.item);
+
 	return drv->format(bdev, fs_spec);
+}
+
+/* The oldfs name for mkfs() (fs/fsop.h), for code written against oldfs.
+ * -errno, as mkfs(). */
+int format(const char *pathname, const char *fs_type) {
+	return mkfs(pathname, fs_type, NULL);
 }

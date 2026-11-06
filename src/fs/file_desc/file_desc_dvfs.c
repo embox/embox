@@ -6,8 +6,34 @@
  */
 #include <sys/types.h>
 
+#include <errno.h>
+
 #include <fs/inode.h>
 #include <fs/file_desc.h>
+#include <util/atomic_rmw.h>
+
+unsigned long fdesc_dead_inode;
+unsigned long fdesc_stale_gen;
+
+/* A descriptor pins its dentry and the dentry its inode, so a changed
+ * generation means a lost pin. A dying inode stays usable while the driver
+ * keeps its private data (FAT keeps the clusters until fat_destroy_inode). */
+int dvfs_file_valid(struct file_desc *desc) {
+	struct inode *inode = desc->f_inode;
+
+	if (inode == NULL) {
+		return 0;
+	}
+	if (inode->i_gen != desc->f_gen) {
+		atomic_rmw_add_fetch(&fdesc_stale_gen, 1, __ATOMIC_RELAXED);
+		return -EBADF;
+	}
+	if (inode->i_dying && inode_priv(inode) == NULL) {
+		atomic_rmw_add_fetch(&fdesc_dead_inode, 1, __ATOMIC_RELAXED);
+		return -EBADF;
+	}
+	return 0;
+}
 
 off_t file_get_pos(struct file_desc *file) {
 	return file->f_pos;

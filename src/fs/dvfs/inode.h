@@ -14,6 +14,7 @@
 struct dentry;
 struct super_block;
 struct inode_operations;
+struct file_desc;
 
 struct inode {
 	int      i_no;
@@ -30,7 +31,23 @@ struct inode {
 	struct inode_operations *i_ops;
 
 	void *i_privdata;
+
+	/* Set under dvfs_lock() when the name is removed while the inode is still
+	 * held; see dvfs_file_valid(). */
+	int i_dying;
+	/* Which allocation of this pool slot the inode is. A descriptor records
+	 * it at open and checks it on every use; see dvfs_file_valid(). */
+	unsigned int i_gen;
+
+	/* flock(2), under dvfs_lock(): the descriptor holding it exclusively,
+	 * and how many hold it shared. See dvfs_flock.c. */
+	struct file_desc *i_flock_ex;
+	int i_flock_sh;
 };
+
+/* Counters, named as oldfs names them so the suites read either. */
+extern unsigned long inode_free_deferred; /* frees postponed by a holder */
+extern unsigned long inode_ref_refused;   /* dying dentries a lookup refused */
 
 extern void *inode_priv(const struct inode *node);
 extern void inode_priv_set(struct inode *node, void *priv);

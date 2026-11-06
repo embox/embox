@@ -9,6 +9,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 
 #include <fs/inode.h>
 #include <fs/super_block.h>
@@ -34,11 +35,16 @@ static int fat_iterate_unlocked(struct inode *next, char *name, struct inode *pa
 	assert(parent->i_sb);
 
 	dirinfo = inode_priv(parent);
-	dirinfo->currententry = (uintptr_t) ctx->fs_ctx;
 
-	if (dirinfo->currententry == 0) {
+	/* The position (cluster, sector, entry) is the reader's, kept in ctx:
+	 * the directory's dirinfo is moved by every reader, lookup and create. */
+	if (ctx->fs_ctx == NULL) {
 		/* Need to get directory data from drive */
 		fat_reset_dir(dirinfo);
+	} else {
+		dirinfo->currentcluster = ctx->fs_pos[0];
+		dirinfo->currentsector = ctx->fs_pos[1];
+		dirinfo->currententry = ctx->fs_pos[2];
 	}
 
 	read_dir_buf(dirinfo);
@@ -77,7 +83,10 @@ static int fat_iterate_unlocked(struct inode *next, char *name, struct inode *pa
 		strncpy(name, tmp_name, NAME_MAX);
 		name[NAME_MAX - 1] = '\0';
 
-		ctx->fs_ctx = (void *) ((uintptr_t) dirinfo->currententry);
+		ctx->fs_pos[0] = dirinfo->currentcluster;
+		ctx->fs_pos[1] = dirinfo->currentsector;
+		ctx->fs_pos[2] = dirinfo->currententry;
+		ctx->fs_ctx = (void *) 1;
 		return 0;
 	}
 	case DFS_EOF:
@@ -109,6 +118,7 @@ static int fat_create_unlocked(struct inode *i_new, struct inode *i_dir, int mod
 	struct fat_fs_info *fsi;
 	struct dirinfo *di;
 	char *name;
+	int res;
 
 	assert(i_dir && i_new);
 
@@ -148,8 +158,9 @@ static int fat_create_unlocked(struct inode *i_new, struct inode *i_dir, int mod
 	fi->fsi     = fsi;
 	fi->mode   |= i_new->i_mode;
 
-	if (0 != fat_create_file(fi, di, name, fi->mode)) {
-		return -EIO;
+	res = fat_create_file(fi, di, name, fi->mode);
+	if (res < 0) {
+		return res;
 	}
 
 	return 0;
@@ -161,7 +172,18 @@ static int fat_delete_unlocked(struct inode *dir, struct inode *node) {
 	fi = inode_priv(node);
 
 	if (S_ISDIR(node->i_mode) && !fat_dir_empty(fi)) {
-		return -EPERM;
+		return -ENOTEMPTY;
+	}
+
+	if (!S_ISDIR(node->i_mode)) {
+		/* Only the name goes here; the clusters go in fat_destroy_inode() on
+		 * the last reference, and the private data stays for dvfs_file_valid().
+		 * A power loss in between leaves a nameless chain for fsck. */
+		if (fat_unlink_entry(fi, (uint8_t *) fat_sector_buff)) {
+			return -1;
+		}
+		fi->removed = 1;
+		return 0;
 	}
 
 	if (fat_unlike_file(fi, (uint8_t *) fat_sector_buff)) {
@@ -207,10 +229,41 @@ static int fat_delete(struct inode *dir, struct inode *node) {
 	return res;
 }
 
+/* Same volume, any directory: the VFS checks the rest (types, targets,
+ * EXDEV) and replaces an existing target before asking. */
+static int fat_rename(struct inode *node, struct inode *new_parent,
+    const char *new_name) {
+	struct fat_file_info *fi;
+	struct dirinfo *newdi;
+	int res;
+
+	fat_lock();
+
+	fi = inode_priv(node);
+	newdi = inode_priv(new_parent);
+	if (!fi || !newdi) {
+		fat_unlock();
+		return -ENOENT;
+	}
+
+	if (fat_entries_per_name(new_name) > 1
+	    && strlen(new_name) >= NAME_MAX) {
+		fat_unlock();
+		return -ENAMETOOLONG;
+	}
+
+	res = fat_rename_file(fi, newdi, new_name);
+
+	fat_unlock();
+
+	return res == DFS_OK ? 0 : -EIO;
+}
+
 struct inode_operations fat_iops = {
 	.ino_create   = fat_create,
 	.ino_lookup   = fat_ilookup,
 	.ino_remove   = fat_delete,
 	.ino_iterate  = fat_iterate,
 	.ino_truncate = fat_truncate,
+	.ino_rename   = fat_rename,
 };

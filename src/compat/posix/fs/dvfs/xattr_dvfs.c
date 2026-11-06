@@ -11,39 +11,64 @@
 
 #include <fs/dvfs.h>
 
-int getxattr(const char *path, const char *name, char *value, size_t size) {
+/* Resolve PATH to a held inode, or set errno and answer NULL. */
+static struct dentry *xattr_lookup(const char *path) {
 	struct lookup lookup = {};
-	struct inode *inode;
 	int err;
 
 	if ((err = dvfs_lookup(path, &lookup))) {
-		return err;
+		SET_ERRNO(-err);
+		return NULL;
 	}
-	inode = lookup.item->d_inode;
-
-	if (inode->i_ops->ino_getxattr) {
-		return inode->i_ops->ino_getxattr(inode, name, value, size);
+	if (lookup.item == NULL) {
+		SET_ERRNO(ENOENT);
+		return NULL;
 	}
+	if (lookup.item->d_inode == NULL || lookup.item->d_inode->i_ops == NULL) {
+		dentry_ref_dec(lookup.item);
+		SET_ERRNO(ENOTSUP);
+		return NULL;
+	}
+	return lookup.item;
+}
 
-	return 0;
+int getxattr(const char *path, const char *name, char *value, size_t size) {
+	struct dentry *d;
+	struct inode *inode;
+	int res;
+
+	if (!(d = xattr_lookup(path))) {
+		return -1;
+	}
+	inode = d->d_inode;
+
+	res = inode->i_ops->ino_getxattr
+	    ? inode->i_ops->ino_getxattr(inode, name, value, size)
+	    : -ENOTSUP;
+
+	dentry_ref_dec(d);
+
+	return res < 0 ? SET_ERRNO(-res) : res;
 }
 
 int setxattr(const char *path, const char *name, const char *value, size_t size,
 	       	int flags) {
-	struct lookup lookup = {};
+	struct dentry *d;
 	struct inode *inode;
-	int err;
+	int res;
 
-	if ((err = dvfs_lookup(path, &lookup))) {
-		return err;
+	if (!(d = xattr_lookup(path))) {
+		return -1;
 	}
-	inode = lookup.item->d_inode;
+	inode = d->d_inode;
 
-	if (inode->i_ops->ino_setxattr) {
-		return inode->i_ops->ino_setxattr(inode, name, value, size, flags);
-	}
+	res = inode->i_ops->ino_setxattr
+	    ? inode->i_ops->ino_setxattr(inode, name, value, size, flags)
+	    : -ENOTSUP;
 
-	return 0;
+	dentry_ref_dec(d);
+
+	return res < 0 ? SET_ERRNO(-res) : res;
 }
 
 int listxattr(const char *path, char *list, size_t size) {

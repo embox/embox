@@ -7,6 +7,7 @@
  */
 
 #include <errno.h>
+#include <limits.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -45,8 +46,8 @@ static int rootfs_mount(void) {
 	const char *dev, *fs_type;
 	const struct fs_driver *fsdrv;
 	const struct auto_mount *auto_mnt;
-	struct lookup lu = {};
-	char *tmp;
+	struct lookup lu;
+	char last[NAME_MAX];
 	int err;
 
 	dev = OPTION_STRING_GET(bdev);
@@ -60,8 +61,8 @@ static int rootfs_mount(void) {
 
 	dvfs_update_root();
 
-	if (-1 == dvfs_mount(dev, "/", (char *) fs_type, 0)) {
-		return -errno;
+	if ((err = dvfs_mount(dev, "/", (char *) fs_type, 0))) {
+		return err;
 	}
 
 	array_spread_foreach(auto_mnt, auto_mount_tab) {
@@ -69,17 +70,20 @@ static int rootfs_mount(void) {
 			continue;
 		}
 
-		err = dvfs_lookup(auto_mnt->mount_path, &lu);
+		dvfs_lock();
+		err = dvfs_lookup_at(NULL, auto_mnt->mount_path, &lu, last);
+		if (err == 0 && lu.item == NULL) {
+			err = dvfs_create_new(last, &lu, VFS_DIR_VIRTUAL | S_IFDIR);
+		}
+		if (err == 0) {
+			dvfs_lookup_put(&lu);
+		}
+		dvfs_unlock();
 
-		if (err && err != -ENOENT) {
+		if (err) {
 			continue;
 		}
 
-		if (lu.item == NULL) {
-			tmp = strrchr(auto_mnt->mount_path, '/');
-			dvfs_create_new(tmp ? tmp + 1: auto_mnt->mount_path,
-					&lu, VFS_DIR_VIRTUAL | S_IFDIR);
-		}
 		err = dvfs_mount(NULL, auto_mnt->mount_path, auto_mnt->fs_driver->name, 0);
 		if (err) {
 			return err;

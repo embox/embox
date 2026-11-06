@@ -61,6 +61,7 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 struct block_dev *bdev_by_path(const char *dev_name) {
 	struct lookup lookup = {};
 	struct dev_module *devmod;
+	struct block_dev *bdev;
 	int res;
 
 	if (!dev_name) {
@@ -70,9 +71,9 @@ struct block_dev *bdev_by_path(const char *dev_name) {
 		return NULL;
 	}
 
-	/* Check if devfs is initialized */
+	/* A missing /dev is item == NULL with a zero answer. */
 	res = dvfs_lookup("/dev", &lookup);
-	if (res) {
+	if (res || lookup.item == NULL) {
 		/* devfs is not mounted yet */
 		return block_dev_find(dev_name);
 	}
@@ -80,19 +81,23 @@ struct block_dev *bdev_by_path(const char *dev_name) {
 
 	/* devfs presents, perform usual mount */
 	memset(&lookup, 0, sizeof(lookup));
-	dvfs_lookup(dev_name, &lookup);
-	if (!lookup.item) {
+	if (dvfs_lookup(dev_name, &lookup) || !lookup.item) {
 		SET_ERRNO(ENOENT);
 		return NULL;
 	}
 
-	assert(lookup.item->d_inode);
+	if (!lookup.item->d_inode || !S_ISBLK(lookup.item->d_inode->i_mode)) {
+		dentry_ref_dec(lookup.item);
+		SET_ERRNO(ENOTBLK);
+		return NULL;
+	}
 
 	devmod = inode_priv(lookup.item->d_inode);
+	bdev = dev_module_to_bdev(devmod);
 
 	dentry_ref_dec(lookup.item);
 
-	return dev_module_to_bdev(devmod);
+	return bdev;
 }
 
 struct super_block_operations devfs_sbops = {

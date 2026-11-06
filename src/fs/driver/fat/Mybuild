@@ -3,7 +3,10 @@ package embox.fs.driver
 @DefaultImpl(fat_old)
 abstract module fat {
 	option string log_level="LOG_NONE"
-	option number default_fat_version = 32
+
+	/* FAT version mkfs writes by default; 0: the one the cluster count makes.
+	 * A version the geometry cannot be gets a warning, and the geometry wins. */
+	option number default_fat_version = 0
 
 	option number inode_quantity=16
 	option number fat_descriptor_quantity=4

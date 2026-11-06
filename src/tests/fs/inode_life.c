@@ -214,35 +214,50 @@ TEST_CASE("open and unlink of the same name from two cores") {
 
 
 /* ------------------------------------------------------------------ *
- * A descriptor whose file was removed is refused, not answered.
+ * A file removed while open lives until its last descriptor closes.
  *
- * The FAT driver frees the chain in ino_remove() and its private data goes
- * back to the pool, so a descriptor that kept answering would eventually
- * answer with another file's data.
+ * The driver takes only the name at the unlink and gives the clusters back on
+ * the last reference (fat_destroy_inode), so the descriptor is answered from
+ * its own file.
  */
-TEST_CASE("a descriptor whose file was removed is refused, not answered") {
+static int fd_check(int fd, unsigned seed) {
+	pattern_fill(pattern, sizeof(pattern), seed);
+	memset(readback, 0, sizeof(readback));
+	if (lseek(fd, 0, SEEK_SET) != 0) {
+		return -1;
+	}
+	if (sizeof(readback) != read(fd, readback, sizeof(readback))) {
+		return -1;
+	}
+	return memcmp(readback, pattern, sizeof(pattern)) ? -1 : 0;
+}
+
+TEST_CASE("a file removed while open is read and written until it is closed") {
 	unsigned long dead_before;
 	int fd;
 
 	test_assert_zero(file_make(FILE_ONE, 3));
 
-	fd = open(FILE_ONE, O_RDONLY);
+	fd = open(FILE_ONE, O_RDWR);
 	test_assert(fd >= 0);
 
 	dead_before = counter_read(&fdesc_dead_inode);
 
 	test_assert_zero(remove(FILE_ONE));
 
-	/* Not a short read: an error. */
-	memset(readback, 0, sizeof(readback));
-	test_assert(read(fd, readback, sizeof(readback)) < 0);
+	/* The name is gone... */
+	test_assert(0 > open(FILE_ONE, O_RDONLY));
 
-	/* Counted, so a run says how often. */
-	test_assert_equal(counter_read(&fdesc_dead_inode) - dead_before, 1);
+	/* ...and the file is not: its bytes, all of them. */
+	test_assert_zero(fd_check(fd, 3));
 
-	/* A write is refused too: it would land in another file. */
-	test_assert(write(fd, readback, 1) < 0);
+	/* It takes a write, and reads it back. */
+	pattern_fill(pattern, sizeof(pattern), 30);
+	test_assert(lseek(fd, 0, SEEK_SET) == 0);
+	test_assert_equal(sizeof(pattern), write(fd, pattern, sizeof(pattern)));
+	test_assert_zero(fd_check(fd, 30));
 
+	test_assert_equal(counter_read(&fdesc_dead_inode), dead_before);
 	test_assert_zero(close(fd));
 
 	/* No descriptor here may have used an inode that changed hands. */
@@ -250,22 +265,21 @@ TEST_CASE("a descriptor whose file was removed is refused, not answered") {
 }
 
 /* ------------------------------------------------------------------ *
- * Remove the file a descriptor is open on, make another so the pools hand
- * the slot out again, and use the old descriptor. The reference keeps the
- * slot from reuse (removal deferred, descriptor refused as dying); the
- * generation catches a missed reference. Either way the descriptor is refused.
+ * The name's slot changes hands under an open descriptor.
+ *
+ * An unlinked file's directory entry is free at once, and the next file made
+ * in that directory can take it. A write through the old descriptor must not
+ * touch the new file's entry, and must still answer with its own bytes.
  */
-TEST_CASE("the slot changes hands under an open descriptor") {
-	unsigned long dead_before, stale_before;
+TEST_CASE("the name's slot changes hands under an open descriptor") {
+	unsigned long stale_before;
 	int fd;
-	char c;
 
 	test_assert_zero(file_make(FILE_ONE, 4));
 
-	fd = open(FILE_ONE, O_RDONLY);
+	fd = open(FILE_ONE, O_RDWR);
 	test_assert(fd >= 0);
 
-	dead_before = counter_read(&fdesc_dead_inode);
 	stale_before = counter_read(&fdesc_stale_gen);
 
 	test_assert_zero(remove(FILE_ONE));
@@ -273,18 +287,22 @@ TEST_CASE("the slot changes hands under an open descriptor") {
 	/* Somebody else's file, made in the same place the removed one was. */
 	test_assert_zero(file_make(FILE_TWO, 5));
 
-	/* The old descriptor must not answer with any of it. */
-	test_assert(read(fd, &c, 1) < 0);
-	test_assert(write(fd, &c, 1) < 0);
-
-	printk("inode_life: the stale descriptor was refused as %s\n",
-	    counter_read(&fdesc_stale_gen) != stale_before ? "another file's"
-	                                                   : "a removed file's");
-
-	/* One of the two caught it, and nothing was answered. */
-	test_assert_not_zero((counter_read(&fdesc_dead_inode) != dead_before)
-	                     || (counter_read(&fdesc_stale_gen) != stale_before));
-
+	/* The old descriptor answers with its own file, and writes to it. */
+	test_assert_zero(fd_check(fd, 4));
+	pattern_fill(pattern, sizeof(pattern), 40);
+	test_assert(lseek(fd, 0, SEEK_SET) == 0);
+	test_assert_equal(sizeof(pattern), write(fd, pattern, sizeof(pattern)));
 	test_assert_zero(close(fd));
+
+	/* The new file is untouched, through a remount, which is the only way
+	 * to tell the directory entry on the media from the cached inode. */
+	test_assert_zero(umount(FS_DIR));
+	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+	fd = open(FILE_TWO, O_RDONLY);
+	test_assert(fd >= 0);
+	test_assert_zero(fd_check(fd, 5));
+	test_assert_zero(close(fd));
+
+	test_assert_equal(counter_read(&fdesc_stale_gen), stale_before);
 	test_assert_zero(remove(FILE_TWO));
 }
