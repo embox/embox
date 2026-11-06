@@ -118,6 +118,7 @@ static int fat_create_unlocked(struct inode *i_new, struct inode *i_dir, int mod
 	struct fat_fs_info *fsi;
 	struct dirinfo *di;
 	char *name;
+	int res;
 
 	assert(i_dir && i_new);
 
@@ -157,8 +158,9 @@ static int fat_create_unlocked(struct inode *i_new, struct inode *i_dir, int mod
 	fi->fsi     = fsi;
 	fi->mode   |= i_new->i_mode;
 
-	if (0 != fat_create_file(fi, di, name, fi->mode)) {
-		return -EIO;
+	res = fat_create_file(fi, di, name, fi->mode);
+	if (res < 0) {
+		return res;
 	}
 
 	return 0;
@@ -171,6 +173,17 @@ static int fat_delete_unlocked(struct inode *dir, struct inode *node) {
 
 	if (S_ISDIR(node->i_mode) && !fat_dir_empty(fi)) {
 		return -ENOTEMPTY;
+	}
+
+	if (!S_ISDIR(node->i_mode)) {
+		/* Only the name goes here; the clusters go in fat_destroy_inode() on
+		 * the last reference, and the private data stays for dvfs_file_valid().
+		 * A power loss in between leaves a nameless chain for fsck. */
+		if (fat_unlink_entry(fi, (uint8_t *) fat_sector_buff)) {
+			return -1;
+		}
+		fi->removed = 1;
+		return 0;
 	}
 
 	if (fat_unlike_file(fi, (uint8_t *) fat_sector_buff)) {
