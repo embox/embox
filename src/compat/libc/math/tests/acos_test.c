@@ -11,19 +11,38 @@
 
 EMBOX_TEST_SUITE("acos() tests");
 
-TEST_CASE("Test for acos() with negative argument") {
-	double x = acos(-1.0);
-	double y = acos(-1.0) - acos(1.0);
-	test_assert(x == y);
+static bool is_close(double x, double y) {
+	return fabs(x - y) < 1e-9;
 }
 
 TEST_CASE("Test for acos(1.0)") {
-	double x = acos(1.0);
-	test_assert(x == 0.0);
+	test_assert(acos(1.0) == 0.0);
+}
+
+TEST_CASE("Test for acos(-1.0)") {
+	test_assert(is_close(acos(-1.0), M_PI));
 }
 
 TEST_CASE("Test for acos(0.0)") {
-	double x = acos(0.0);
-	double y = acos(-1.0);
-	test_assert(x == (y / 2));
+	test_assert(is_close(acos(0.0), M_PI_2));
+}
+
+TEST_CASE("Test for acos(1/2)") {
+	test_assert(is_close(acos(0.5), (M_PI / 3)));
+}
+
+TEST_CASE("Test for acos(-1/2)") {
+	test_assert(is_close(acos(-0.5), ((2 * M_PI) / 3)));
+}
+
+TEST_CASE("Test for acos(+INFINITY)") {
+	test_assert(isnan(acos(INFINITY)));
+}
+
+TEST_CASE("Test for acos(-INFINITY)") {
+	test_assert(isnan(acos(-INFINITY)));
+}
+
+TEST_CASE("Test for acos(NAN)") {
+	test_assert(isnan(acos(NAN)));
 }
