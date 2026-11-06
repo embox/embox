@@ -1,0 +1,11 @@
+package embox.driver.interrupt
+
+module esp32_inmatrix {
+	/* ESP32-C5 HP interrupt matrix. */
+	option number base_addr=0x60010000
+
+	source "esp32_inmatrix.c"
+
+	@IncludeExport(path="drivers")
+	source "esp32_intmatrix.h"
+}

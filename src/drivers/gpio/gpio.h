@@ -13,6 +13,10 @@
 #include <sys/cdefs.h>
 
 #include <lib/libds/array.h>
+#include <framework/mod/options.h>
+
+#include <config/embox/driver/gpio/core.h>
+
 
 #define GPIO_MODE_IN_SECTION  0x000000ff
 #define GPIO_MODE_OUT_SECTION 0x0000ff00
@@ -75,11 +79,23 @@
 	ARRAY_SPREAD_DECLARE(const struct gpio_chip *, __gpio_chip_registry); \
 	ARRAY_SPREAD_ADD(__gpio_chip_registry, chip)
 
+#define GPIO_MATRIX OPTION_MODULE_GET(embox__driver__gpio__core, BOOLEAN, gpio_matrix)
+
+#if GPIO_MATRIX
+/* Direction is relative to the peripheral; remaining bits hold its signal ID. */
+#define GPIO_ROUTE_INPUT       (1U << 31)
+#define GPIO_ROUTE_OUTPUT      0U
+#define GPIO_ROUTE_SIGNAL_MASK (~GPIO_ROUTE_INPUT)
+#endif
+
 typedef uint32_t gpio_mask_t;
 typedef int (*gpio_irq_hnd_t)(unsigned int irq_nt, void *data);
 
 struct gpio_chip {
 	int (*setup_mode)(unsigned int port, gpio_mask_t pins, uint32_t mode);
+#if GPIO_MATRIX
+	int (*setup_route)(unsigned int port, uint32_t pin, uint32_t signal);
+#endif
 	void (*set)(unsigned int port, gpio_mask_t pins, int level);
 	gpio_mask_t (*get)(unsigned int port, gpio_mask_t pins);
 	unsigned int nports;
@@ -91,6 +107,10 @@ __BEGIN_DECLS
 extern const struct gpio_chip *gpio_get_chip(unsigned int chip_id);
 
 extern int gpio_setup_mode(unsigned int port, gpio_mask_t pins, uint32_t mode);
+
+#if GPIO_MATRIX
+extern int gpio_setup_route(unsigned int port, uint32_t pin, uint32_t signal);
+#endif
 
 extern void gpio_set(unsigned int port, gpio_mask_t pins, int level);
 

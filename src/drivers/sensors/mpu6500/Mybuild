@@ -1,0 +1,18 @@
+package embox.driver.sensors
+
+abstract module mpu6500 {
+	@IncludeExport(path="drivers/sensors", target_name="mpu6500.h")
+	source "mpu6500.h"
+	source "mpu6500.c"
+	source "mpu6500_transfer.h"
+}
+
+static module mpu6500_spi extends mpu6500 {
+	option string log_level="LOG_INFO"
+	option number spi_bus = 0
+	option number spi_cs = 0
+
+	source "mpu6500_spi.c"
+
+	depends embox.driver.spi.core
+}

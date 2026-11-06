@@ -9,10 +9,10 @@
 #ifndef DRIVERS_INTERRUPT_RISCV_CLIC_H_
 #define DRIVERS_INTERRUPT_RISCV_CLIC_H_
 
-#if defined(__EMBOX_PLATFORM__mdr1206fi__)
-#define __IRQCTRL_IRQS_TOTAL 47
-#elif defined(__EMBOX_PLATFORM__baikal_evu_ba__)
-#define __IRQCTRL_IRQS_TOTAL 75
-#endif
+#include <framework/mod/options.h>
+#include <module/embox/driver/interrupt/riscv_clic.h>
+
+#define __IRQCTRL_IRQS_TOTAL \
+	OPTION_MODULE_GET(embox__driver__interrupt__riscv_clic, NUMBER, irq_count)
 
 #endif /* DRIVERS_INTERRUPT_RISCV_CLIC_H_ */

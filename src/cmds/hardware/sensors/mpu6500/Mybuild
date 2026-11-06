@@ -1,0 +1,10 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name="mpu6500", help="Read and check MPU6500 WHO_AM_I")
+module mpu6500 {
+	source "mpu6500.c"
+
+	depends embox.driver.sensors.mpu6500
+	depends embox.compat.libc.stdio.printf
+}

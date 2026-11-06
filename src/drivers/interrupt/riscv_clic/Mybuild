@@ -2,6 +2,8 @@ package embox.driver.interrupt
 
 module riscv_clic extends irqctrl_api {
 	option number base_addr=0x0d000000
+	/* Number of IRQ ID slots, including reserved IDs. */
+	option number irq_count=47
 	option boolean vectored_mode=false
 
 	source "riscv_clic.h"

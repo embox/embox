@@ -1,0 +1,21 @@
+package embox.driver.spi
+
+module esp32_spi_drv {
+	option string log_level="LOG_ERR"
+
+	source "esp32_spi_drv.c"
+	source "esp32_spi.h"
+
+	depends embox.driver.spi.core
+}
+
+module esp32_spi0 {
+	option string log_level="LOG_ERR"
+	source "esp32_spi0.c"
+
+	@NoRuntime depends embox.driver.spi.spi0_dev0
+
+	depends embox.driver.spi.esp32_spi_drv
+	depends embox.driver.clk.esp32c5_pcr
+	depends embox.driver.gpio.esp32_gpio
+}

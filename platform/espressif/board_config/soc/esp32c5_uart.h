@@ -1,0 +1,7 @@
+#ifndef ESP32C5_UART_H_
+#define ESP32C5_UART_H_
+
+#define UART0_BASE  0x60000000
+#define UART1_BASE  0x60001000
+
+#endif /* ESP32C5_UART_H_ */

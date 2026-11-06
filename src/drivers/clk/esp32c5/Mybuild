@@ -1,0 +1,10 @@
+package embox.driver.clk
+
+module esp32c5_pcr {
+	source "esp32c5_pcr.c"
+
+	@IncludeExport(path="drivers/clk")
+	source "esp32c5_pcr.h"
+
+	depends embox.driver.clk.esp32c5_clk_defs
+}

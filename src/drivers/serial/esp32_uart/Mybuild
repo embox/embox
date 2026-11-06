@@ -1,0 +1,30 @@
+package embox.driver.serial
+
+module esp32_uart {
+	option string log_level="LOG_ERR"
+	
+	source "esp32_uart.c"
+
+	depends embox.driver.serial.core
+	depends embox.driver.clk.esp32c5_pcr
+	@NoRuntime depends embox.driver.interrupt.esp32_inmatrix
+}
+
+module esp32_uart_diag extends embox.driver.serial.diag {
+	option number base_addr
+	option number baud_rate
+
+	source "esp32_uart_diag.c"
+
+	depends esp32_uart
+	depends embox.driver.periph_memory
+}
+
+module esp32_uart_ttyS0 {
+	option number baud_rate
+
+	source "esp32_uart_ttys0.c"
+
+	depends esp32_uart
+	depends embox.driver.periph_memory
+}

@@ -1,0 +1,10 @@
+package embox.driver.gpio
+
+module esp32_gpio {
+	source "esp32_gpio.c"
+	@IncludeExport(path="drivers/gpio")
+	source "esp32_gpio.h"
+
+	depends embox.driver.gpio.core
+}
+

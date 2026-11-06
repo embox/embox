@@ -1,11 +1,12 @@
 package embox.driver.clock
 
-module esp32c3_systimer {
+module esp32_systimer {
 	option number rtc_freq=16000000
 	option number base_addr=0x60023000
 	option number irq_num=37
 	
-	source "esp32c3_systimer.c"
+	source "esp32_systimer.c"
 
 	depends embox.kernel.time.clock_source
+	@NoRuntime depends embox.driver.interrupt.esp32_inmatrix
 }

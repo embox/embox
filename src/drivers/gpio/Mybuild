@@ -3,6 +3,7 @@ package embox.driver.gpio
 module core {
 	option string log_level="LOG_ERR"
 	option number irq_pool_size=4
+  option boolean gpio_matrix=false
 
 	@IncludeExport(path="drivers")
 	source "gpio.h"

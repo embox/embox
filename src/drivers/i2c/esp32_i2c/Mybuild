@@ -1,0 +1,23 @@
+package embox.driver.i2c
+
+module esp32_i2c_drv {
+	option string log_level="LOG_ERR"
+
+	source "esp32_i2c_drv.c"
+	source "esp32_i2c.h"
+
+	depends embox.driver.clk.esp32c5_pcr
+	depends embox.kernel.time.kernel_time
+	depends embox.driver.i2c_core
+}
+
+module esp32_i2c0 {
+	option string log_level="LOG_ERR"
+
+	source "esp32_i2c0.c"
+
+	depends embox.driver.i2c_core
+	depends esp32_i2c_drv
+	depends embox.driver.clk.esp32c5_pcr
+	depends embox.driver.gpio.esp32_gpio
+}
