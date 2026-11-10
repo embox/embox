@@ -1,0 +1,5 @@
+package third_party.lib.etl.tests
+
+static module etl_tests {
+    source "etl_test.c"
+}
