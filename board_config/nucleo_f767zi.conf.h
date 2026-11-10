@@ -60,7 +60,7 @@ struct uart_conf uarts[] = {
 
 struct spi_conf spis[] = {
 	[1] = {
-		.status = DISABLED,
+		.status = ENABLED,
 		.name = "SPI1",
 		.dev = {
 			.name = "SPI1",
@@ -89,7 +89,7 @@ struct spi_conf spis[] = {
 		},
 	},
 	[2] = {
-		.status = DISABLED,
+		.status = ENABLED,
 		.name = "SPI2",
 		.dev = {
 			.name = "SPI2",
