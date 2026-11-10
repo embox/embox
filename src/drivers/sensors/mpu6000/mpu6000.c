@@ -32,7 +32,7 @@ int mpu6000_init(void) {
 	}
 	log_info("WHO_AM_I = 0x%02x", tmp);
 	if (tmp != MPU6000_WHO_AM_I_VALUE) {
-		log_error("MPU6000 Device ID mismatch! %2x", tmp);
+		log_error("MPU6000 Device ID mismatch! 0x%2x", tmp);
 		return -1;
 	}
 	return 0;
