@@ -1,0 +1,23 @@
+package embox.driver.sensors.imu.st
+
+/* TODO There can be both I2C and SPI versions in one config,
+ * this must be removed after we will add sensors API. */
+abstract module lsm6ds3 {
+	@IncludeExport(path="drivers/sensors", target_name="lsm6ds3.h")
+	source "lsm6ds3.h"
+
+	source "lsm6ds3.c"
+}
+
+static module lsm6ds3_i2c extends lsm6ds3 {
+	option string log_level="LOG_ERR"
+	option number i2c_bus = 0
+	source "lsm6ds3_i2c.c"
+}
+
+static module lsm6ds3_spi extends lsm6ds3 {
+	option string log_level="LOG_ERR"
+	option number spi_bus = 0
+
+	source "lsm6ds3_spi.c"
+}
