@@ -1,0 +1,14 @@
+package embox.driver.sensors
+
+abstract module spl06 {
+	@IncludeExport(path="drivers/sensors", target_name="spl06.h")
+	source "spl06.h"
+
+	source "spl06.c"
+}
+
+static module spl06_i2c extends spl06 {
+	option string log_level="LOG_ERR"
+	option number i2c_bus = 0
+	source "spl06_i2c.c"
+}

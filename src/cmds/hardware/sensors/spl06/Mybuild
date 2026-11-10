@@ -1,0 +1,7 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name="spl06", help="spl06 sensor demo")
+module spl06 {
+	source "spl06.c"
+}
