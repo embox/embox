@@ -1,9 +1,9 @@
 
 PKG_NAME := openlibm
-PKG_VER  := 0.8.3
+PKG_VER  := 0.8.8
 
 PKG_SOURCES := https://github.com/JuliaMath/openlibm/archive/refs/tags/v$(PKG_VER).tar.gz
-PKG_MD5     := 8bdbe6bf53dfb8790b8ccb98773cafd6
+PKG_MD5     := f3dbd16fa02e3ed940cb3122aba4e810
 PKG_PATCHES := openlibm.patch
 
 DBL_MANT_DIG  := $(call macro_get,__DBL_MANT_DIG__)
