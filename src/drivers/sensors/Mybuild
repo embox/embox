@@ -1,0 +1,8 @@
+package embox.driver.sensors
+
+module sensor_dev {
+    source "sensor.c"
+
+    @IncludeExport(path="drivers/")
+    source "sensor.h"
+}
