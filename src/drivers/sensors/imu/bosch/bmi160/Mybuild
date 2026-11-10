@@ -1,0 +1,25 @@
+package embox.driver.sensors.imu.bosch
+
+abstract module bmi160 {
+	@IncludeExport(path="drivers/sensors", target_name="bmi160.h")
+	source "bmi160.h"
+
+	source "bmi160.c"
+}
+
+static module bmi160_i2c extends bmi160 {
+	option string log_level="LOG_ERR"
+	option number i2c_bus = 0
+	/* Connecting SA0 to GND sets the I2C address to 0x68. 
+	If connected to 3.3V, the I2C address would change to 0x69. */
+	option number i2c_bus = 0x68
+
+	source "bmi160_i2c.c"
+}
+
+static module bmi160_spi extends bmi160 {
+	option string log_level="LOG_ERR"
+	option number spi_bus = 0
+
+	source "bmi160_spi.c"
+}
