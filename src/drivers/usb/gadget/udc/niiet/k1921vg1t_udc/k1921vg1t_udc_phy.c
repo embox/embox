@@ -167,7 +167,7 @@ void usb_phy_bconf_init(struct niiet_udc *niiet_udc) {
 #if 0
 	while(!(niiet_udc->usbphy_regs->PHYSTAT & USBCTR_PHYSTAT_UTMI_CLK_EN));
 #else
-	for (int i = 0; i < 100000; i ++);
+	for (volatile int i = 0; i < 100000; i ++);
 #endif
 
 
