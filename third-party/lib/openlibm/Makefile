@@ -51,6 +51,7 @@ $(error Unsupported architecture)
 endif
 
 $(CONFIGURE) :
+	$(CP) $(CURDIR)/stubs/fenv-softfloat.h $(PKG_SOURCE_DIR)/riscv64
 	touch $@
 
 $(BUILD) :
