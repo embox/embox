@@ -318,7 +318,6 @@ int tty_rx_dequeue(struct tty *t) {
 	}
 
 	if (TTY_I(t, IGNCR) && *slot == '\r') {
-		ring_just_read(&t->rx_ring, TTY_RX_BUFF_SZ, TTY_RX_BUFF_SZ - 1);
 		return tty_rx_dequeue(t);
 	}
 
