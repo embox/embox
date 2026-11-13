@@ -130,6 +130,7 @@ extern int dentry_fill(struct super_block *, struct inode *,
                        struct dentry *d, struct dentry *parent);
 extern void dentry_upd_flags(struct dentry *dentry);
 extern int dentry_full_path(struct dentry *dentry, char *buf);
+extern int dentry_full_path_n(struct dentry *dentry, char *buf, size_t size);
 extern int dentry_ref_inc(struct dentry *dentry);
 extern int dentry_ref_dec(struct dentry *dentry);
 

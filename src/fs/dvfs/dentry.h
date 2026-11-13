@@ -51,6 +51,7 @@ extern int dvfs_lookup(const char *path, struct lookup *lookup);
 extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
 extern struct dentry *dvfs_root(void);
 extern int dentry_full_path(struct dentry *dentry, char *buf);
+extern int dentry_full_path_n(struct dentry *dentry, char *buf, size_t size);
 extern int dentry_ref_inc(struct dentry *dentry);
 extern int dentry_ref_dec(struct dentry *dentry);
 

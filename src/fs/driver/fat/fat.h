@@ -239,6 +239,9 @@ struct fat_fs_info {
 	/* Hint for free-cluster search. Per-volume, verified on use.
 	 * 0 or out of range means "start at beginning". */
 	uint32_t free_hint;
+	/* Mounted volume: FAT sectors may be held until the locked operation ends
+	 * (fat_fatc_*). Zero for the on-stack volume a format builds. */
+	uint8_t fatc_ok;
 };
 
 struct fat_file_info {
@@ -278,6 +281,11 @@ static inline int fat_sec_by_clus(struct fat_fs_info *fsi, int clus) {
 }
 
 extern void fat_set_filetime(struct fat_dirent *de);
+extern void fat_set_wrttime(struct fat_dirent *de, int64_t secs);
+extern int64_t fat_wrttime_now(void);
+extern int64_t fat_direntry_get_mtime(const struct fat_dirent *de);
+extern int64_t fat_direntry_get_ctime(const struct fat_dirent *de);
+extern int fat_set_mtime(struct fat_file_info *fi, int64_t secs);
 //extern void fat_get_filename(char *tmppath, char *filename);
 extern int fat_check_filename(char *filename);
 extern int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name);
@@ -338,6 +346,17 @@ extern uint32_t fat_direntry_get_size(struct fat_dirent *de);
 extern void     fat_direntry_set_size(struct fat_dirent *de, uint32_t size);
 
 extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
+
+/* Held FAT sector (fat_common.c): flush writes it to both copies, drop also
+ * forgets it. Driver lock held; the outermost fat_unlock() drops. */
+/* An inode number for a file: where its directory entry is. See fat_common.c. */
+extern int fat_ino_of(const struct fat_file_info *fi);
+
+/* ftruncate(): grow with zeros or free the tail, and the entry follows. */
+extern int fat_truncate_file(struct fat_file_info *fi, uint32_t length);
+
+extern int fat_fatc_flush(void);
+extern int fat_fatc_drop(void);
 
 /* Serialises the whole driver (shared fat_sector_buff). Recursive. */
 extern void fat_lock(void);

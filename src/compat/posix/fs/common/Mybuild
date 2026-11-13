@@ -9,7 +9,6 @@ static module file_system_common {
 	source "chown.c"
 	source "creat.c"
 	source "fsync.c"
-	source "getcwd.c"
 	source "getdtablesize.c"
 	source "lseek.c"
 	source "openat.c"

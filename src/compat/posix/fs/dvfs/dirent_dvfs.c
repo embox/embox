@@ -10,6 +10,7 @@
 #include <posix_errno.h>
 #include <stddef.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <dirent.h>
 #include <dirent_dvfs_impl.h>
@@ -21,8 +22,28 @@
 
 POOL_DEF(dir_pool, DIR, MAX_DIR_QUANTITY);
 
+/* The inode's mode, or the dentry's flags for a virtual directory that has
+ * no inode. */
+static unsigned char dirent_type(const struct dentry *dentry) {
+	mode_t mode = dentry->d_inode ? dentry->d_inode->i_mode : dentry->flags;
+
+	switch (mode & S_IFMT) {
+	case S_IFREG:  return DT_REG;
+	case S_IFDIR:  return DT_DIR;
+	case S_IFCHR:  return DT_CHR;
+	case S_IFBLK:  return DT_BLK;
+	case S_IFIFO:  return DT_FIFO;
+	case S_IFLNK:  return DT_LNK;
+	case S_IFSOCK: return DT_SOCK;
+	default:       return DT_UNKNOWN;
+	}
+}
+
 static inline void fill_dirent(struct dirent *dirent, struct dentry *dentry) {
-	dirent->d_ino = dentry->d_inode ? dentry->d_inode->i_no : 0;
+	/* i_no is -1 on a driver with no inode numbers; 0 means "no number". */
+	dirent->d_ino = (dentry->d_inode && dentry->d_inode->i_no > 0)
+	                    ? (ino_t)dentry->d_inode->i_no : 0;
+	dirent->d_type = dirent_type(dentry);
 	memcpy(dirent->d_name, dentry->name, NAME_MAX);
 }
 
@@ -99,10 +120,43 @@ struct dirent *readdir(DIR *dir) {
 	}
 
 	fill_dirent(&dir->dirent, l.item);
+	dir->pos++;
+	dir->dirent.d_off = dir->pos;
 
 	/* The entry stays in the tree as cache for reclaim: another core may
 	 * have just found it and not yet taken it. */
 	dentry_ref_dec(l.item);
 
 	return &dir->dirent;
+}
+
+/* A driver keeps only its position in the iteration context, so a zeroed
+ * context is a directory not yet read. */
+void rewinddir(DIR *dir) {
+	if (!dir) {
+		return;
+	}
+	dir->ctx = (struct dir_ctx) {0};
+	dir->pos = 0;
+}
+
+/* The number of entries read so far: a position seekdir() can return to. */
+long telldir(DIR *dir) {
+	if (!dir) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	return dir->pos;
+}
+
+/* The iteration only moves forward, so seeking rereads from the start. */
+void seekdir(DIR *dir, long loc) {
+	if (!dir || loc < 0) {
+		return;
+	}
+	if (loc < dir->pos) {
+		rewinddir(dir);
+	}
+	while (dir->pos < loc && readdir(dir)) {
+	}
 }

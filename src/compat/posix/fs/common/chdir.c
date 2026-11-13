@@ -50,7 +50,10 @@ int chdir(const char *path) {
 		return SET_ERRNO(ENOTDIR);
 	}
 
-	dentry_full_path(l.item, new_pwd);
+	if (dentry_full_path_n(l.item, new_pwd, sizeof(new_pwd))) {
+		dentry_ref_dec(l.item);
+		return SET_ERRNO(ENAMETOOLONG);
+	}
 
 	if ((t = task_self_resource_vfs()) == NULL) {
 		dentry_ref_dec(l.item);
@@ -58,10 +61,11 @@ int chdir(const char *path) {
 		return SET_ERRNO(EIO);
 	}
 
+	/* $PWD is for the shell; the working directory is t->pwd, which getcwd()
+	 * reads. A name the environment cannot hold (64-byte strings) drops $PWD
+	 * rather than leave it naming the previous directory. */
 	if (-1 == setenv("PWD", new_pwd, 1)) {
-		dentry_ref_dec(l.item);
-		assert(errno == ENOMEM);
-		return SET_ERRNO(ENAMETOOLONG);
+		unsetenv("PWD");
 	}
 
 	/* The lookup's reference becomes the working directory's, so there is

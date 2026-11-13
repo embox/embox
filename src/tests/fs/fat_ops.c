@@ -4,13 +4,16 @@
  */
 
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <utime.h>
 
+#include <ctype.h>
 #include <dirent.h>
 
 #include <errno.h>
@@ -21,6 +24,7 @@
 #include <embox/test.h>
 #include <fs/fsop.h>
 #include <kernel/printk.h>
+#include <kernel/thread.h>
 #include <util/err.h>
 
 EMBOX_TEST_SUITE("FAT driver operations");
@@ -402,6 +406,419 @@ TEST_CASE("a volume big enough for FAT32 is formatted as one") {
 	test_assert_zero(memcmp(root, root + 1, sizeof(root) - 1));
 }
 
+/* fat_common.c holds the last FAT sector written until another is written or
+ * the operation ends. It skips FAT12, so a FAT32 volume is mounted inside the
+ * suite's own. Two files grown by turns interleave their chains in shared FAT
+ * sectors; after a remount the bytes and both FAT copies must match. */
+#define F32W_DEV   "/dev/ramdisk_f32w"
+#define F32W_DIR   FS_DIR "/f32"
+#define F32W_CHUNKS 32
+
+static int f32w_check(const char *path, unsigned seed) {
+	int fd, i, bad = -1;
+
+	pattern_fill(pattern, DATA_SZ, seed);
+	fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		return -2;
+	}
+	for (i = 0; i < F32W_CHUNKS && bad < 0; i++) {
+		size_t got = 0;
+
+		while (got < DATA_SZ) {
+			ssize_t n = read(fd, readback + got, DATA_SZ - got);
+
+			if (n <= 0) {
+				break;
+			}
+			got += (size_t)n;
+		}
+		if (got != DATA_SZ) {
+			bad = -2 - i;
+			break;
+		}
+		if (pattern_first_diff(readback, pattern, DATA_SZ) >= 0) {
+			bad = i;
+		}
+	}
+	close(fd);
+	return bad;
+}
+
+/* Small appends to another file on the same volume while the main file is
+ * truncated and rewritten. */
+static volatile int f32w_log_stop;
+static volatile int f32w_log_writes;
+
+static void *f32w_logger(void *arg) {
+	int fd = open(F32W_DIR "/log.txt", O_WRONLY | O_CREAT | O_APPEND, 0666);
+
+	(void)arg;
+	while (fd >= 0 && !f32w_log_stop) {
+		if (write(fd, "a line of the boot log, as the follower writes it\n", 51)
+		    == 51) {
+			f32w_log_writes++;
+		}
+	}
+	if (fd >= 0) {
+		close(fd);
+	}
+	return NULL;
+}
+
+/* 1 if the first `n` sectors of the two FATs are the same, 0 if not. */
+static int f32w_fats_agree(const struct volume *v, unsigned n) {
+	struct block_dev *bdev = block_dev_find("ramdisk_f32w");
+	static uint8_t a[512], b[512];
+	unsigned per = v->bytepersec / bdev->block_size, i;
+
+	for (i = 0; i < n && i < v->secperfat; i++) {
+		block_dev_read(bdev, (char *)a, sizeof(a), (v->reserved + i) * per);
+		block_dev_read(bdev, (char *)b, sizeof(b),
+		    (v->reserved + v->secperfat + i) * per);
+		if (memcmp(a, b, sizeof(a)) != 0) {
+			printk("fat_ops: FAT sector %u differs between the copies\n", i);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+TEST_CASE("a FAT32 file grown a cluster at a time survives a remount, both FAT copies alike") {
+	enum { F32_BYTES = 140 * 1024 * 1024 };
+	struct volume v;
+	int fa = -1, fb = -1, i, res, made = 0, mounted = 0;
+	int ok_write = 1, bad_a, bad_b, agree_before, agree_after = 0;
+
+	res = ptr2err(ramdisk_create(F32W_DEV, F32_BYTES));
+	if (res != 0) {
+		printk("fat_ops: no %u MiB ramdisk for the FAT32 write-back case "
+		       "(%d) -- skipped\n", (unsigned)(F32_BYTES / (1024 * 1024)), res);
+		return;
+	}
+	made = 1;
+	poison_media(F32W_DEV, 8 * 1024 * 1024, 0xf6);
+	res = format(F32W_DEV, FS_NAME);
+	if (res == 0) {
+		mkdir(F32W_DIR, 0777);
+		res = mount(F32W_DEV, F32W_DIR, FS_NAME, 0, NULL);
+		mounted = res == 0;
+	}
+
+	if (mounted) {
+		fa = open(F32W_DIR "/a.bin", O_WRONLY | O_CREAT | O_TRUNC, 0666);
+		fb = open(F32W_DIR "/b.bin", O_WRONLY | O_CREAT | O_TRUNC, 0666);
+		for (i = 0; i < F32W_CHUNKS && fa >= 0 && fb >= 0; i++) {
+			pattern_fill(pattern, DATA_SZ, 40);
+			ok_write &= write(fa, pattern, DATA_SZ) == DATA_SZ;
+			pattern_fill(pattern, DATA_SZ, 41);
+			ok_write &= write(fb, pattern, DATA_SZ) == DATA_SZ;
+		}
+		if (fa >= 0) {
+			close(fa);
+		}
+		if (fb >= 0) {
+			close(fb);
+		}
+		umount(F32W_DIR);
+		mounted = 0 == mount(F32W_DEV, F32W_DIR, FS_NAME, 0, NULL);
+	}
+
+	/* O_TRUNC over a file with a chain, then TCP-segment-sized writes: with the
+	 * FAT sector held back, the chain is freed and a new one allocated. */
+	if (mounted) {
+		struct thread *logger;
+		int fd;
+
+		f32w_log_stop = 0;
+		f32w_log_writes = 0;
+		logger = thread_create(0, f32w_logger, NULL);
+		fd = open(F32W_DIR "/a.bin", O_WRONLY | O_TRUNC);
+
+		printk("fat_ops: FAT32 write-back: O_TRUNC over a chain: open %d\n", fd);
+		for (i = 0; i < F32W_CHUNKS && fd >= 0; i++) {
+			size_t off;
+
+			pattern_fill(pattern, DATA_SZ, 40);
+			for (off = 0; off < DATA_SZ; off += 1460) {
+				size_t n = DATA_SZ - off < 1460 ? DATA_SZ - off : 1460;
+
+				ok_write &= write(fd, pattern + off, n) == (ssize_t)n;
+			}
+		}
+		if (fd >= 0) {
+			close(fd);
+		}
+		f32w_log_stop = 1;
+		if (!ptr2err(logger)) {
+			thread_join(logger, NULL);
+		}
+		printk("fat_ops: FAT32 write-back: ... rewritten %s, %d log write(s) "
+		       "alongside\n", ok_write ? "whole" : "SHORT", f32w_log_writes);
+		umount(F32W_DIR);
+		mounted = 0 == mount(F32W_DEV, F32W_DIR, FS_NAME, 0, NULL);
+	}
+
+	bad_a = mounted ? f32w_check(F32W_DIR "/a.bin", 40) : -9;
+	bad_b = mounted ? f32w_check(F32W_DIR "/b.bin", 41) : -9;
+	memset(&v, 0, sizeof(v));
+	volume_read(block_dev_find("ramdisk_f32w"), &v);
+	agree_before = v.secperfat ? f32w_fats_agree(&v, 16) : 0;
+
+	if (mounted) {
+		remove(F32W_DIR "/a.bin");
+		remove(F32W_DIR "/b.bin");
+		umount(F32W_DIR);
+		mounted = 0;
+		agree_after = f32w_fats_agree(&v, 16);
+	}
+	rmdir(F32W_DIR);
+	if (made) {
+		ramdisk_delete(F32W_DEV);
+	}
+
+	printk("fat_ops: FAT32 write-back: %u-bit volume, 2 x %u KiB written %s, "
+	       "read back after remount %s/%s, FATs alike %s/%s\n",
+	    v.bits, (unsigned)(F32W_CHUNKS * DATA_SZ / 1024),
+	    ok_write ? "whole" : "SHORT", bad_a == -1 ? "ok" : "WRONG",
+	    bad_b == -1 ? "ok" : "WRONG", agree_before ? "yes" : "NO",
+	    agree_after ? "yes" : "NO");
+
+	/* Nothing below here touches the device. */
+	test_assert_zero(res);
+	test_assert_equal(32u, v.bits);
+	test_assert_true(fa >= 0 && fb >= 0);
+	test_assert_true(ok_write);
+	test_assert_equal(-1, bad_a);
+	test_assert_equal(-1, bad_b);
+	test_assert_true(agree_before);
+	test_assert_true(agree_after);
+}
+
+/* ------------------------------------------------------------------ *
+ * VFS calls user programs rely on: getcwd, rewinddir/seekdir, d_type, stat
+ * fields, ftruncate. */
+
+TEST_CASE("readdir says what each entry is, and its number is stat's") {
+	struct stat st;
+	struct dirent *e;
+	DIR *d;
+	int file = 0, dir = 0, same_ino = 0;
+
+	test_assert_zero(write_file(FILE_A, 1024, 50));
+	mkdir(FS_DIR "/sub", 0777);
+	test_assert_zero(stat(FILE_A, &st));
+
+	test_assert_not_null(d = opendir(FS_DIR));
+	while ((e = readdir(d)) != NULL) {
+		if (0 == strcmp(e->d_name, "a.bin")) {
+			file = e->d_type == DT_REG;
+			same_ino = e->d_ino != 0 && e->d_ino == st.st_ino;
+		}
+		if (0 == strcmp(e->d_name, "sub")) {
+			dir = e->d_type == DT_DIR;
+		}
+	}
+	closedir(d);
+	rmdir(FS_DIR "/sub");
+	remove(FILE_A);
+
+	test_assert_true(file);
+	test_assert_true(dir);
+	test_assert_true(same_ino);
+}
+
+static int count_entries(DIR *d) {
+	int n = 0;
+
+	while (readdir(d)) {
+		n++;
+	}
+	return n;
+}
+
+TEST_CASE("rewinddir starts the directory over, and seekdir goes back to telldir") {
+	char second[NAME_MAX];
+	struct dirent *e;
+	DIR *d;
+	long at;
+	int first_pass, second_pass;
+
+	test_assert_zero(write_file(FILE_A, 100, 51));
+	test_assert_zero(write_file(FILE_B, 100, 52));
+
+	test_assert_not_null(d = opendir(FS_DIR));
+	first_pass = count_entries(d);
+	rewinddir(d);
+	second_pass = count_entries(d);
+
+	rewinddir(d);
+	readdir(d);
+	at = telldir(d);
+	e = readdir(d);
+	strncpy(second, e ? e->d_name : "", sizeof(second) - 1);
+	second[sizeof(second) - 1] = '\0';
+	count_entries(d);
+	seekdir(d, at);
+	e = readdir(d);
+	closedir(d);
+
+	remove(FILE_A);
+	remove(FILE_B);
+
+	test_assert(first_pass >= 2);
+	test_assert_equal(first_pass, second_pass);
+	test_assert_equal(1, at);
+	test_assert_not_null(e);
+	test_assert_zero(strcmp(e->d_name, second));
+}
+
+TEST_CASE("stat fills what POSIX asks: dev, ino, nlink, blksize, blocks") {
+	struct stat a, b, root;
+
+	test_assert_zero(write_file(FILE_A, 1000, 53));
+	test_assert_zero(write_file(FILE_B, 1, 54));
+	test_assert_zero(stat(FILE_A, &a));
+	test_assert_zero(stat(FILE_B, &b));
+	test_assert_zero(stat("/", &root));
+	remove(FILE_A);
+	remove(FILE_B);
+
+	test_assert_equal(1, (int)a.st_nlink);
+	test_assert(a.st_blksize > 0);
+	test_assert_equal(2, (int)a.st_blocks);   /* 1000 bytes: two 512s */
+	test_assert_equal(a.st_mtime, a.st_atime);
+	test_assert(a.st_dev != 0);
+	test_assert_equal(a.st_dev, b.st_dev);    /* one volume */
+	test_assert(a.st_ino != 0 && b.st_ino != 0 && a.st_ino != b.st_ino);
+	test_assert(root.st_dev != a.st_dev);     /* another one */
+}
+
+TEST_CASE("getcwd names a working directory deeper than the environment holds") {
+	/* 8 + 4 * 16 characters: more than $PWD can carry. */
+	static const char *const parts[] = {
+	    "/abcdefghijklmno", "/pqrstuvwxyzabcd", "/efghijklmnopqrs",
+	    "/tuvwxyzabcdefgh"};
+	char path[PATH_MAX], got[PATH_MAX];
+	char *res;
+	size_t i;
+
+	strcpy(path, FS_DIR);
+	for (i = 0; i < sizeof(parts) / sizeof(parts[0]); i++) {
+		strcat(path, parts[i]);
+		mkdir(path, 0777);
+	}
+	test_assert(strlen(path) > 59);
+
+	test_assert_zero(chdir(path));
+	res = getcwd(got, sizeof(got));
+	chdir("/");
+
+	for (i = sizeof(parts) / sizeof(parts[0]); i > 0; i--) {
+		rmdir(path);
+		*strrchr(path, '/') = '\0';
+	}
+
+	test_assert_not_null(res);
+	test_assert_zero(strcmp(got, FS_DIR "/abcdefghijklmno/pqrstuvwxyzabcd"
+	                             "/efghijklmnopqrs/tuvwxyzabcdefgh"));
+}
+
+TEST_CASE("ftruncate grows a file with zeros and shrinks it, and a remount agrees") {
+	struct stat st;
+	int fd, i, zeros = 1, head = 1;
+	char c;
+
+	test_assert_zero(write_file(FILE_A, 3000, 55));
+
+	/* Grow, past several clusters: the new bytes read as zeros. */
+	fd = open(FILE_A, O_RDWR);
+	test_assert(fd >= 0);
+	test_assert_zero(ftruncate(fd, 20000));
+	close(fd);
+
+	test_assert_zero(umount(FS_DIR));
+	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+
+	test_assert_zero(stat(FILE_A, &st));
+	test_assert_equal(20000, (int)st.st_size);
+	fd = open(FILE_A, O_RDONLY);
+	test_assert(fd >= 0);
+	pattern_fill(pattern, 3000, 55);
+	for (i = 0; i < 20000; i++) {
+		if (read(fd, &c, 1) != 1) {
+			zeros = head = 0;
+			break;
+		}
+		if (i < 3000 && c != pattern[i]) {
+			head = 0;
+		}
+		if (i >= 3000 && c != 0) {
+			zeros = 0;
+		}
+	}
+	close(fd);
+	test_assert_true(head);
+	test_assert_true(zeros);
+
+	/* Shrink: the length holds across a remount, the head is intact. */
+	fd = open(FILE_A, O_RDWR);
+	test_assert(fd >= 0);
+	test_assert_zero(ftruncate(fd, 100));
+	close(fd);
+
+	test_assert_zero(umount(FS_DIR));
+	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+
+	test_assert_zero(stat(FILE_A, &st));
+	test_assert_equal(100, (int)st.st_size);
+	pattern_fill(pattern, 100, 55);
+	test_assert_equal(-1, check_file(FILE_A, 100, 100));
+
+	/* And to nothing, which frees the whole chain. */
+	fd = open(FILE_A, O_RDWR);
+	test_assert(fd >= 0);
+	test_assert_zero(ftruncate(fd, 0));
+	close(fd);
+	test_assert_zero(stat(FILE_A, &st));
+	test_assert_zero(st.st_size);
+	test_assert_zero(remove(FILE_A));
+}
+
+/* The time lives in the directory entry, in FAT's two-second steps, so what
+ * stat() says holds across a remount. */
+TEST_CASE("utime sets a modification time that survives a remount, to two seconds") {
+	const char *dir = FS_DIR "/mtime_d";
+	struct utimbuf ut = {.actime = 1000000000, .modtime = 1234567891};
+	struct stat st;
+
+	/* A write stamps the entry; a clock before 1980 reads as FAT's epoch. */
+	test_assert_zero(write_file(FILE_A, 100, 61));
+	test_assert_zero(stat(FILE_A, &st));
+	test_assert(st.st_mtime >= 315532800);
+	test_assert_zero(st.st_mtime % 2);
+
+	test_assert_zero(mkdir(dir, 0777));
+	test_assert_zero(utime(FILE_A, &ut));
+	test_assert_zero(utime(dir, &ut));
+	test_assert_zero(stat(FILE_A, &st));
+	test_assert_equal(1234567890, (long)st.st_mtime);
+
+	test_assert_zero(umount(FS_DIR));
+	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+
+	test_assert_zero(stat(FILE_A, &st));
+	test_assert_equal(1234567890, (long)st.st_mtime);
+	test_assert_zero(stat(dir, &st));
+	test_assert_equal(1234567890, (long)st.st_mtime);
+
+	test_assert_equal(-1, utime(FS_DIR "/missing", &ut));
+	test_assert_equal(ENOENT, errno);
+
+	test_assert_zero(rmdir(dir));
+	test_assert_zero(remove(FILE_A));
+}
+
 TEST_CASE("a read longer than one sector returns the whole thing") {
 	test_assert_zero(write_file(FILE_A, DATA_SZ, 1));
 
@@ -515,6 +932,105 @@ TEST_CASE("what was written survives a remount") {
 
 	pattern_fill(pattern, DATA_SZ, 10);
 	test_assert_equal(-1, check_file(FILE_A, DATA_SZ, 4096));
+}
+
+/* A FAT12 entry is a byte and a half, so some straddle two 512-byte sectors
+ * (clusters 341, 682, 1365, 1706...). Read back after a remount, so the FAT on
+ * the media is followed. */
+TEST_CASE("a file across FAT12 entries that straddle two sectors reads back whole") {
+	const size_t chunks = (FS_BYTES / 2) / DATA_SZ;
+	size_t k, got;
+	int fd;
+
+	fd = open(FILE_A, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	test_assert(fd >= 0);
+	for (k = 0; k < chunks; k++) {
+		pattern_fill(pattern, DATA_SZ, 50 + k);
+		test_assert_equal((ssize_t)DATA_SZ, write(fd, pattern, DATA_SZ));
+	}
+	test_assert_zero(close(fd));
+
+	test_assert_zero(umount(FS_DIR));
+	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+
+	fd = open(FILE_A, O_RDONLY);
+	test_assert(fd >= 0);
+	for (k = 0; k < chunks; k++) {
+		for (got = 0; got < DATA_SZ;) {
+			ssize_t n = read(fd, readback + got, DATA_SZ - got);
+
+			if (n <= 0) {
+				break;
+			}
+			got += (size_t)n;
+		}
+		if (got != DATA_SZ) {
+			printk("fat_ops: the file ended at %u bytes of %u\n",
+			    (unsigned)(k * DATA_SZ + got), (unsigned)(chunks * DATA_SZ));
+		}
+		test_assert_equal(DATA_SZ, got);
+		pattern_fill(pattern, DATA_SZ, 50 + k);
+		test_assert_equal(-1, pattern_first_diff(readback, pattern, DATA_SZ));
+	}
+	test_assert_zero(close(fd));
+	test_assert_zero(remove(FILE_A));
+}
+
+/* The gap lands in reused clusters, so stale non-zero data is written and
+ * removed first. Also a write at an offset into an empty file, and one past
+ * the allocated chain. */
+TEST_CASE("a write past the end leaves zeros in the gap") {
+	static const off_t at[] = {5, 3000};
+	unsigned i;
+	int fd;
+
+	memset(pattern, 'X', DATA_SZ);
+	fd = open(FILE_B, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	test_assert(fd >= 0);
+	test_assert_equal((ssize_t)DATA_SZ, write(fd, pattern, DATA_SZ));
+	test_assert_zero(close(fd));
+	test_assert_zero(remove(FILE_B));
+
+	for (i = 0; i < sizeof(at) / sizeof(at[0]); i++) {
+		size_t k;
+
+		fd = open(FILE_A, O_RDWR | O_CREAT | O_TRUNC, 0666);
+		test_assert(fd >= 0);
+		/* Into an empty file, at an offset. */
+		test_assert_equal(at[i], lseek(fd, at[i], SEEK_SET));
+		test_assert_equal(3, write(fd, "abc", 3));
+		/* And past the end of what is there. */
+		test_assert_equal(at[i] + 3 + 5000, lseek(fd, 5000, SEEK_END));
+		test_assert_equal(1, write(fd, "Z", 1));
+		test_assert_equal(at[i] + 3 + 5000 + 1, lseek(fd, 0, SEEK_END));
+		test_assert_zero(close(fd));
+
+		test_assert_zero(umount(FS_DIR));
+		test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL));
+
+		fd = open(FILE_A, O_RDONLY);
+		test_assert(fd >= 0);
+		memset(readback, 0x55, DATA_SZ);
+		for (k = 0; k < (size_t)(at[i] + 3 + 5000 + 1);) {
+			ssize_t n = read(fd, readback + k, DATA_SZ - k);
+
+			if (n <= 0) {
+				break;
+			}
+			k += (size_t)n;
+		}
+		test_assert_zero(close(fd));
+		test_assert_equal((size_t)(at[i] + 3 + 5000 + 1), k);
+		for (k = 0; k < (size_t)at[i]; k++) {
+			test_assert_zero(readback[k]);
+		}
+		test_assert_zero(memcmp(readback + at[i], "abc", 3));
+		for (k = at[i] + 3; k < (size_t)(at[i] + 3 + 5000); k++) {
+			test_assert_zero(readback[k]);
+		}
+		test_assert_equal('Z', readback[at[i] + 3 + 5000]);
+		test_assert_zero(remove(FILE_A));
+	}
 }
 
 TEST_CASE("unlinking a multi-cluster file returns, and gives the space back") {
@@ -648,6 +1164,212 @@ TEST_CASE("files in a subdirectory are written, read back and deleted") {
 
 TEST_CASE("empty files in a subdirectory are created and deleted") {
 	dir_case(FS_DIR "/empties", 0);
+}
+
+/* ------------------------------------------------------------------ *
+ * ".." of a new directory names its parent's first cluster, 0 for the root.
+ * Only fsck reads it, so this reads the media as fsck does. */
+
+static int raw_sector(struct block_dev *bdev, const struct volume *v,
+    unsigned sec, uint8_t *buf) {
+	return (int)v->bytepersec == block_dev_read(bdev, (char *)buf,
+	    v->bytepersec, sec * (v->bytepersec / bdev->block_size)) ? 0 : -1;
+}
+
+static unsigned clus_sector(const struct volume *v, unsigned clus) {
+	return v->dataarea + (clus - 2) * v->secperclus;
+}
+
+/* The next cluster of a chain, or 0 at its end. A FAT12 entry is a byte and
+ * a half and may straddle two sectors, so two are read. */
+static unsigned clus_next(struct block_dev *bdev, const struct volume *v,
+    unsigned clus) {
+	uint8_t buf[1024];
+	unsigned off = v->bits == 12 ? clus + clus / 2 : clus * (v->bits / 8);
+	unsigned sec = v->reserved + off / v->bytepersec, next;
+
+	if (raw_sector(bdev, v, sec, buf)
+	    || raw_sector(bdev, v, sec + 1, buf + v->bytepersec)) {
+		return 0;
+	}
+	off %= v->bytepersec;
+	if (v->bits == 12) {
+		next = buf[off] | (buf[off + 1] << 8);
+		next = (clus & 1) ? next >> 4 : next & 0xfff;
+		return next >= 0xff8 ? 0 : next;
+	}
+	if (v->bits == 16) {
+		next = buf[off] | (buf[off + 1] << 8);
+		return next >= 0xfff8 ? 0 : next;
+	}
+	next = (buf[off] | (buf[off + 1] << 8) | (buf[off + 2] << 16)
+	           | ((unsigned)buf[off + 3] << 24)) & 0x0fffffff;
+	return next >= 0x0ffffff8 ? 0 : next;
+}
+
+static unsigned de_clus(const uint8_t *d) {
+	return (d[26] | (d[27] << 8)) | ((unsigned)(d[20] | (d[21] << 8)) << 16);
+}
+
+/* Look for the 8.3 name @name (11 bytes, blank-padded, any case) in the
+ * directory starting at cluster @clus, 0 for a FAT12/16 root. Returns its
+ * first cluster, or 0. */
+static unsigned dir_find(struct block_dev *bdev, const struct volume *v,
+    unsigned clus, const char *name) {
+	uint8_t buf[512];
+	unsigned s, e, i, nsec;
+
+	if (clus == 0 && v->bits == 32) {
+		clus = v->rootclus;
+	}
+	while (1) {
+		nsec = clus ? v->secperclus : v->rootsecs;
+		for (s = 0; s < nsec; s++) {
+			if (raw_sector(bdev, v, (clus ? clus_sector(v, clus)
+			                               : v->rootstart) + s, buf)) {
+				return 0;
+			}
+			for (e = 0; e < v->bytepersec / 32; e++) {
+				const uint8_t *d = buf + e * 32;
+
+				if (d[0] == 0x00) {
+					return 0;
+				}
+				if (d[0] == 0xe5 || (d[11] & 0x0f) == 0x0f) {
+					continue;
+				}
+				for (i = 0; i < 11; i++) {
+					if (toupper(d[i]) != toupper((unsigned char)name[i])) {
+						break;
+					}
+				}
+				if (i == 11) {
+					return de_clus(d);
+				}
+			}
+		}
+		if (clus == 0 || (clus = clus_next(bdev, v, clus)) == 0) {
+			return 0;
+		}
+	}
+}
+
+/* ".." of the directory at cluster @clus, or ~0 when it cannot be read. */
+static unsigned dotdot_of(struct block_dev *bdev, const struct volume *v,
+    unsigned clus) {
+	uint8_t buf[512];
+
+	if (raw_sector(bdev, v, clus_sector(v, clus), buf)
+	    || memcmp(buf + 32, "..         ", 11)) {
+		return ~0u;
+	}
+	return de_clus(buf + 32);
+}
+
+/* Every live 8.3 entry of the directory at @clus: how many, how many repeat
+ * an earlier name, and how many are empty files holding a cluster -- each an
+ * fsck error. */
+#define DD_MAX 512
+static uint8_t dd_names[DD_MAX][11];
+
+static void dir_audit(struct block_dev *bdev, const struct volume *v,
+    unsigned clus, unsigned *live, unsigned *dups, unsigned *empty_clus) {
+	uint8_t buf[512];
+	unsigned s, e, i;
+
+	*live = *dups = *empty_clus = 0;
+	while (clus) {
+		for (s = 0; s < v->secperclus; s++) {
+			if (raw_sector(bdev, v, clus_sector(v, clus) + s, buf)) {
+				return;
+			}
+			for (e = 0; e < v->bytepersec / 32; e++) {
+				const uint8_t *d = buf + e * 32;
+				uint32_t size;
+
+				if (d[0] == 0x00) {
+					return;
+				}
+				if (d[0] == 0xe5 || (d[11] & 0x0f) == 0x0f || d[0] == '.') {
+					continue;
+				}
+				for (i = 0; i < *live && i < DD_MAX; i++) {
+					if (!memcmp(dd_names[i], d, 11)) {
+						printk("fat_ops: \"%.11s\" twice in one directory\n",
+						    (const char *)d);
+						(*dups)++;
+						break;
+					}
+				}
+				if (*live < DD_MAX) {
+					memcpy(dd_names[*live], d, 11);
+				}
+				(*live)++;
+				size = d[28] | (d[29] << 8) | (d[30] << 16)
+				       | ((uint32_t)d[31] << 24);
+				if (size == 0 && !(d[11] & 0x10) && de_clus(d) != 0) {
+					(*empty_clus)++;
+				}
+			}
+		}
+		clus = clus_next(bdev, v, clus);
+	}
+}
+
+/* Names that are 8.3 already, so the two directories are found by name on
+ * the media; the files have long names sharing their first eighteen
+ * characters, so each needs a short name of its own. */
+#define DD_PARENT FS_DIR "/DDPARENT"
+#define DD_FILE   DD_PARENT "/fsck-dotdot-entry-%03u"
+
+TEST_CASE("a new directory's .. names its parent's first cluster, 0 for the root") {
+	struct block_dev *bdev = fat_bdev();
+	struct volume v;
+	unsigned pclus, sclus, n, per_clus, i, live, dups, empty_clus;
+	char path[64];
+	int fd;
+
+	test_assert_zero(volume_read(bdev, &v));
+
+	test_assert_zero(mkdir(DD_PARENT, 0777));
+	/* More entries than one cluster holds, so the next one is not in the
+	 * first: each name takes two long-name entries and the 8.3 one. */
+	per_clus = v.secperclus * v.bytepersec / 32;
+	n = per_clus / 3 + 8;
+	for (i = 0; i < n; i++) {
+		snprintf(path, sizeof(path), DD_FILE, i);
+		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+		test_assert(fd >= 0);
+		close(fd);
+	}
+	test_assert_zero(mkdir(DD_PARENT "/ZSUB", 0777));
+
+	pclus = dir_find(bdev, &v, 0, "DDPARENT   ");
+	test_assert_not_equal(pclus, 0);
+	test_assert_not_equal(clus_next(bdev, &v, pclus), 0); /* really two */
+	sclus = dir_find(bdev, &v, pclus, "ZSUB       ");
+	test_assert_not_equal(sclus, 0);
+
+	printk("fat_ops: parent at cluster %u, its .. %u; child at %u, its .. %u\n",
+	    pclus, dotdot_of(bdev, &v, pclus), sclus, dotdot_of(bdev, &v, sclus));
+	test_assert_equal(dotdot_of(bdev, &v, pclus), 0);
+	test_assert_equal(dotdot_of(bdev, &v, sclus), pclus);
+
+	dir_audit(bdev, &v, pclus, &live, &dups, &empty_clus);
+	printk("fat_ops: %u entries, %u duplicate 8.3 names, %u empty files "
+	       "holding a cluster\n", live, dups, empty_clus);
+	test_assert_equal(live, n + 1);
+	test_assert_zero(dups);
+	test_assert_zero(empty_clus);
+
+	/* Every one found by its long name, which a duplicate short name would
+	 * not stop -- a host fsck would. */
+	for (i = 0; i < n; i++) {
+		snprintf(path, sizeof(path), DD_FILE, i);
+		test_assert_zero(unlink(path));
+	}
+	test_assert_zero(rmdir(DD_PARENT "/ZSUB"));
+	test_assert_zero(rmdir(DD_PARENT));
 }
 
 /* ------------------------------------------------------------------ *
@@ -833,8 +1555,10 @@ static int root_live_entries(int *bad_clus, int *bad_date) {
 	return live;
 }
 
-/* The entries' dates are checked too. */
-TEST_CASE("a file on a full volume is refused with ENOSPC, and leaves nothing") {
+/* An empty file owns no cluster, so on a full volume it is created and its
+ * first write fails. Its entry keeps cluster 0, not DFS_BAD_CLUS. The dates
+ * are checked too. */
+TEST_CASE("a file on a full volume takes no cluster, and its first write fails") {
 	int fd, n, bad_clus, bad_date;
 	ssize_t w;
 
@@ -858,15 +1582,19 @@ TEST_CASE("a file on a full volume is refused with ENOSPC, and leaves nothing") 
 	test_assert(total <= FS_BYTES);
 
 	fd = open(FILE_B, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	if (fd >= 0) {
-		close(fd);
-		printk("fat_ops: a file was created on a full volume\n");
+	test_assert(fd >= 0);
+	errno = 0;
+	w = write(fd, pattern, 1);
+	if (w > 0) {
+		printk("fat_ops: a byte was written to a full volume\n");
 	}
-	test_assert(fd < 0);
+	/* -1 and ENOSPC, not 0: a 0 is "try again", and stdio does, for ever. */
+	test_assert_equal(-1, w);
 	test_assert_equal(ENOSPC, errno);
+	test_assert_zero(close(fd));
 
 	n = root_live_entries(&bad_clus, &bad_date);
-	test_assert_equal(1, n);
+	test_assert_equal(2, n);
 	test_assert_zero(bad_clus);
 	test_assert_zero(bad_date);
 

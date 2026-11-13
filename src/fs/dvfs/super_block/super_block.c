@@ -31,6 +31,10 @@ POOL_DEF(super_block_pool, struct super_block, SUPER_BLOCK_POOL_SZ);
  * @return Pointer to the new superblock
  * @retval NULL Superblock could not be allocated
  */
+/* See sb_dev in super_block.h. Never reused within a boot, so a descriptor
+ * kept across an unmount and a mount cannot mistake one volume for another. */
+static unsigned int super_block_next_dev;
+
 struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	struct super_block *sb;
 	const struct fs_driver *drv;
@@ -51,6 +55,7 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	memset(sb, 0, sizeof(*sb));
 
 	sb->fs_drv = drv;
+	sb->sb_dev = __atomic_add_fetch(&super_block_next_dev, 1, __ATOMIC_RELAXED);
 
 	node = dvfs_alloc_inode(sb);
 	if (!node) {

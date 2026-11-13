@@ -41,6 +41,10 @@ struct super_block {
 	 * when a descriptor is created, so the count stays true through the
 	 * teardown. */
 	int                     sb_unmounting;
+
+	/* Unique per mount in this boot; reported as st_dev so (st_dev, st_ino)
+	 * names one file. Neither a device number nor a pointer. */
+	unsigned int            sb_dev;
 };
 
 extern struct super_block *super_block_alloc(const char *fs_driver, const char *source);

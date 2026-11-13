@@ -107,6 +107,7 @@ static int fat_fill_sb_unlocked(struct super_block *sb, const char *source) {
 		.free_hint = 2,
 	};
 	sb->sb_data = fsi;
+	fsi->fatc_ok = 1;
 	sb->sb_iops = &fat_iops;
 	sb->sb_fops = &fat_fops;
 	sb->sb_ops  = &fat_sbops;
@@ -141,6 +142,7 @@ static int fat_fill_sb_unlocked(struct super_block *sb, const char *source) {
 
 	inode_priv_set(sb->sb_root, di);
 	sb->sb_root->i_ops = &fat_iops;
+	sb->sb_root->i_no = 1; /* see fat_ino_of() */
 
 	return 0;
 
@@ -170,6 +172,9 @@ static int fat_clean_sb_unlocked(struct super_block *sb) {
 
 	assert(fsi);
 
+	/* The held FAT sector belongs to this volume; fat_unlock() would
+	 * otherwise write it through a freed pointer. */
+	fat_fatc_drop();
 	fat_fs_free(fsi);
 
 	/* Through fat_destroy_inode(), which clears the private pointer, since

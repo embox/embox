@@ -36,6 +36,11 @@ struct inode_operations {
 	int (*ino_setxattr)(struct inode *node, const char *name, const char *value,
 	    size_t size, int flags);
 	int (*ino_listxattr)(struct inode *node, char *list, size_t len);
+
+	/* Store MTIME as the node's modification time and set i_mtime to what
+	 * the medium holds (it may round). A driver with it also sets i_mtime on
+	 * write. NULL: the time lives in memory only. */
+	int (*ino_utime)(struct inode *node, time_t mtime);
 };
 
 #endif /* SRC_INCLUDE_FS_INODE_OPERATION_H_ */

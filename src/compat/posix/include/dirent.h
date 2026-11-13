@@ -50,6 +50,10 @@ extern int readdir_r(DIR *, struct dirent *, struct dirent **);
 
 extern void rewinddir(DIR *dirp);
 
+extern long telldir(DIR *dirp);
+
+extern void seekdir(DIR *dirp, long loc);
+
 extern int scandir(const char *dir, struct dirent ***namelist,
     int (*sel)(const struct dirent *),
     int (*compar)(const struct dirent **, const struct dirent **));

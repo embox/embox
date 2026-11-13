@@ -4,6 +4,7 @@
  * @date Dec 12, 2019
  * @author Anton Bondarev
  */
+#include <errno.h>
 #include <stddef.h>
 #include <fcntl.h>
 
@@ -58,6 +59,14 @@ static size_t fat_write_unlocked(struct file_desc *desc, void *buf,
 	if (fi == NULL) {
 		return 0;   /* see the note in fat_read */
 	}
+	/* A write past the end leaves a zero-filled gap. fat_write_file() only
+	 * continues a file, so it is grown to old_pos first, as ftruncate does. */
+	if ((uint32_t)old_pos > fi->filelen) {
+		if (fat_truncate_file(fi, (uint32_t)old_pos) != 0) {
+			return (size_t)-ENOSPC;
+		}
+		file_set_size(desc, old_pos);
+	}
 	/* Same cursor as in fat_read_unlocked(). */
 	if ((size_t)old_pos != fi->pointer && fi->firstcluster >= 2) {
 		if (fat_seek_cluster(fi, fat_sector_buff, old_pos) != DFS_OK) {
@@ -71,16 +80,21 @@ static size_t fat_write_unlocked(struct file_desc *desc, void *buf,
 	rezult = fat_write_file(fi, fat_sector_buff, (uint8_t *)buf,
 			&bytecount, size, &new_sz);
 
-	if (DFS_OK == rezult || DFS_EOF == rezult) {
+	/* A short write counts. Nothing stored is -ENOSPC, not 0: a 0 means
+	 * "try again", and musl's stdio retries for ever. */
+	if (bytecount > 0) {
 		if (old_pos + bytecount > file_get_size(desc)) {
 			file_set_size(desc, old_pos + bytecount);
 			fi->filelen = old_pos + bytecount;
 		}
-
+		/* What fat_write_file() stamped on the entry. */
+		inode_mtime_set(desc->f_inode, fat_wrttime_now());
 		return bytecount;
 	}
-
-	return 0;
+	if (DFS_OK == rezult || DFS_EOF == rezult || size == 0) {
+		return 0;
+	}
+	return (size_t)-ENOSPC;
 }
 
 /* Refuse I/O on a file whose inode has no private data left and record it
@@ -134,6 +148,12 @@ static size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
 		return 0;
 	}
 	res = fat_write_unlocked(desc, buf, size);
+	/* The clusters this call took reach the card only with the held FAT
+	 * sector. Flushed here rather than in fat_unlock(), so that the caller
+	 * sees a failure. */
+	if (fat_fatc_flush() != DFS_OK) {
+		res = 0;
+	}
 	fat_unlock();
 	return res;
 }
