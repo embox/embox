@@ -130,6 +130,10 @@ static int change_mode(char *path, int recursive, char *mode_str) {
 	}
 
 	while (NULL != (dent = readdir(dir))) {
+		/* readdir() returns "." and ".." as well */
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) {
+			continue;
+		}
 		int pathlen = strlen(path);
 		int dent_namel = strlen(dent->d_name);
 		char line[pathlen + dent_namel + 3];

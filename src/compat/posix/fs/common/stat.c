@@ -25,6 +25,11 @@ int stat(const char *path, struct stat *buf) {
 		return 0;
 	}
 
+	if (fd == -1) {
+		/* Keep the errno open() set; fstat(-1) would replace it with EBADF. */
+		return -1;
+	}
+
 	ret = fstat(fd, buf);
 
 	close(fd);

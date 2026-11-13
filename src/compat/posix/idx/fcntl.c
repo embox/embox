@@ -11,6 +11,13 @@
 #include <kernel/task/resource/index_descriptor.h>
 #include <kernel/task/resource/idesc_table.h>
 
+/* Record locks: none here. A file system that keeps them overrides this
+ * (fs/dvfs/dvfs_lockf.c). */
+__attribute__((weak)) int idesc_fcntl_lock(struct idesc *idesc, int cmd,
+    struct flock *fl) {
+	return -EINVAL;
+}
+
 int fcntl(int fd, int cmd, ...) {
 	int ret;
 	va_list args;
@@ -53,7 +60,9 @@ int fcntl(int fd, int cmd, ...) {
 		}
 		break;
 	case F_GETFL:
-		return index_descriptor_flags_get(fd);
+		/* The whole word: index_descriptor_flags_get() masks the access mode
+		 * off, and the access mode is what F_GETFL is asked for. */
+		return index_descriptor_get(fd)->idesc_flags;
 	case F_SETFL:
 		va_start(args, cmd);
 		index_descriptor_flags_set(fd, va_arg(args, int));
@@ -66,10 +75,25 @@ int fcntl(int fd, int cmd, ...) {
 		index_descriptor_cloexec_set(fd, va_arg(args, int));
 		va_end(args);
 		return 0;
-	default:
+	case F_GETLK:
+	case F_SETLK:
+	case F_SETLKW:
+		/* Record locks belong to the file system, not to the file's ioctl. */
+		va_start(args, cmd);
+		ret = idesc_fcntl_lock(index_descriptor_get(fd), cmd,
+		    va_arg(args, struct flock *));
+		va_end(args);
+		break;
+	case F_GETPIPE_SZ:
+	case F_SETPIPE_SZ:
+		/* The only commands a driver answers (the pipe's) */
 		va_start(args, cmd);
 		ret = index_descriptor_fcntl(fd, cmd, va_arg(args, void *));
 		va_end(args);
+		break;
+	default:
+		/* POSIX: an unknown command is EINVAL, not an ioctl of the file. */
+		ret = -EINVAL;
 		break;
 	}
 

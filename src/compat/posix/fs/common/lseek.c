@@ -30,25 +30,31 @@ off_t lseek(int fd, off_t offset, int origin) {
 	switch (sb.st_mode & S_IFMT) {
 		case S_IFIFO:
 		case S_IFSOCK:
-		return SET_ERRNO(EPIPE);
+		return SET_ERRNO(ESPIPE);
 	}
 
 	pos = file_get_pos(file);
 	switch (origin) {
 		case SEEK_SET:
-			pos = offset;
+			pos = 0;
 			break;
 
 		case SEEK_CUR:
-			pos += offset;
 			break;
 
 		case SEEK_END:
-			pos = sb.st_size + offset;
+			pos = sb.st_size;
 			break;
 
 		default:
 			return SET_ERRNO(EINVAL);
+	}
+	if (__builtin_add_overflow(pos, offset, &pos)) {
+		return SET_ERRNO(EOVERFLOW);
+	}
+	/* A position before the start is refused, and the old one kept. */
+	if (pos < 0) {
+		return SET_ERRNO(EINVAL);
 	}
 	file_set_pos(file, pos);
 	return pos;

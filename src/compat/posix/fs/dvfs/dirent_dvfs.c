@@ -47,6 +47,25 @@ static inline void fill_dirent(struct dirent *dirent, struct dentry *dentry) {
 	memcpy(dirent->d_name, dentry->name, NAME_MAX);
 }
 
+/* "." and "..": names the tree resolves, not driver entries, so they come
+ * from here before the driver's own. The parent is read under the tree's
+ * lock; the root is its own "..". */
+static void fill_dot(struct dirent *dirent, struct dentry *dir, int dotdot) {
+	struct dentry *d = dir;
+
+	dvfs_lock();
+	if (dotdot && dir->parent) {
+		d = dir->parent;
+	}
+	dirent->d_ino = (d->d_inode && d->d_inode->i_no > 0)
+	                    ? (ino_t)d->d_inode->i_no : 0;
+	dvfs_unlock();
+
+	dirent->d_type = DT_DIR;
+	dirent->d_reclen = sizeof(*dirent);
+	strcpy(dirent->d_name, dotdot ? ".." : ".");
+}
+
 DIR *opendir(const char *path) {
 	DIR *d;
 	struct lookup l = {0, 0};
@@ -104,6 +123,15 @@ struct dirent *readdir(DIR *dir) {
 	if (!dir) {
 		SET_ERRNO(EBADF);
 		return NULL;
+	}
+
+	/* Positions 0 and 1; the driver's iteration starts after them, which is
+	 * why rewinddir(), telldir() and seekdir() need nothing of their own. */
+	if (dir->pos < 2) {
+		fill_dot(&dir->dirent, dir->dir_dentry, dir->pos == 1);
+		dir->pos++;
+		dir->dirent.d_off = dir->pos;
+		return &dir->dirent;
 	}
 
 	l = (struct lookup) {

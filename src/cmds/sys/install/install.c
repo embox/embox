@@ -31,6 +31,10 @@ static void cp_all_content_recursive(const char *src, const char *dst) {
 	}
 
 	while (NULL != (dent = readdir(dir))) {
+		/* readdir() returns "." and ".." as well */
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) {
+			continue;
+		}
 		snprintf(cmd_buf, sizeof(cmd_buf), "cp %s/%s %s", src, dent->d_name,
 		    dst);
 #ifdef DRY_RUN
