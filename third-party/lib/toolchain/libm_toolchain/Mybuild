@@ -1,0 +1,16 @@
+package third_party.lib
+
+static module libm_toolchain extends embox.compat.libc.math {
+	@Rule(script="$(CP) \"$$($(EMBOX_GCC) -print-file-name=libm.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/toolchain/libm_toolchain")
+	source "libm.a"
+
+	@IncludeExport(path="")
+	source "math.h"
+	@IncludeExport(path="")
+	source "ieeefp.h"
+	@IncludeExport(path="")
+	source "machine/ieeefp.h"
+	@IncludeExport(path="")
+	source "sys/reent.h"
+
+}
