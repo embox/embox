@@ -1,0 +1,15 @@
+package third_party.gcc
+
+@DefaultImpl(libstdcxx_math_builtin)
+abstract module libstdcxx_math {
+}
+
+module libstdcxx_math_builtin extends libstdcxx_math {
+	@IncludeExport(target_name="libstdcxx_math.hpp")
+	source "libstdcxx_math_builtin.hpp"
+}
+
+module libstdcxx_math_openlibm extends libstdcxx_math {
+	@IncludeExport(target_name="libstdcxx_math.hpp")
+	source "libstdcxx_math_openlibm.hpp"
+}

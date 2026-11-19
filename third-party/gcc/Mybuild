@@ -33,4 +33,5 @@ static module gcc_build {
 
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.posix.proc.atexit_api
+	@NoRuntime depends third_party.gcc.libstdcxx_math
 }
