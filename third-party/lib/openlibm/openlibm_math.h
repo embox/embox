@@ -12,29 +12,29 @@
 #include <limits.h>
 #include <sys/cdefs.h>
 
-#define FP_ILOGB0        (-INT_MAX)
-#define FP_ILOGBNAN      INT_MAX
+#define FP_ILOGB0   (-INT_MAX)
+#define FP_ILOGBNAN INT_MAX
 
-#define HUGE_VAL         __builtin_huge_val()
-#define HUGE_VALF        __builtin_huge_valf()
-#define HUGE_VALL        __builtin_huge_vall()
-#define INFINITY         __builtin_inff()
-#define NAN              __builtin_nanf("")
+#define HUGE_VAL  __builtin_huge_val()
+#define HUGE_VALF __builtin_huge_valf()
+#define HUGE_VALL __builtin_huge_vall()
+#define INFINITY  __builtin_inff()
+#define NAN       __builtin_nanf("")
 
 #define MATH_ERRNO       1
 #define MATH_ERREXCEPT   2
 #define math_errhandling MATH_ERREXCEPT
 
-#define FP_FAST_FMAF     1
+#define FP_FAST_FMAF 1
 // #define FP_FAST_FMA   1
 // #define FP_FAST_FMAL  1
 
 /* Symbolic constants to classify floating point numbers. */
-#define FP_INFINITE      0x01
-#define FP_NAN           0x02
-#define FP_NORMAL        0x04
-#define FP_SUBNORMAL     0x08
-#define FP_ZERO          0x10
+#define FP_INFINITE  0x01
+#define FP_NAN       0x02
+#define FP_NORMAL    0x04
+#define FP_SUBNORMAL 0x08
+#define FP_ZERO      0x10
 
 #define fpclassify(x)                                      \
 	((sizeof(x) == sizeof(float))       ? __fpclassifyf(x) \
@@ -47,16 +47,21 @@
 	                                    : __isfinitel(x))
 #define isinf(x)                                      \
 	((sizeof(x) == sizeof(float))       ? __isinff(x) \
-	    : (sizeof(x) == sizeof(double)) ? isinf(x)    \
+	    : (sizeof(x) == sizeof(double)) ? __isinf(x)  \
 	                                    : __isinfl(x))
 #define isnan(x)                                      \
 	((sizeof(x) == sizeof(float))       ? __isnanf(x) \
-	    : (sizeof(x) == sizeof(double)) ? isnan(x)    \
+	    : (sizeof(x) == sizeof(double)) ? __isnan(x)  \
 	                                    : __isnanl(x))
 #define isnormal(x)                                      \
 	((sizeof(x) == sizeof(float))       ? __isnormalf(x) \
 	    : (sizeof(x) == sizeof(double)) ? __isnormal(x)  \
 	                                    : __isnormall(x))
+
+#define signbit(x)                                      \
+	((sizeof(x) == sizeof(float))       ? __signbitf(x) \
+	    : (sizeof(x) == sizeof(double)) ? __signbit(x)  \
+	                                    : __signbitl(x))
 
 #define isgreater(x, y)      __builtin_isgreater((x), (y))
 #define isgreaterequal(x, y) __builtin_isgreaterequal((x), (y))
@@ -64,11 +69,6 @@
 #define islessequal(x, y)    __builtin_islessequal((x), (y))
 #define islessgreater(x, y)  __builtin_islessgreater((x), (y))
 #define isunordered(x, y)    __builtin_isunordered((x), (y))
-
-#define signbit(x)                                      \
-	((sizeof(x) == sizeof(float))       ? __signbitf(x) \
-	    : (sizeof(x) == sizeof(double)) ? __signbit(x)  \
-	                                    : __signbitl(x))
 
 #define M_E        2.7182818284590452354  /* e */
 #define M_LOG2E    1.4426950408889634074  /* log 2e */
@@ -84,8 +84,8 @@
 #define M_SQRT2    1.41421356237309504880 /* sqrt(2) */
 #define M_SQRT1_2  0.70710678118654752440 /* 1/sqrt(2) */
 
-#define MAXFLOAT   ((float)3.40282346638528860e+38)
-#define HUGE       MAXFLOAT
+#define MAXFLOAT ((float)3.40282346638528860e+38)
+#define HUGE     MAXFLOAT
 
 #if FLT_EVAL_METHOD == 0
 typedef float float_t;
@@ -109,8 +109,10 @@ extern int __isfinitef(float);
 extern int __isfinite(double);
 extern int __isfinitel(long double);
 extern int __isinff(float);
+extern int __isinf(double);
 extern int __isinfl(long double);
 extern int __isnanf(float);
+extern int __isnan(double);
 extern int __isnanl(long double);
 extern int __isnormalf(float);
 extern int __isnormal(double);
@@ -157,8 +159,6 @@ extern double expm1(double);
 extern double fma(double, double, double);
 extern double hypot(double, double);
 extern int ilogb(double);
-extern int(isinf)(double);
-extern int(isnan)(double);
 extern double lgamma(double);
 extern long long llrint(double);
 extern long long llround(double);
