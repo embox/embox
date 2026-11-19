@@ -79,14 +79,19 @@ extern int shm_unlink(const char *name);
 __END_DECLS
 
 static inline int mlock(const void *addr, size_t len) {
+	(void)addr;
+	(void)len;
 	return 0;
 }
 
 static inline int munlock(const void *addr, size_t len) {
+	(void)addr;
+	(void)len;
 	return 0;
 }
 
 static inline int mlockall(int flags) {
+	(void)flags;
 	return 0;
 }
 
@@ -95,14 +100,23 @@ static inline int munlockall(void) {
 }
 
 static inline int msync(void *addr, size_t len, int flags) {
+	(void)addr;
+	(void)len;
+	(void)flags;
 	return 0;
 }
 
 static inline int madvise(void *addr, size_t len, int advice) {
+	(void)addr;
+	(void)len;
+	(void)advice;
 	return 0;
 }
 
 static inline int posix_madvise(void *addr, size_t len, int advice) {
+	(void)addr;
+	(void)len;
+	(void)advice;
 	return 0;
 }
 
