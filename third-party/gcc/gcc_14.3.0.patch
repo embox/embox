@@ -1,6 +1,7 @@
+
 diff -aur ./gcc-releases-gcc-14.3.0/gcc/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/gcc/Makefile.in
 --- ./gcc-releases-gcc-14.3.0/gcc/Makefile.in	2025-05-23 14:02:58.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/gcc/Makefile.in	2025-10-03 01:38:53.806342971 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/gcc/Makefile.in	2026-11-19 23:56:20.704061157 +0300
 @@ -467,18 +467,7 @@
  
  # Header files that are made available under the same name
@@ -23,7 +24,7 @@ diff -aur ./gcc-releases-gcc-14.3.0/gcc/Makefile.in ../build/extbld/third_party/
  USER_H_INC_NEXT_POST = @user_headers_inc_next_post@
 diff -aur ./gcc-releases-gcc-14.3.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/gcc/c/Make-lang.in
 --- ./gcc-releases-gcc-14.3.0/gcc/c/Make-lang.in	2025-05-23 14:02:58.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/gcc/c/Make-lang.in	2025-10-03 01:40:16.835068878 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/gcc/c/Make-lang.in	2026-11-19 23:56:20.704807679 +0300
 @@ -73,14 +73,6 @@
  # the bootstrap comparison and allows comparing of the cc1 binary
  cc1-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
@@ -41,7 +42,7 @@ diff -aur ./gcc-releases-gcc-14.3.0/gcc/c/Make-lang.in ../build/extbld/third_par
  	@$(call LINK_PROGRESS,$(INDEX.c),start)
 diff -aur ./gcc-releases-gcc-14.3.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/gcc/cp/Make-lang.in
 --- ./gcc-releases-gcc-14.3.0/gcc/cp/Make-lang.in	2025-05-23 14:02:58.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/gcc/cp/Make-lang.in	2025-10-03 01:41:24.867662572 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/gcc/cp/Make-lang.in	2026-11-19 23:56:20.705034333 +0300
 @@ -131,14 +131,6 @@
  # the bootstrap comparison and allows comparing of the cc1 binary
  cc1plus-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
@@ -59,7 +60,7 @@ diff -aur ./gcc-releases-gcc-14.3.0/gcc/cp/Make-lang.in ../build/extbld/third_pa
  	@$(call LINK_PROGRESS,$(INDEX.c++),start)
 diff -aur ./gcc-releases-gcc-14.3.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libgcc/configure
 --- ./gcc-releases-gcc-14.3.0/libgcc/configure	2025-05-23 14:02:58.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libgcc/configure	2025-10-03 01:42:36.996290949 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libgcc/configure	2026-11-19 23:56:20.705662424 +0300
 @@ -5047,6 +5047,9 @@
  target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
@@ -72,7 +73,7 @@ diff -aur ./gcc-releases-gcc-14.3.0/libgcc/configure ../build/extbld/third_party
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether assembler supports CFI directives" >&5
 diff -aur ./gcc-releases-gcc-14.3.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/configure
 --- ./gcc-releases-gcc-14.3.0/libstdc++-v3/configure	2025-05-23 14:02:58.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/configure	2025-10-03 01:46:09.386135131 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/configure	2026-11-19 23:56:20.710655705 +0300
 @@ -15961,6 +15961,9 @@
    target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
@@ -113,9 +114,21 @@ diff -aur ./gcc-releases-gcc-14.3.0/libstdc++-v3/configure ../build/extbld/third
    fi
  
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for install location" >&5
+diff -aur ./gcc-releases-gcc-14.3.0/libstdc++-v3/include/c_global/cmath ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/include/c_global/cmath
+--- ./gcc-releases-gcc-14.3.0/libstdc++-v3/include/c_global/cmath	2025-05-23 14:02:58.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/include/c_global/cmath	2026-11-20 00:00:42.665338485 +0300
+@@ -86,6 +86,8 @@
+ {
+ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 
++#include <libstdcxx_math.hpp>
++
+   using ::acos;
+ 
+ #ifndef __CORRECT_ISO_CPP_MATH_H_PROTO
 diff -aur ./gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.am ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.am
 --- ./gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.am	2025-05-23 14:02:58.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.am	2025-10-03 01:46:42.558422358 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.am	2026-11-19 23:56:20.713322247 +0300
 @@ -127,8 +127,6 @@
  	list_associated-2.cc \
  	locale.cc \
@@ -127,7 +140,7 @@ diff -aur ./gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.am ../build/
  	tree.cc \
 diff -aur ./gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.in
 --- ./gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.in	2025-05-23 14:02:58.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.in	2025-10-03 01:47:53.879039168 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.in	2026-11-19 23:56:20.713494234 +0300
 @@ -139,7 +139,7 @@
  	hashtable_tr1.lo ios_failure.lo ios_init.lo ios_locale.lo \
  	list.lo list-aux.lo list-aux-2.lo list_associated.lo \
@@ -148,7 +161,7 @@ diff -aur ./gcc-releases-gcc-14.3.0/libstdc++-v3/src/c++98/Makefile.in ../build/
  	tree.cc \
 diff -aur ./gcc-releases-gcc-14.3.0/zlib/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/zlib/Makefile.in
 --- ./gcc-releases-gcc-14.3.0/zlib/Makefile.in	2025-05-23 14:02:58.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/zlib/Makefile.in	2025-10-03 01:48:30.411354736 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.3.0/zlib/Makefile.in	2026-11-19 23:56:20.713776740 +0300
 @@ -454,7 +454,7 @@
  MULTISUBDIR = 
  MULTIDO = true

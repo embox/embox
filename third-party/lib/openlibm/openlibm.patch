@@ -1,6 +1,6 @@
 diff -aur ./openlibm-0.8.8/Make.inc ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/Make.inc
 --- ./openlibm-0.8.8/Make.inc	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/Make.inc	2026-11-10 14:46:44.425417968 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/Make.inc	2026-11-20 11:46:03.106602794 +0300
 @@ -189,15 +189,8 @@
  endif
  endif
@@ -41,7 +41,7 @@ diff -aur ./openlibm-0.8.8/Make.inc ../build/extbld/third_party/lib/OpenLibm/ope
  # Makefile debugging trick:
 diff -aur ./openlibm-0.8.8/Makefile ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/Makefile
 --- ./openlibm-0.8.8/Makefile	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/Makefile	2026-11-10 14:46:44.425618601 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/Makefile	2026-11-20 11:46:03.106868961 +0300
 @@ -2,16 +2,10 @@
  include ./Make.inc
  
@@ -63,7 +63,7 @@ diff -aur ./openlibm-0.8.8/Makefile ../build/extbld/third_party/lib/OpenLibm/ope
  define INC_template
 diff -aur ./openlibm-0.8.8/i387/fenv.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/i387/fenv.c
 --- ./openlibm-0.8.8/i387/fenv.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/i387/fenv.c	2026-11-10 14:46:44.425772287 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/i387/fenv.c	2026-11-20 11:46:03.107091827 +0300
 @@ -70,22 +70,6 @@
  int
  __test_sse(void)
@@ -89,7 +89,7 @@ diff -aur ./openlibm-0.8.8/i387/fenv.c ../build/extbld/third_party/lib/OpenLibm/
  }
 diff -aur ./openlibm-0.8.8/include/openlibm_math.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/include/openlibm_math.h
 --- ./openlibm-0.8.8/include/openlibm_math.h	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/include/openlibm_math.h	2026-11-10 14:46:44.425936646 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/include/openlibm_math.h	2026-11-20 11:46:03.107320692 +0300
 @@ -27,9 +27,7 @@
      #define __WIN32__
  #endif
@@ -102,7 +102,7 @@ diff -aur ./openlibm-0.8.8/include/openlibm_math.h ../build/extbld/third_party/l
  #define __pure2
 diff -aur ./openlibm-0.8.8/src/cdefs-compat.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/cdefs-compat.h
 --- ./openlibm-0.8.8/src/cdefs-compat.h	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/cdefs-compat.h	2026-11-10 14:46:44.426068128 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/cdefs-compat.h	2026-11-20 11:46:03.107509980 +0300
 @@ -1,6 +1,8 @@
  #ifndef _CDEFS_COMPAT_H_
  #define	_CDEFS_COMPAT_H_
@@ -125,7 +125,7 @@ diff -aur ./openlibm-0.8.8/src/cdefs-compat.h ../build/extbld/third_party/lib/Op
  #endif /* _CDEFS_COMPAT_H_ */
 diff -aur ./openlibm-0.8.8/src/e_fmod.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/e_fmod.c
 --- ./openlibm-0.8.8/src/e_fmod.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/e_fmod.c	2026-11-10 14:46:44.426171574 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/e_fmod.c	2026-11-20 11:46:03.107655140 +0300
 @@ -131,3 +131,7 @@
  	}
  	return x;		/* exact output */
@@ -136,7 +136,7 @@ diff -aur ./openlibm-0.8.8/src/e_fmod.c ../build/extbld/third_party/lib/OpenLibm
 +#endif
 diff -aur ./openlibm-0.8.8/src/e_lgamma.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/e_lgamma.c
 --- ./openlibm-0.8.8/src/e_lgamma.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/e_lgamma.c	2026-11-10 14:46:44.426264492 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/e_lgamma.c	2026-11-20 11:46:03.107796508 +0300
 @@ -34,3 +34,7 @@
  
  	return __ieee754_lgamma_r(x,&signgam);
@@ -147,7 +147,7 @@ diff -aur ./openlibm-0.8.8/src/e_lgamma.c ../build/extbld/third_party/lib/OpenLi
 +#endif
 diff -aur ./openlibm-0.8.8/src/e_lgamma_r.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/e_lgamma_r.c
 --- ./openlibm-0.8.8/src/e_lgamma_r.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/e_lgamma_r.c	2026-11-10 14:46:44.426361838 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/e_lgamma_r.c	2026-11-20 11:46:03.107949526 +0300
 @@ -297,3 +297,7 @@
  	if(hx<0) r = nadj - r;
  	return r;
@@ -158,7 +158,7 @@ diff -aur ./openlibm-0.8.8/src/e_lgamma_r.c ../build/extbld/third_party/lib/Open
 +#endif
 diff -aur ./openlibm-0.8.8/src/fpmath.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/fpmath.h
 --- ./openlibm-0.8.8/src/fpmath.h	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/fpmath.h	2026-11-10 14:46:44.426589914 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/fpmath.h	2026-11-20 11:46:03.108206594 +0300
 @@ -29,26 +29,6 @@
  #ifndef _FPMATH_H_
  #define _FPMATH_H_
@@ -249,7 +249,7 @@ diff -aur ./openlibm-0.8.8/src/fpmath.h ../build/extbld/third_party/lib/OpenLibm
  	struct {
 diff -aur ./openlibm-0.8.8/src/math_private.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/math_private.h
 --- ./openlibm-0.8.8/src/math_private.h	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/math_private.h	2026-11-10 14:46:44.426696801 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/math_private.h	2026-11-20 11:46:03.108401401 +0300
 @@ -24,6 +24,7 @@
  #include "fpmath.h"
  #include <stdint.h>
@@ -260,7 +260,7 @@ diff -aur ./openlibm-0.8.8/src/math_private.h ../build/extbld/third_party/lib/Op
   * The original fdlibm code used statements like:
 diff -aur ./openlibm-0.8.8/src/riscv_fpmath.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/riscv_fpmath.h
 --- ./openlibm-0.8.8/src/riscv_fpmath.h	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/riscv_fpmath.h	2026-11-10 14:46:44.426802100 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/riscv_fpmath.h	2026-11-20 11:46:03.108581978 +0300
 @@ -27,18 +27,20 @@
   * $FreeBSD: head/lib/libc/riscv/_fpmath.h 362788 2020-06-29 19:30:35Z mhorne $
   */
@@ -291,7 +291,7 @@ diff -aur ./openlibm-0.8.8/src/riscv_fpmath.h ../build/extbld/third_party/lib/Op
  
 diff -aur ./openlibm-0.8.8/src/s_carg.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_carg.c
 --- ./openlibm-0.8.8/src/s_carg.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_carg.c	2026-11-10 14:46:44.426903301 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_carg.c	2026-11-20 11:46:03.108735857 +0300
 @@ -38,3 +38,7 @@
  
  	return (atan2(cimag(z), creal(z)));
@@ -302,7 +302,7 @@ diff -aur ./openlibm-0.8.8/src/s_carg.c ../build/extbld/third_party/lib/OpenLibm
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_ccosh.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_ccosh.c
 --- ./openlibm-0.8.8/src/s_ccosh.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_ccosh.c	2026-11-10 14:46:44.426997646 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_ccosh.c	2026-11-20 11:46:03.108907947 +0300
 @@ -153,3 +153,8 @@
  	/* ccos(z) = ccosh(I * z) */
  	return (ccosh(CMPLX(-cimag(z), creal(z))));
@@ -314,7 +314,7 @@ diff -aur ./openlibm-0.8.8/src/s_ccosh.c ../build/extbld/third_party/lib/OpenLib
 +#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
 diff -aur ./openlibm-0.8.8/src/s_cexp.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_cexp.c
 --- ./openlibm-0.8.8/src/s_cexp.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_cexp.c	2026-11-10 14:46:44.427093100 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_cexp.c	2026-11-20 11:46:03.109137376 +0300
 @@ -87,3 +87,7 @@
  		return (CMPLX(exp_x * cos(y), exp_x * sin(y)));
  	}
@@ -325,7 +325,7 @@ diff -aur ./openlibm-0.8.8/src/s_cexp.c ../build/extbld/third_party/lib/OpenLibm
 +#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
 diff -aur ./openlibm-0.8.8/src/s_cimag.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_cimag.c
 --- ./openlibm-0.8.8/src/s_cimag.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_cimag.c	2026-11-10 14:46:44.427178671 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_cimag.c	2026-11-20 11:46:03.109357065 +0300
 @@ -35,3 +35,7 @@
  {
  	return (__imag__ z);
@@ -336,7 +336,7 @@ diff -aur ./openlibm-0.8.8/src/s_cimag.c ../build/extbld/third_party/lib/OpenLib
 +#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
 diff -aur ./openlibm-0.8.8/src/s_conj.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_conj.c
 --- ./openlibm-0.8.8/src/s_conj.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_conj.c	2026-11-10 14:46:44.427280914 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_conj.c	2026-11-20 11:46:03.109580134 +0300
 @@ -36,3 +36,7 @@
  
  	return (CMPLX(creal(z), -cimag(z)));
@@ -347,7 +347,7 @@ diff -aur ./openlibm-0.8.8/src/s_conj.c ../build/extbld/third_party/lib/OpenLibm
 +#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
 diff -aur ./openlibm-0.8.8/src/s_copysign.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_copysign.c
 --- ./openlibm-0.8.8/src/s_copysign.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_copysign.c	2026-11-10 14:46:44.427364471 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_copysign.c	2026-11-20 11:46:03.109840646 +0300
 @@ -32,3 +32,7 @@
  	SET_HIGH_WORD(x,(hx&0x7fffffff)|(hy&0x80000000));
          return x;
@@ -358,7 +358,7 @@ diff -aur ./openlibm-0.8.8/src/s_copysign.c ../build/extbld/third_party/lib/Open
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_creal.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_creal.c
 --- ./openlibm-0.8.8/src/s_creal.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_creal.c	2026-11-10 14:46:44.427452432 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_creal.c	2026-11-20 11:46:03.110108686 +0300
 @@ -35,3 +35,7 @@
  {
  	return z;
@@ -369,7 +369,7 @@ diff -aur ./openlibm-0.8.8/src/s_creal.c ../build/extbld/third_party/lib/OpenLib
 +#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
 diff -aur ./openlibm-0.8.8/src/s_csinh.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_csinh.c
 --- ./openlibm-0.8.8/src/s_csinh.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_csinh.c	2026-11-10 14:46:44.427539878 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_csinh.c	2026-11-20 11:46:03.110304319 +0300
 @@ -155,3 +155,8 @@
  	z = csinh(CMPLX(-cimag(z), creal(z)));
  	return (CMPLX(cimag(z), -creal(z)));
@@ -381,7 +381,7 @@ diff -aur ./openlibm-0.8.8/src/s_csinh.c ../build/extbld/third_party/lib/OpenLib
 +#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
 diff -aur ./openlibm-0.8.8/src/s_ctanh.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_ctanh.c
 --- ./openlibm-0.8.8/src/s_ctanh.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_ctanh.c	2026-11-10 14:46:44.427632621 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_ctanh.c	2026-11-20 11:46:03.110516578 +0300
 @@ -142,3 +142,8 @@
  	z = ctanh(CMPLX(-cimag(z), creal(z)));
  	return (CMPLX(cimag(z), -creal(z)));
@@ -393,7 +393,7 @@ diff -aur ./openlibm-0.8.8/src/s_ctanh.c ../build/extbld/third_party/lib/OpenLib
 +#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
 diff -aur ./openlibm-0.8.8/src/s_fabs.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_fabs.c
 --- ./openlibm-0.8.8/src/s_fabs.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_fabs.c	2026-11-10 14:46:44.427718889 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_fabs.c	2026-11-20 11:46:03.110717918 +0300
 @@ -26,3 +26,7 @@
  	SET_HIGH_WORD(x,high&0x7fffffff);
          return x;
@@ -404,7 +404,7 @@ diff -aur ./openlibm-0.8.8/src/s_fabs.c ../build/extbld/third_party/lib/OpenLibm
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_fmax.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_fmax.c
 --- ./openlibm-0.8.8/src/s_fmax.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_fmax.c	2026-11-10 14:46:44.427801684 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_fmax.c	2026-11-20 11:46:03.110907519 +0300
 @@ -52,3 +52,7 @@
  
  	return (x > y ? x : y);
@@ -415,7 +415,7 @@ diff -aur ./openlibm-0.8.8/src/s_fmax.c ../build/extbld/third_party/lib/OpenLibm
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_fmin.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_fmin.c
 --- ./openlibm-0.8.8/src/s_fmin.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_fmin.c	2026-11-10 14:46:44.427897153 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_fmin.c	2026-11-20 11:46:03.111126512 +0300
 @@ -52,3 +52,7 @@
  
  	return (x < y ? x : y);
@@ -426,7 +426,7 @@ diff -aur ./openlibm-0.8.8/src/s_fmin.c ../build/extbld/third_party/lib/OpenLibm
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_ilogb.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_ilogb.c
 --- ./openlibm-0.8.8/src/s_ilogb.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_ilogb.c	2026-11-10 14:46:44.427979894 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_ilogb.c	2026-11-20 11:46:03.111280565 +0300
 @@ -47,3 +47,7 @@
  	else if (hx>0x7ff00000 || lx!=0) return FP_ILOGBNAN;
  	else return INT_MAX;
@@ -435,9 +435,45 @@ diff -aur ./openlibm-0.8.8/src/s_ilogb.c ../build/extbld/third_party/lib/OpenLib
 +#if (LDBL_MANT_DIG == 53)
 +openlibm_weak_reference(ilogb, ilogbl);
 +#endif
+diff -aur ./openlibm-0.8.8/src/s_isinf.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_isinf.c
+--- ./openlibm-0.8.8/src/s_isinf.c	2026-09-02 11:18:40.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_isinf.c	2026-11-20 11:48:59.853327195 +0300
+@@ -33,7 +33,7 @@
+ /* Provided by libc */
+ #if 1
+ OLM_DLLEXPORT int
+-(isinf) (double d)
++__isinf(double d)
+ {
+ 	union IEEEd2bits u;
+ 
+@@ -63,4 +63,5 @@
+ }
+ #endif
+ 
++openlibm_weak_reference(__isinf, isinf);
+ openlibm_weak_reference(__isinff, isinff);
+diff -aur ./openlibm-0.8.8/src/s_isnan.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_isnan.c
+--- ./openlibm-0.8.8/src/s_isnan.c	2026-09-02 11:18:40.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_isnan.c	2026-11-20 11:48:46.734982910 +0300
+@@ -34,7 +34,7 @@
+ /* Provided by libc */
+ #if 1
+ OLM_DLLEXPORT int
+-(isnan) (double d)
++__isnan(double d)
+ {
+ 	union IEEEd2bits u;
+ 
+@@ -64,4 +64,5 @@
+ }
+ #endif
+ 
++openlibm_weak_reference(__isnan, isnan);
+ openlibm_weak_reference(__isnanf, isnanf);
 diff -aur ./openlibm-0.8.8/src/s_llrint.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_llrint.c
 --- ./openlibm-0.8.8/src/s_llrint.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_llrint.c	2026-11-10 14:46:44.428061637 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_llrint.c	2026-11-20 11:46:03.111738220 +0300
 @@ -7,3 +7,7 @@
  #define	fn		llrint
  
@@ -448,7 +484,7 @@ diff -aur ./openlibm-0.8.8/src/s_llrint.c ../build/extbld/third_party/lib/OpenLi
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_llround.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_llround.c
 --- ./openlibm-0.8.8/src/s_llround.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_llround.c	2026-11-10 14:46:44.428141707 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_llround.c	2026-11-20 11:46:03.111891712 +0300
 @@ -9,3 +9,7 @@
  #define	fn		llround
  
@@ -459,7 +495,7 @@ diff -aur ./openlibm-0.8.8/src/s_llround.c ../build/extbld/third_party/lib/OpenL
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_lrint.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_lrint.c
 --- ./openlibm-0.8.8/src/s_lrint.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_lrint.c	2026-11-10 14:46:44.428225602 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_lrint.c	2026-11-20 11:46:03.112079554 +0300
 @@ -59,3 +59,7 @@
  	feupdateenv(&env);
  	return (d);
@@ -470,7 +506,7 @@ diff -aur ./openlibm-0.8.8/src/s_lrint.c ../build/extbld/third_party/lib/OpenLib
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_lround.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_lround.c
 --- ./openlibm-0.8.8/src/s_lround.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_lround.c	2026-11-10 14:46:44.428308908 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_lround.c	2026-11-20 11:46:03.112259182 +0300
 @@ -67,3 +67,7 @@
  		return (DTYPE_MAX);
  	}
@@ -481,7 +517,7 @@ diff -aur ./openlibm-0.8.8/src/s_lround.c ../build/extbld/third_party/lib/OpenLi
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_modf.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_modf.c
 --- ./openlibm-0.8.8/src/s_modf.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_modf.c	2026-11-10 14:46:44.428395285 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_modf.c	2026-11-20 11:46:03.112413355 +0300
 @@ -74,3 +74,7 @@
  	    }
  	}
@@ -492,7 +528,7 @@ diff -aur ./openlibm-0.8.8/src/s_modf.c ../build/extbld/third_party/lib/OpenLibm
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_nearbyint.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_nearbyint.c
 --- ./openlibm-0.8.8/src/s_nearbyint.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_nearbyint.c	2026-11-10 14:46:44.428481310 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_nearbyint.c	2026-11-20 11:46:03.112548769 +0300
 @@ -54,3 +54,7 @@
  
  DECL(double, nearbyint, rint)
@@ -503,7 +539,7 @@ diff -aur ./openlibm-0.8.8/src/s_nearbyint.c ../build/extbld/third_party/lib/Ope
 +#endif
 diff -aur ./openlibm-0.8.8/src/s_round.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_round.c
 --- ./openlibm-0.8.8/src/s_round.c	2026-09-02 11:18:40.000000000 +0300
-+++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_round.c	2026-11-10 14:46:44.428567527 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.8/src/s_round.c	2026-11-20 11:46:03.112685648 +0300
 @@ -53,3 +53,7 @@
  		return (-t);
  	}
