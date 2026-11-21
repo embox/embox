@@ -38,6 +38,10 @@ static long long print(char *path, DIR *dir, size_t block_size) {
 	char *line;
 
 	while (NULL != (dent = readdir(dir))) {
+		/* readdir() returns "." and ".." as well */
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) {
+			continue;
+		}
 		int pathlen = strlen(path);
 		int dent_namel = strlen(dent->d_name);
 		line = (char*)malloc(sizeof(char) * (pathlen + dent_namel + 3));

@@ -35,6 +35,18 @@
 
 #define _SC_OPEN_MAX 20
 
+/* pathconf() names, numbered as in Linux. Only _PC_NAME_MAX and _PC_PATH_MAX
+ * have an answer; the rest are EINVAL. */
+#define _PC_LINK_MAX         0
+#define _PC_MAX_CANON        1
+#define _PC_MAX_INPUT        2
+#define _PC_NAME_MAX         3
+#define _PC_PATH_MAX         4
+#define _PC_PIPE_BUF         5
+#define _PC_CHOWN_RESTRICTED 6
+#define _PC_NO_TRUNC         7
+#define _PC_VDISABLE         8
+
 /*
 _SC_2_C_BIND
 _SC_2_C_DEV
@@ -244,6 +256,8 @@ extern int chdir(const char *path);
 extern int getpagesize(void);
 
 extern long int sysconf(int name);
+extern long int pathconf(const char *path, int name);
+extern long int fpathconf(int fd, int name);
 
 #define R_OK 4
 #define W_OK 2

@@ -12,6 +12,7 @@ static module file_system_common {
 	source "getdtablesize.c"
 	source "lseek.c"
 	source "openat.c"
+	source "pathconf.c"
 	source "pread.c"
 	source "pwrite.c"
 	source "readlink.c"

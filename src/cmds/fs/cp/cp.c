@@ -118,6 +118,10 @@ static int cp_recursive(char *src, char *dst) {
 		dst_store = path_append_store(dst);
 
 		while (NULL != (dent = readdir(dir))) {
+			/* readdir() returns "." and ".." as well */
+			if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) {
+				continue;
+			}
 
 			strcpy(src_store, "/");
 			strcat(src_store, dent->d_name);
