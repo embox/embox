@@ -88,6 +88,7 @@ SECTIONS {
 		*(.sdata.*)
 		*(.got)
 		*(.got.*)
+		. = ALIGN(DATA_ALIGNMENT);
 
 	} SECTION_REGION(data) :data
 	LDS_MODULES_DATA_LMA
